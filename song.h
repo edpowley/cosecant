@@ -1,7 +1,6 @@
 #pragma once
 
 #include "routing.h"
-#include "undoredo.h"
 
 namespace Sequence { class Seq; };
 
@@ -58,7 +57,7 @@ public:
 
 	Ptr<Routing> m_routing;
 	Ptr<Sequence::Seq> m_sequence;
-	UndoRedo m_undoredo;
+	QUndoStack m_undo;
 
 	bool load(const bpath& filepath);
 	void save(const bpath& filepath);

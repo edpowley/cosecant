@@ -22,7 +22,7 @@ Song::Song()
 
 void Song::clear()
 {
-	m_undoredo.clear();
+	m_undo.clear();
 	m_routing = NULL;
 	m_sequence = NULL;
 	WorkQueue::setNull();

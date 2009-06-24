@@ -59,6 +59,12 @@ void Machine::initParamStates(const Ptr<ParamInfo::Group>& group)
 	}
 }
 
+void Machine::setPos(const QPointF& newpos)
+{
+	m_pos = newpos;
+	signalChangePos();
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 Ptr<Sequence::Pattern> Machine::createPattern(double length)

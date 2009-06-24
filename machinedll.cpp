@@ -117,25 +117,25 @@ Ptr<Sequence::Pattern> DllMachine::newPattern(double length)
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-class PatternLengthChangeAction : public DllMachine::Action
+class PatternLengthChangeAction : public DllMachine::Command
 {
 public:
 	PatternLengthChangeAction(const Ptr<DllMachine::Pattern>& pattern, double newlength, MiUndoable* miundoable)
-		: Action(pattern->m_instance, miundoable),
+		: Command(pattern->m_instance, miundoable),
 		m_pattern(pattern), m_oldLength(pattern->m_length), m_newLength(newlength)
 	{
 	}
 
-	virtual bool operator()()
+	virtual void redo()
 	{
 		m_pattern->m_length = m_newLength;
-		return Action::operator()();
+		Command::redo();
 	}
 
-	virtual bool undo()
+	virtual void undo()
 	{
 		m_pattern->m_length = m_oldLength;
-		return Action::undo();
+		Command::undo();
 	}
 
 protected:
@@ -143,7 +143,7 @@ protected:
 	double m_oldLength, m_newLength;
 };
 
-Ptr<Undoable> DllMachine::Pattern::createUndoableForLengthChange(double newlength)
+QUndoCommand* DllMachine::Pattern::createUndoableForLengthChange(double newlength)
 {
 	return new PatternLengthChangeAction(this, newlength,
 		m_instance->m_functions->patChangeLength(m_ppat, (int)ceil(newlength)));

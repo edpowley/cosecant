@@ -16,7 +16,7 @@ public:
 	virtual void load(SongLoadContext& ctx, xmlpp::Element* el);
 	virtual void save(xmlpp::Element* el);
 
-	virtual Ptr<Undoable> createUndoableForLengthChange(double newlength);
+	virtual QUndoCommand* createUndoableForLengthChange(double newlength);
 
 	class Note : public Object
 	{

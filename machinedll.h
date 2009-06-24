@@ -50,31 +50,27 @@ public:
 		Ptr<Dll> m_dll;
 	};
 
-	class Action : public Undoable
+	class Command : public QUndoCommand
 	{
 	public:
-		Action(Instance* instance, MiUndoable* p) : m_instance(instance), m_p(p)
+		Command(Instance* instance, MiUndoable* p) : m_instance(instance), m_p(p)
 		{
+			setText(m_instance->m_functions->undoableDescribe(m_p));
 		}
 
-		virtual ~Action()
+		virtual ~Command()
 		{
 			m_instance->m_functions->undoableDestroy(m_p);
 		}
 
-		virtual bool operator()()
+		virtual void redo()
 		{
-			return m_instance->m_functions->undoableDo(m_p);
+			m_instance->m_functions->undoableDo(m_p);
 		}
 
-		virtual bool undo()
+		virtual void undo()
 		{
-			return m_instance->m_functions->undoableUndo(m_p);
-		}
-
-		virtual QString describe()
-		{
-			return m_instance->m_functions->undoableDescribe(m_p);
+			m_instance->m_functions->undoableUndo(m_p);
 		}
 
 	protected:
@@ -93,7 +89,7 @@ public:
 		virtual void load(SongLoadContext& ctx, xmlpp::Element* el);
 		virtual void save(xmlpp::Element* el) {}
 
-		virtual Ptr<Undoable> createUndoableForLengthChange(double newlength);
+		virtual QUndoCommand* createUndoableForLengthChange(double newlength);
 
 		CosecantAPI::MiPattern* m_ppat;
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "undoredo.h"
-
 class PatternEditor;
 class NotebookWindow;
 class SequenceEditor;
@@ -31,7 +29,7 @@ namespace Sequence
 		virtual void load(SongLoadContext& ctx, xmlpp::Element* el) = 0;
 		virtual void save(xmlpp::Element* el) = 0;
 
-		virtual Ptr<Undoable> createUndoableForLengthChange(double newlength) = 0;
+		virtual QUndoCommand* createUndoableForLengthChange(double newlength) = 0;
 
 		Machine* m_mac;
 		PatternEditor* m_editor;

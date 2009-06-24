@@ -3,7 +3,9 @@
 #include "routingeditor.h"
 using namespace RoutingEditor;
 
+#include "song.h"
 #include "theme.h"
+#include "undo_command_ids.h"
 
 PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 20);
@@ -73,6 +75,8 @@ MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 	{
 		PinItem* pi = editor->m_pinItemMap[pin] = new PinItem(editor, pin, this);
 	}
+
+	connect(m_mac, SIGNAL(signalChangePos()), this, SLOT(onMachinePosChanged()));
 }
 
 void MachineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -105,9 +109,43 @@ QVariant MachineItem::itemChange(GraphicsItemChange change, const QVariant& valu
 	return QGraphicsRectItem::itemChange(change, value);
 }
 
+class MachineMoveCommand : public QUndoCommand
+{
+public:
+	MachineMoveCommand(const Ptr<Machine>& mac, const QPointF& newpos)
+		: m_mac(mac), m_newpos(newpos), m_oldpos(mac->m_pos)
+	{ setText( QString("move machine '%1'").arg(m_mac->m_name) ); }
+
+	virtual int id() const { return ucidMachineChangePos; }
+
+	virtual void undo() { m_mac->setPos(m_oldpos); }
+	virtual void redo() { m_mac->setPos(m_newpos); }
+
+	virtual bool mergeWith(const QUndoCommand* other)
+	{
+		const MachineMoveCommand* mmc = dynamic_cast<const MachineMoveCommand*>(other);
+		if (!mmc) return false;
+		if (m_mac != mmc->m_mac) return false;
+		m_newpos = mmc->m_newpos;
+		return true;
+	}
+
+protected:
+	Ptr<Machine> m_mac;
+	QPointF m_oldpos, m_newpos;
+};
+
 void MachineItem::onMove()
 {
-	// TODO: update machine pos
+	// TODO: command merging doesn't work properly if >1 machine is selected
+	if (pos() != m_mac->m_pos)
+		Song::get().m_undo.push(new MachineMoveCommand(m_mac, pos()));
+}
+
+void MachineItem::onMachinePosChanged()
+{
+	if (pos() != m_mac->m_pos)
+		setPos(m_mac->m_pos);
 }
 
 ////////////////////////////////////////////////////////////////////////////

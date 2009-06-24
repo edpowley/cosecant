@@ -42,18 +42,16 @@ CreatePatternAndInsertEvent::CreatePatternAndInsertEvent(const Ptr<Sequence::Tra
 {
 }
 
-bool CreatePatternAndInsertEvent::operator()()
+void CreatePatternAndInsertEvent::redo()
 {
 	m_mac->addPattern(m_pattern);
-	InsertEvent::operator()();
-	return true;
+	InsertEvent::redo();
 }
 
-bool CreatePatternAndInsertEvent::undo()
+void CreatePatternAndInsertEvent::undo()
 {
 	InsertEvent::undo();
 	m_mac->removePattern(m_pattern);
-	return true;
 }
 
 ClearTrackRange::ClearTrackRange(const Ptr<Sequence::Track>& track, double begin, double end, bool deleteIfStartsHere)
@@ -113,20 +111,18 @@ ChangePatternLength::ChangePatternLength(const Ptr<Sequence::Pattern>& pattern, 
 	}
 }
 
-bool ChangePatternLength::operator()()
+void ChangePatternLength::redo()
 {
-	m_actualUndoable->operator()();
-	ChangeEvents::operator()();
+	m_actualUndoable->redo();
+	ChangeEvents::redo();
 	Song::get().m_sequence->trigger_signalMachinePatternsChange(m_pattern->m_mac);
-	return true;
 }
 
-bool ChangePatternLength::undo()
+void ChangePatternLength::undo()
 {
 	ChangeEvents::undo();
 	m_actualUndoable->undo();
 	Song::get().m_sequence->trigger_signalMachinePatternsChange(m_pattern->m_mac);
-	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +149,7 @@ void ChangeEvents::addReplaceEvent(const Ptr<Sequence::Track>& track,
 	m_tracksAffected.insert(track);
 }
 
-bool ChangeEvents::operator()()
+void ChangeEvents::redo()
 {
 	boost::unique_lock<boost::shared_mutex> lock(Song::get().m_sequence->m_mutex);
 
@@ -171,11 +167,9 @@ bool ChangeEvents::operator()()
 	{
 		track->trigger_signalChange();
 	}
-
-	return !m_eventsAdded.empty() || !m_eventsRemoved.empty();
 }
 
-bool ChangeEvents::undo()
+void ChangeEvents::undo()
 {
 	boost::unique_lock<boost::shared_mutex> lock(Song::get().m_sequence->m_mutex);
 
@@ -193,6 +187,4 @@ bool ChangeEvents::undo()
 	{
 		track->trigger_signalChange();
 	}
-
-	return !m_eventsAdded.empty() || !m_eventsRemoved.empty();
 }

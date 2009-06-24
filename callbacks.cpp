@@ -148,7 +148,7 @@ namespace CallbacksImpl
 
 	void doUndoable(HostMachine* mac, MiUndoable* undoable)
 	{
-		Song::get().m_undoredo.doAction( new DllMachine::Action(mac->m_instance, undoable) );
+		Song::get().m_undo.push( new DllMachine::Command(mac->m_instance, undoable) );
 	}
 
 	void xmlSetAttribute(xmlpp::Element* el, const char* name, const char* value)

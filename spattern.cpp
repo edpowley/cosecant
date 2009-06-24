@@ -30,7 +30,7 @@ void Spattern::save(xmlpp::Element* el)
 	}
 }
 
-Ptr<Undoable> Spattern::createUndoableForLengthChange(double newlength)
+QUndoCommand* Spattern::createUndoableForLengthChange(double newlength)
 {
 	return NULL;
 }

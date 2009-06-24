@@ -27,6 +27,7 @@ namespace RoutingEditor
 
 	protected slots:
 		void onMove();
+		void onMachinePosChanged();
 
 //		virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
 	};

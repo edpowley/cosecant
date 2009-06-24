@@ -87,6 +87,8 @@ public:
 	QPointF m_pos, m_halfsize;
 	Routing* m_routing;
 
+	void setPos(const QPointF& newpos);
+
 	boost::recursive_timed_mutex m_mutex;
 
 	bool m_dead;
@@ -95,6 +97,7 @@ public:
 signals:
 	void signalAdd();
 	void signalRemove();
+	void signalChangePos();
 
 public:
 	void added() { signalAdd(); }

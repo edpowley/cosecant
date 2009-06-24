@@ -1,24 +1,24 @@
 #pragma once
 
 #include "sequence.h"
-#include "undoredo.h"
 
 namespace SequenceActions
 {
-	class ChangeEvents : public Undoable
+	class ChangeEvents : public QUndoCommand
 	{
 	public:
 		ChangeEvents(const QString& description)
-			: m_description(description) {}
+		{
+			setText(description);
+		}
 
 		void addAddEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
 		void addRemoveEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
 		void addReplaceEvent(const Ptr<Sequence::Track>& track,
 							const Ptr<Sequence::Event>& evOld, const Ptr<Sequence::Event>& evNew);
 
-		virtual QString describe() { return m_description; }
-		virtual bool operator()();
-		virtual bool undo();
+		virtual void redo();
+		virtual void undo();
 
 	protected:
 		std::multimap< Ptr<Sequence::Track>, Ptr<Sequence::Event> > m_eventsAdded, m_eventsRemoved;
@@ -38,8 +38,8 @@ namespace SequenceActions
 	public:
 		CreatePatternAndInsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
 
-		virtual bool operator()();
-		virtual bool undo();
+		virtual void redo();
+		virtual void undo();
 
 	protected:
 		Ptr<Machine> m_mac;
@@ -57,11 +57,11 @@ namespace SequenceActions
 	public:
 		ChangePatternLength(const Ptr<Sequence::Pattern>& pattern, double newlength);
 
-		virtual bool operator()();
-		virtual bool undo();
+		virtual void redo();
+		virtual void undo();
 
 	protected:
 		Ptr<Sequence::Pattern> m_pattern;
-		Ptr<Undoable> m_actualUndoable;
+		QUndoCommand* m_actualUndoable;
 	};
 };

@@ -371,8 +371,8 @@ namespace CosecantAPI
 		void (*patedKeyJazz)(MiPatternEditor*, KeyJazz::Type, KeyJazz::Note);
 		void (*destroyPatternEditor)(MiPatternEditor*);
 
-		bool (*undoableDo)(MiUndoable*);
-		bool (*undoableUndo)(MiUndoable*);
+		void (*undoableDo)(MiUndoable*);
+		void (*undoableUndo)(MiUndoable*);
 		const char* (*undoableDescribe)(MiUndoable*);
 		void (*undoableDestroy)(MiUndoable*);
 	};
