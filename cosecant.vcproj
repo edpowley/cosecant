@@ -130,7 +130,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="qtmaind.lib QtCored4.lib QtGuid4.lib QtXmld4.lib QtScriptd4.lib QtSvgd4.lib portaudio_x86.lib shlwapi.lib sigc-vc90-2_0.lib xml++-vc90-d-2_6.lib glibmm-vc90-d-2_4.lib libboost_filesystem-vc90-mt-gd-1_39.lib"
+				AdditionalDependencies="qtmaind.lib QtCored4.lib QtGuid4.lib QtXmld4.lib QtScriptd4.lib QtSvgd4.lib portaudio_x86.lib shlwapi.lib xml++-vc90-d-2_6.lib glibmm-vc90-d-2_4.lib libboost_filesystem-vc90-mt-gd-1_39.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				AdditionalLibraryDirectories="&quot;$(QTDIR)\lib&quot;;&quot;C:\Program Files (x86)\gtkmm\lib&quot;"
 				GenerateDebugInformation="true"

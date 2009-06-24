@@ -28,9 +28,8 @@
 #include <boost/filesystem.hpp>
 typedef boost::filesystem::wpath bpath;
 
-// sigc++ and libxml++
-// TODO: remove dependencies on them, and remove associated include dirs from project settings
-//#include <sigc++/sigc++.h>
+// libxml++
+// TODO: remove dependency, and remove associated include dir from project settings
 #include <libxml++/libxml++.h>
 
 // Qt
