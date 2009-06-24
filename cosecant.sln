@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cosecant", "cosecant.vcproj", "{A2F8E174-C514-4732-8FD7-B862E033CCBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2F8E174-C514-4732-8FD7-B862E033CCBF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2F8E174-C514-4732-8FD7-B862E033CCBF}.Debug|Win32.Build.0 = Debug|Win32
+		{A2F8E174-C514-4732-8FD7-B862E033CCBF}.Release|Win32.ActiveCfg = Release|Win32
+		{A2F8E174-C514-4732-8FD7-B862E033CCBF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
