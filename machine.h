@@ -1,6 +1,5 @@
 #pragma once
 
-#include "geometry.h"
 #include "machinfo.h"
 #include "workbuffer.h"
 #include "sequence.h"
@@ -34,8 +33,8 @@ public:
 
 	Ptr<WorkBuffer::Base> m_buffer;
 
-	Vector2f getPosOffset();
-	Vector2f getAbsPos();
+	QPointF getPosOffset();
+	QPointF getAbsPos();
 	double getRotation() { return (int)m_side * 90.0; }
 
 	std::vector< Ptr<Connection> > m_connections;
@@ -85,7 +84,7 @@ public:
 	Ptr<MachInfo> m_info;
 	QString m_name;
 	CosecantAPI::MachineTypeHint::mt m_colorhint;
-	Vector2f m_pos, m_halfsize;
+	QPointF m_pos, m_halfsize;
 	Routing* m_routing;
 
 	boost::recursive_timed_mutex m_mutex;

@@ -175,30 +175,30 @@ void Machine::autoArrangePins(Pin::Side side)
 	if (m_routing) m_routing->signalChange();
 }
 
-Vector2f Pin::getPosOffset()
+QPointF Pin::getPosOffset()
 {
 	switch (m_side)
 	{
 	case left:
 	case right:
-		return Vector2f(
+		return QPointF(
 			(m_side == left) ? -1.0f : +1.0f,
 			(m_pos - 0.5f) * 2.0f
 		);
 
 	case top:
 	case bottom:
-		return Vector2f(
+		return QPointF(
 			(m_pos - 0.5f) * 2.0f,
 			(m_side == top) ? -1.0f : +1.0f
 		);
 
 	default:
-		return Vector2f(-1,-1);
+		return QPointF(-1,-1);
 	}
 }
 
-Vector2f Pin::getAbsPos()
+QPointF Pin::getAbsPos()
 {
-	return m_machine->m_pos + m_machine->m_halfsize.multElementWise(getPosOffset());
+	return m_machine->m_pos + multElementWise(m_machine->m_halfsize, getPosOffset());
 }

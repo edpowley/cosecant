@@ -210,10 +210,10 @@ void Machine::load(SongLoadContext& ctx, xmlpp::Element* el)
 	ctx.setObject(m_objectUuid, this);
 
 	m_name = getAttribute<QString>(el, "name");
-	m_pos.x = getAttribute<double>(el, "posx");
-	m_pos.y = getAttribute<double>(el, "posy");
-	m_halfsize.x = getAttribute<double>(el, "halfwidth");
-	m_halfsize.y = getAttribute<double>(el, "halfheight");
+	m_pos.setX(getAttribute<double>(el, "posx"));
+	m_pos.setY(getAttribute<double>(el, "posy"));
+	m_halfsize.setX(getAttribute<double>(el, "halfwidth"));
+	m_halfsize.setY(getAttribute<double>(el, "halfheight"));
 
 	size_t pinIndex = 0;
 	BOOST_FOREACH(xmlpp::Node* pinNode, el->get_children("inpin"))

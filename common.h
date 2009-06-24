@@ -3,7 +3,6 @@
 #include "error.h"
 #include "object.h"
 #include "utility.h"
-#include "geometry.h"
 
 template<typename T> T min(T a, T b) { return (a < b) ? a : b; }
 template<typename T> T max(T a, T b) { return (a > b) ? a : b; }
@@ -26,6 +25,11 @@ inline std::ostream& operator<<(std::ostream& stream, const QString& str)
 {
 	stream << str.toAscii().constData();
 	return stream;
+}
+
+inline QPointF multElementWise(const QPointF& a, const QPointF& b)
+{
+	return QPointF(a.x() * b.x(), a.y() * b.y());
 }
 
 /////////////////////////////////////////////////////////////////////

@@ -50,10 +50,8 @@ MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 	connect(this, SIGNAL(signalMove()), this, SLOT(onMove()));
 
 	prepareGeometryChange();
-	double hx = m_mac->m_halfsize.x;
-	double hy = m_mac->m_halfsize.y;
-	setRect(-hx, -hy, hx*2, hy*2);
-	setPos(m_mac->m_pos.x, m_mac->m_pos.y);
+	setPos(m_mac->m_pos);
+	setRect(QRectF(-m_mac->m_halfsize, m_mac->m_halfsize));
 	
 	setBrush(QBrush(Theme::get().getMachineTypeHintColor(m_mac->m_colorhint)));
 	
@@ -138,8 +136,8 @@ PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
 
 	setPath(path);
 
-	Vector2f pos = m_pin->m_machine->m_halfsize.multElementWise(m_pin->getPosOffset());
-	setPos(pos.x, pos.y);
+	QPointF pos = multElementWise(m_pin->m_machine->m_halfsize, m_pin->getPosOffset());
+	setPos(pos);
 	rotate(m_pin->getRotation());
 
 	QPen pen;
