@@ -42,14 +42,25 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 	}
 }
 
+QList<MachineItem*> Editor::getSelectedMachineItems()
+{
+	QList<MachineItem*> ret;
+	foreach(QGraphicsItem* item, m_scene.selectedItems())
+	{
+		if (MachineItem* macitem = dynamic_cast<MachineItem*>(item))
+			ret << macitem;
+	}
+
+	return ret;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 : m_mac(machine), m_editor(editor)
 {
-	setFlags(ItemIsMovable | ItemIsSelectable);
-
-	connect(this, SIGNAL(signalMove()), this, SLOT(onMove()));
+	setFlags(ItemIsSelectable);
+	m_mouseMode = none;
 
 	prepareGeometryChange();
 	setPos(m_mac->m_pos);
@@ -135,11 +146,71 @@ protected:
 	QPointF m_oldpos, m_newpos;
 };
 
-void MachineItem::onMove()
+void MachineItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 {
-	// TODO: command merging doesn't work properly if >1 machine is selected
-	if (pos() != m_mac->m_pos)
-		Song::get().m_undo.push(new MachineMoveCommand(m_mac, pos()));
+	QGraphicsRectItem::mousePressEvent(ev);
+
+	if (m_mouseMode == none)
+	{
+		switch (ev->button())
+		{
+		case Qt::LeftButton:
+			m_mouseMode = leftClick;
+			break;
+		}
+	}
+}
+
+void MachineItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+	QGraphicsRectItem::mouseMoveEvent(ev);
+
+	switch (m_mouseMode)
+	{
+	case leftClick:
+		m_mouseMode = move;
+		if (!isSelected()) setSelected(true);
+		// no break -- fall through
+
+	case move:
+		{
+			QPointF offset = ev->scenePos() - ev->lastScenePos();
+			foreach(MachineItem* m, m_editor->getSelectedMachineItems())
+			{
+				m->setPos(m->pos() + offset);
+			}
+		}
+		break;
+	}
+}
+
+void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+{
+	QGraphicsRectItem::mouseReleaseEvent(ev);
+
+	switch (m_mouseMode)
+	{
+	case leftClick:
+		m_mouseMode = none;
+		break;
+
+	case move:
+		{
+			QList<MachineItem*> selectedMachines = m_editor->getSelectedMachineItems();
+
+			bool usemacro = (selectedMachines.length() > 1);
+			if (usemacro) Song::get().m_undo.beginMacro(tr("move machines"));
+
+			foreach(MachineItem* m, selectedMachines)
+			{
+				Song::get().m_undo.push(new MachineMoveCommand(m->m_mac, m->pos()));
+			}
+			
+			if (usemacro) Song::get().m_undo.endMacro();
+		}
+		m_mouseMode = none;
+		break;
+	}
 }
 
 void MachineItem::onMachinePosChanged()
@@ -192,12 +263,31 @@ PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
 ConnectionItem::ConnectionItem(Editor* editor, const Ptr<Connection>& conn)
 : m_conn(conn), m_editor(editor)
 {
+	m_lineItem = new QGraphicsPathItem(this);
+	addToGroup(m_lineItem);
+
+	m_triangleItem = new QGraphicsPathItem(this);
+	addToGroup(m_triangleItem);
+
+	QPainterPath tri;
+	double a = 7.5;
+	tri.moveTo( a, 0);
+	tri.lineTo(-a, a);
+	tri.lineTo(-a,-a);
+	tri.closeSubpath();
+	m_triangleItem->setPath(tri);
+
 	updatePath();
 
+	QColor color = Theme::get().getSignalTypeColor(m_conn->getPin1()->m_type);
 	QPen pen;
-	pen.setColor(Theme::get().getSignalTypeColor(m_conn->getPin1()->m_type));
+	pen.setColor(color);
 	pen.setWidth(2);
-	setPen(pen);
+	m_lineItem->setPen(pen);
+	pen.setStyle(Qt::NoPen);
+	m_triangleItem->setPen(pen);
+
+	m_triangleItem->setBrush(QBrush(color));
 
 	connect(m_editor->m_pinItemMap[m_conn->getPin1()], SIGNAL(signalMove()), this, SLOT(updatePath()));
 	connect(m_editor->m_pinItemMap[m_conn->getPin2()], SIGNAL(signalMove()), this, SLOT(updatePath()));
@@ -216,7 +306,11 @@ void ConnectionItem::updatePath()
 	path.moveTo(pos1);
 	path.cubicTo(pos1 + off1, pos2 + off2, pos2);
 
-	setPath(path);
+	m_lineItem->setPath(path);
+
+	qreal middle = path.percentAtLength(path.length() * 0.5);
+	m_triangleItem->setPos(path.pointAtPercent(middle));
+	m_triangleItem->setTransform(QTransform().rotate(-path.angleAtPercent(middle)));
 }
 
 QPointF ConnectionItem::getPinBezierOffset(Pin::Side side)

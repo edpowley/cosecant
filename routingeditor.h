@@ -20,16 +20,19 @@ namespace RoutingEditor
 		Editor* m_editor;
 		QPen m_selectedPen;
 
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
+
+		enum { none, leftClick, move } m_mouseMode;
+
 		virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
 	signals:
 		void signalMove();
 
 	protected slots:
-		void onMove();
 		void onMachinePosChanged();
-
-//		virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
 	};
 
 	class PinItem : public QObject, public QGraphicsPathItem
@@ -47,7 +50,7 @@ namespace RoutingEditor
 		void signalMove();
 	};
 
-	class ConnectionItem : public QObject, public QGraphicsPathItem
+	class ConnectionItem : public QObject, public QGraphicsItemGroup
 	{
 		Q_OBJECT
 
@@ -58,7 +61,15 @@ namespace RoutingEditor
 		Ptr<Connection> m_conn;
 		Editor* m_editor;
 
+		QGraphicsPathItem* m_lineItem;
+		QGraphicsPathItem* m_triangleItem;
+
 		QPointF getPinBezierOffset(Pin::Side side);
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev)
+		{
+			qDebug("connection mouse press"); QGraphicsItemGroup::mousePressEvent(ev);
+		}
 
 	protected slots:
 		void updatePath();
@@ -78,6 +89,8 @@ namespace RoutingEditor
 		Editor(const Ptr<Routing>& routing, QWidget* parent);
 
 		static PrefsVar_Double s_prefPinSize, s_prefConnBezierOffset;
+
+		QList<MachineItem*> getSelectedMachineItems();
 
 	protected:
 		Ptr<Routing> m_routing;
