@@ -74,3 +74,5 @@ protected:
 
 	void clear();
 };
+
+inline QUndoStack& theUndo() { return Song::get().m_undo; }

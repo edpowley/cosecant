@@ -26,5 +26,6 @@ int main(int argc, char *argv[])
 
 	CosecantMainWindow w;
 	w.show();
+
 	return a.exec();
 }

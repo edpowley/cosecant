@@ -38,8 +38,14 @@
     <addaction name="actionUndoredo_placeholder"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Edit"/>
+   <addaction name="menuWindow"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">

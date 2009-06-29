@@ -132,15 +132,6 @@ public:
 	virtual void undo() { m_mac->setPos(m_oldpos); }
 	virtual void redo() { m_mac->setPos(m_newpos); }
 
-	virtual bool mergeWith(const QUndoCommand* other)
-	{
-		const MachineMoveCommand* mmc = dynamic_cast<const MachineMoveCommand*>(other);
-		if (!mmc) return false;
-		if (m_mac != mmc->m_mac) return false;
-		m_newpos = mmc->m_newpos;
-		return true;
-	}
-
 protected:
 	Ptr<Machine> m_mac;
 	QPointF m_oldpos, m_newpos;
@@ -199,14 +190,14 @@ void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 			QList<MachineItem*> selectedMachines = m_editor->getSelectedMachineItems();
 
 			bool usemacro = (selectedMachines.length() > 1);
-			if (usemacro) Song::get().m_undo.beginMacro(tr("move machines"));
+			if (usemacro) theUndo().beginMacro(tr("move machines"));
 
 			foreach(MachineItem* m, selectedMachines)
 			{
-				Song::get().m_undo.push(new MachineMoveCommand(m->m_mac, m->pos()));
+				theUndo().push(new MachineMoveCommand(m->m_mac, m->pos()));
 			}
 			
-			if (usemacro) Song::get().m_undo.endMacro();
+			if (usemacro) theUndo().endMacro();
 		}
 		m_mouseMode = none;
 		break;
