@@ -15,7 +15,7 @@ public:
 
 	virtual Ptr<MachInfo> getMachInfo();
 
-	static void scan(const bpath& path);
+	static void scan(const QString& path);
 
 protected:
 	QString m_id;

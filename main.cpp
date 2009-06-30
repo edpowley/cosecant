@@ -5,6 +5,7 @@
 #include "song.h"
 #include "audioio.h"
 #include "builtinmachines.h"
+#include "machinedll.h"
 #include "theme.h"
 
 int main(int argc, char *argv[])
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
 	}
 
 	initBuiltinMachineFactories();
+	DllMachineFactory::scan(QCoreApplication::applicationDirPath() + "/gear");
 	Song::initSingleton();
 	Song::get().load(bpath(L"test1.csc"));
 

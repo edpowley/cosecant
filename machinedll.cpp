@@ -224,48 +224,41 @@ bool DllMachine::DllPatternEditor::on_key_press_event(GdkEventKey* ev)
 */
 //////////////////////////////////////////////////////////////////////////////////////
 
-void DllMachineFactory::scan(const bpath& path)
+void DllMachineFactory::scan(const QString& path)
 {
-/*	using namespace boost::filesystem;
-
-	wdirectory_iterator end;
-	for (wdirectory_iterator i(path); i != end; ++i)
+	QDir dir(path);
+	foreach(QString fname, dir.entryList(QStringList("*.dll"), QDir::Files))
 	{
-		const bpath& fname = *i;
-		
-		if (Dll::isDll(fname))
+		QString fpath = path + "/" + fname;
+		bpath dllpath(QDir::toNativeSeparators(fpath).toStdWString());
+		try
 		{
-			try
-			{
-				Dll dll(fname);
+			Dll dll(dllpath);
 
-				MachineExports::getMachineIds f
-					= (MachineExports::getMachineIds)dll.getFunc("getMachineIds");
-				if (f)
+			MachineExports::getMachineIds f
+				= (MachineExports::getMachineIds)dll.getFunc("getMachineIds");
+			if (f)
+			{
+				struct Callback
 				{
-					struct Callback
+					const bpath& m_fname;
+					Callback(const bpath& fname) : m_fname(fname) {}
+
+					static void callback(void* vinst, const char* id)
 					{
-						const bpath& m_fname;
-						Callback(const bpath& fname) : m_fname(fname) {}
+						Callback* inst = (Callback*)vinst;
+						Ptr<DllMachineFactory> fac = new DllMachineFactory(inst->m_fname, id);
+						MachineFactory::add(id, fac);
+					}
+				};
 
-						static void callback(void* vinst, const char* id)
-						{
-							Callback* inst = (Callback*)vinst;
-							Ptr<DllMachineFactory> fac = new DllMachineFactory(inst->m_fname, id);
-							MachineFactory::add(id, fac);
-						}
-					};
-
-					Callback cb(fname);
-					f(Callback::callback, (void*)&cb);
-				}
-			}
-			catch (const Dll::InitError& err)
-			{
-				printf("Failed to load dll %ls\n%s\n", 
-					wstring_to_ustring(fname.file_string()).c_str(), err.what());
+				Callback cb(dllpath);
+				f(Callback::callback, (void*)&cb);
 			}
 		}
+		catch (const Dll::InitError& err)
+		{
+			qDebug() << "Failed to load dll " << fpath << ": " << err.msg();
+		}
 	}
-*/
 }
