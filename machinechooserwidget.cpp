@@ -71,6 +71,25 @@ void MachineChooserWidget::populateIndexBranch()
 	{
 		root->addChild(new QTreeWidgetItem(QStringList() << "Error" << err.msg()));
 	}
+
+	QTreeWidgetItem* unsortedRoot = new QTreeWidgetItem(QStringList("Unsorted"));
+	root->addChild(unsortedRoot);
+	bool haveUnsortedMachines = false;
+	typedef std::pair<QString, bool> stringboolpair;
+	BOOST_FOREACH(const stringboolpair& sb, idSeenInIndex)
+	{
+		if (!sb.second)
+		{
+			haveUnsortedMachines = true;
+			QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << sb.first << sb.first);
+			unsortedRoot->addChild(item);
+		}
+	}
+	if (!haveUnsortedMachines)
+	{
+		root->removeChild(unsortedRoot);
+		delete unsortedRoot;
+	}
 }
 
 void MachineChooserWidget::populateIndexBranch(QTreeWidgetItem* parentItem,
