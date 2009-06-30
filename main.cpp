@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	Theme::initSingleton();
 
 	CosecantMainWindow w;
-	w.show();
+	w.showMaximized();
 
 	return a.exec();
 }

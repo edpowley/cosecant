@@ -99,5 +99,15 @@ namespace RoutingEditor
 		std::map< Ptr<Machine>,		MachineItem*	> m_machineItemMap;
 		std::map< Ptr<Pin>,			PinItem*		> m_pinItemMap;
 		std::map< Ptr<Connection>,	ConnectionItem*	> m_connectionItemMap;
+
+		virtual void dragEnterEvent(QDragEnterEvent* ev);
+		virtual void dragMoveEvent(QDragMoveEvent* ev);
+		virtual void dropEvent(QDropEvent* ev);
+
+		bool shouldAcceptDropEvent(QDropEvent* ev);
+
+	protected slots:
+		void onAddMachine(const Ptr<Machine>& mac);
+		void onRemoveMachine(const Ptr<Machine>& mac);
 	};
 };

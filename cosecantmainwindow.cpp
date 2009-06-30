@@ -4,6 +4,7 @@
 
 #include "song.h"
 #include "routingeditor.h"
+#include "machinechooserwidget.h"
 
 CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
@@ -33,13 +34,20 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	m_tabWidget->setDocumentMode(true);
 
 	QDockWidget* undodock = new QDockWidget(tr("Undo stack"), this);
-	undodock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	undodock->setAllowedAreas(Qt::AllDockWidgetAreas);
 	QUndoView* undoview = new QUndoView(&theUndo(), undodock);
 	undodock->setWidget(undoview);
 	addDockWidget(Qt::LeftDockWidgetArea, undodock);
 	undodock->hide();
 	QAction* undodockaction = undodock->toggleViewAction();
 	ui.menuWindow->addAction(undodockaction);
+
+	QDockWidget* macdock = new QDockWidget(tr("Machines"), this);
+	macdock->setAllowedAreas(Qt::AllDockWidgetAreas);
+	macdock->setWidget(new MachineChooserWidget);
+	addDockWidget(Qt::LeftDockWidgetArea, macdock);
+	QAction* macdockaction = macdock->toggleViewAction();
+	ui.menuWindow->addAction(macdockaction);
 }
 
 CosecantMainWindow::~CosecantMainWindow()

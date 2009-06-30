@@ -6,6 +6,7 @@ using namespace RoutingEditor;
 #include "song.h"
 #include "theme.h"
 #include "undo_command_ids.h"
+#include "machinechooserwidget.h"
 
 PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 20);
@@ -40,6 +41,33 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 			}
 		}
 	}
+
+	setAcceptDrops(true);
+
+	connect(
+		m_routing,	SIGNAL(	signalAddMachine(const Ptr<Machine>&)),
+		this,		SLOT(		onAddMachine(const Ptr<Machine>&))
+	);
+
+	connect(
+		m_routing,	SIGNAL(	signalRemoveMachine(const Ptr<Machine>&)),
+		this,		SLOT(		onRemoveMachine(const Ptr<Machine>&))
+	);
+}
+
+void Editor::onAddMachine(const Ptr<Machine>& mac)
+{
+	MachineItem* mi = m_machineItemMap[mac] = new MachineItem(this, mac);
+	mi->setZValue(10);
+	m_scene.addItem(mi);
+}
+
+void Editor::onRemoveMachine(const Ptr<Machine>& mac)
+{
+	std::map<Ptr<Machine>, MachineItem*>::iterator iter = m_machineItemMap.find(mac);
+	ASSERT(iter != m_machineItemMap.end());
+	m_scene.removeItem(iter->second);
+	delete iter->second;
 }
 
 QList<MachineItem*> Editor::getSelectedMachineItems()
@@ -52,6 +80,90 @@ QList<MachineItem*> Editor::getSelectedMachineItems()
 	}
 
 	return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+bool Editor::shouldAcceptDropEvent(QDropEvent* ev)
+{
+	if (ev->mimeData()->hasFormat(MachineChooserWidget::c_dndMimeType)
+		&& ev->source() // it comes from within this app
+		&& ev->mimeData()->data(MachineChooserWidget::c_dndMimeType).size() > 0
+	)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void Editor::dragEnterEvent(QDragEnterEvent* ev)
+{
+	QGraphicsView::dragEnterEvent(ev);
+
+	if (shouldAcceptDropEvent(ev))
+		ev->acceptProposedAction();
+	else
+		ev->ignore();
+}
+
+void Editor::dragMoveEvent(QDragMoveEvent* ev)
+{
+	QGraphicsView::dragMoveEvent(ev);
+
+	if (shouldAcceptDropEvent(ev))
+		ev->acceptProposedAction();
+	else
+		ev->ignore();
+}
+
+class AddMachineCommand : public QUndoCommand
+{
+public:
+	AddMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
+		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("add machine '%1'").arg(mac->m_name))
+	{
+	}
+
+	virtual void redo()
+	{
+		m_routing->addMachine(m_mac);
+	}
+
+	virtual void undo()
+	{
+		m_routing->removeMachine(m_mac);
+	}
+
+protected:
+	Ptr<Routing> m_routing;
+	Ptr<Machine> m_mac;
+};
+
+void Editor::dropEvent(QDropEvent* ev)
+{
+	QGraphicsView::dropEvent(ev);
+
+	if (shouldAcceptDropEvent(ev))
+	{
+		QByteArray data = ev->mimeData()->data(MachineChooserWidget::c_dndMimeType);
+		QStringList ids = QString::fromUtf8(data, data.size()).split("\n", QString::SkipEmptyParts);
+
+		foreach(QString id, ids)
+		{
+			Ptr<Machine> mac = MachineFactory::get(id)->createMachine();
+			mac->m_pos = mapToScene(ev->pos());
+			theUndo().push(new AddMachineCommand(m_routing, mac));
+		}
+
+		ev->acceptProposedAction();
+	}
+	else
+	{
+		ev->ignore();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -8,6 +8,7 @@ public:
 	Error() {}
 	Error(const QString& msg) : m_msg(msg) {}
 	virtual const char* what() const { return m_msg.toUtf8(); }
+	QString msg() const { return m_msg; }
 };
 
 
@@ -25,9 +26,11 @@ public:
 	}													\
 // end define THROW_ERROR
 
-#define ERROR_CLASS(classname) \
-	class classname : public ::Error \
-	{ public: classname() {} ; classname(const QString& msg) : ::Error(msg) {} };
+#define ERROR_CLASS_2(classname, baseclassname) \
+	class classname : public baseclassname \
+	{ public: classname() {} ; classname(const QString& msg) : baseclassname(msg) {} };
+
+#define ERROR_CLASS(classname) ERROR_CLASS_2(classname, ::Error)
 
 ERROR_CLASS(AssertionFailure)
 
