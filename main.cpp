@@ -16,13 +16,12 @@ int main(int argc, char *argv[])
 	PaError err = AudioIO::get().open();
 	if (err == paNoError)
 	{
-//		AudioIO::get().start();
+		AudioIO::get().start();
 	}
 
 	initBuiltinMachineFactories();
 	DllMachineFactory::scan(QCoreApplication::applicationDirPath() + "/gear");
 	Song::initSingleton();
-	Song::get().load(bpath(L"test1.csc"));
 
 	Theme::initSingleton();
 
