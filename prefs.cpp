@@ -70,7 +70,7 @@ int sqlDo(sqlite3* database, int retcode)
 	return retcode;
 }
 
-bpath PrefsFile::getAppDataDir()
+QString PrefsFile::getAppDataDir()
 {
 	static TCHAR path[MAX_PATH];
 	static bool done = false;
@@ -91,17 +91,16 @@ bpath PrefsFile::getAppDataDir()
 			THROW_ERROR(Error, "SHGetFolderPath error");
 	}
 
-	return bpath(path);
+	return QDir::fromNativeSeparators(QString::fromWCharArray(path));
 }
 
 PrefsFile::PrefsFile() : m_database(NULL)
 {
-	bpath path = getAppDataDir() / L"prefs.db";
-	Glib::ustring upath = wstring_to_ustring(path.file_string());
+	QString path = QDir::toNativeSeparators(getAppDataDir() + "/prefs.db");
 
 	try
 	{
-		sqlDo(m_database, sqlite3_open(upath.c_str(), &m_database));
+		sqlDo(m_database, sqlite3_open(path.toUtf8(), &m_database));
 	}
 	catch (SqliteError&)
 	{

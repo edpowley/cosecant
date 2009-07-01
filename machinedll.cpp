@@ -34,12 +34,12 @@ Ptr<Machine> DllMachineFactory::createMachineImpl()
 	return new DllMachine(m_dllpath, m_id);
 }
 
-DllMachine::DllMachine(const bpath& dllpath, const QString& id)
+DllMachine::DllMachine(const QString& dllpath, const QString& id)
 {
 	m_instance = new Instance(this, dllpath, id);
 }
 
-DllMachine::Instance::Instance(DllMachine* mac, const bpath& dllpath, const QString& id)
+DllMachine::Instance::Instance(DllMachine* mac, const QString& dllpath, const QString& id)
 {
 	m_dll = new Dll(dllpath);
 
@@ -230,10 +230,9 @@ void DllMachineFactory::scan(const QString& path)
 	foreach(QString fname, dir.entryList(QStringList("*.dll"), QDir::Files))
 	{
 		QString fpath = path + "/" + fname;
-		bpath dllpath(QDir::toNativeSeparators(fpath).toStdWString());
 		try
 		{
-			Dll dll(dllpath);
+			Dll dll(fpath);
 
 			MachineExports::getMachineIds f
 				= (MachineExports::getMachineIds)dll.getFunc("getMachineIds");
@@ -241,8 +240,8 @@ void DllMachineFactory::scan(const QString& path)
 			{
 				struct Callback
 				{
-					const bpath& m_fname;
-					Callback(const bpath& fname) : m_fname(fname) {}
+					const QString& m_fname;
+					Callback(const QString& fname) : m_fname(fname) {}
 
 					static void callback(void* vinst, const char* id)
 					{
@@ -252,7 +251,7 @@ void DllMachineFactory::scan(const QString& path)
 					}
 				};
 
-				Callback cb(dllpath);
+				Callback cb(fpath);
 				f(Callback::callback, (void*)&cb);
 			}
 		}

@@ -60,10 +60,10 @@ void MachineChooserWidget::populateIndexBranch()
 		idSeenInIndex[fp.first] = false;
 	}
 
-	bpath indexpath = PrefsFile::getAppDataDir() / L"index.xml";
+	QString indexpath = PrefsFile::getAppDataDir() + "/index.xml";
 	try
 	{
-		QDomDocument doc = openXml(QString::fromStdWString(indexpath.file_string()));
+		QDomDocument doc = openXml(indexpath);
 
 		populateIndexBranch(root, doc.documentElement(), idSeenInIndex);
 	}

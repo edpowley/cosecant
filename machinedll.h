@@ -10,7 +10,7 @@
 class DllMachineFactory : public MachineFactory
 {
 public:
-	DllMachineFactory(const bpath& dllpath, const QString& id)
+	DllMachineFactory(const QString& dllpath, const QString& id)
 		: m_dllpath(dllpath), m_id(id) {}
 
 	virtual Ptr<MachInfo> getMachInfo();
@@ -19,7 +19,7 @@ public:
 
 protected:
 	QString m_id;
-	bpath m_dllpath;
+	QString m_dllpath;
 
 	virtual Ptr<Machine> createMachineImpl();
 };
@@ -27,7 +27,7 @@ protected:
 class DllMachine : public Machine
 {
 public:
-	DllMachine(const bpath& dllpath, const QString& id);
+	DllMachine(const QString& dllpath, const QString& id);
 
 	virtual void changeParam(ParamTag tag, ParamValue value);
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
@@ -40,7 +40,7 @@ public:
 	class Instance : public Object
 	{
 	public:
-		Instance(DllMachine* mac, const bpath& dllpath, const QString& id);
+		Instance(DllMachine* mac, const QString& dllpath, const QString& id);
 		virtual ~Instance();
 
 		Mi* m_mi;

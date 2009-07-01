@@ -3,11 +3,11 @@
 class Dll : public Object
 {
 public:
-	static bool isDll(const bpath& path);
+	static bool isDll(const QString& path);
 
 	ERROR_CLASS(InitError);
 
-	Dll(const bpath& path);
+	Dll(const QString& path);
 	virtual ~Dll();
 
 	void* getFunc(const char* name);

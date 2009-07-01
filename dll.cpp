@@ -2,14 +2,16 @@
 #include "common.h"
 #include "dll.h"
 
-bool Dll::isDll(const bpath& path)
+bool Dll::isDll(const QString& path)
 {
-	return _wcsicmp(path.extension().c_str(), L".dll") == 0;
+	return path.endsWith(".dll", Qt::CaseInsensitive);
 }
 
-Dll::Dll(const bpath& path)
+Dll::Dll(const QString& path)
 {
-	m_hmod = LoadLibrary(path.file_string().c_str());
+	ASSERT(sizeof(wchar_t) == 2);
+
+	m_hmod = LoadLibrary(QDir::toNativeSeparators(path).utf16());
 	if (!m_hmod)
 	{
 		THROW_ERROR(InitError,

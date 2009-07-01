@@ -74,7 +74,7 @@ public:
 		return s_singleton;
 	}
 
-	static bpath getAppDataDir();
+	static QString getAppDataDir();
 
 	void readValue(const QString& id, PrefsVar_Base* var);
 	void writeValue(const QString& id, PrefsVar_Base* var);
