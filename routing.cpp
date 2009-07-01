@@ -75,6 +75,7 @@ void Routing::addConnection(const Ptr<Connection> &conn)
 {
 	conn->getPin1()->m_connections.push_back(conn);
 	conn->getPin2()->m_connections.push_back(conn);
+	signalAddConnection(conn);
 	signalTopologyChangeIfNotInBatch();
 }
 
@@ -82,6 +83,7 @@ void Routing::removeConnection(const Ptr<Connection> &conn)
 {
 	vectorEraseFirst(conn->getPin1()->m_connections, conn);
 	vectorEraseFirst(conn->getPin2()->m_connections, conn);
+	signalRemoveConnection(conn);
 	signalTopologyChangeIfNotInBatch();
 }
 

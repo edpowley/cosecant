@@ -35,6 +35,8 @@ namespace RoutingEditor
 		void onMachinePosChanged();
 	};
 
+	class NewConnectionItem;
+
 	class PinItem : public QObject, public QGraphicsPathItem
 	{
 		Q_OBJECT
@@ -42,15 +44,50 @@ namespace RoutingEditor
 	public:
 		PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent);
 
+		Ptr<Pin> getPin() { return m_pin; }
+
+		virtual QPainterPath shape() const;
+
 	protected:
 		Ptr<Pin> m_pin;
 		Editor* m_editor;
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
+
+		enum { none, leftClick, drawConnection } m_mouseMode;
+		NewConnectionItem* m_newConnectionItem;
 
 	signals:
 		void signalMove();
 	};
 
-	class ConnectionItem : public QObject, public QGraphicsItemGroup
+	class ConnectionLineItem : public QObject, public QGraphicsItemGroup
+	{
+		Q_OBJECT
+
+	public:
+		ConnectionLineItem(Editor* editor);
+
+	protected:
+		Editor* m_editor;
+		virtual Ptr<Pin> getPin1() = 0;
+		virtual Ptr<Pin> getPin2() = 0;
+		virtual QPointF getPos1() { return QPointF(0,0); }
+		virtual QPointF getPos2() { return QPointF(0,0); }
+
+		QGraphicsPathItem* m_lineItem;
+		QGraphicsPathItem* m_triangleItem;
+
+		QPointF getPinBezierOffset(Pin::Side side);
+
+	protected slots:
+		void updatePath();
+		void updateColor();
+	};
+
+	class ConnectionItem : public ConnectionLineItem
 	{
 		Q_OBJECT
 
@@ -59,20 +96,28 @@ namespace RoutingEditor
 
 	protected:
 		Ptr<Connection> m_conn;
-		Editor* m_editor;
+		virtual Ptr<Pin> getPin1() { return m_conn->getPin1(); }
+		virtual Ptr<Pin> getPin2() { return m_conn->getPin2(); }
+	};
 
-		QGraphicsPathItem* m_lineItem;
-		QGraphicsPathItem* m_triangleItem;
+	class NewConnectionItem : public ConnectionLineItem
+	{
+		Q_OBJECT
 
-		QPointF getPinBezierOffset(Pin::Side side);
+	public:
+		NewConnectionItem(Editor* editor, const Ptr<Pin>& pin);
 
-		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev)
-		{
-			qDebug("connection mouse press"); QGraphicsItemGroup::mousePressEvent(ev);
-		}
+		void onMouseMove(QGraphicsSceneMouseEvent* ev);
+		void finish(QGraphicsSceneMouseEvent* ev);
 
-	protected slots:
-		void updatePath();
+	protected:
+		Ptr<Pin> m_pinStart, m_pinEnd;
+		QPointF m_mousePos;
+
+		virtual Ptr<Pin> getPin1();
+		virtual Ptr<Pin> getPin2();
+		virtual QPointF getPos1() { return m_mousePos; }
+		virtual QPointF getPos2() { return m_mousePos; }
 	};
 
 	/////////////////////////////////////////////////////////////////////////
@@ -101,19 +146,21 @@ namespace RoutingEditor
 
 		friend MachineItem;
 		friend PinItem;
-		friend ConnectionItem;
 		friend Scene;
 
 	public:
 		Editor(const Ptr<Routing>& routing, QWidget* parent);
+		Scene m_scene;
+		Ptr<Routing> getRouting() { return m_routing; }
 
 		static PrefsVar_Double s_prefPinSize, s_prefConnBezierOffset;
 
 		QList<MachineItem*> getSelectedMachineItems();
 
+		PinItem* getPinItem(const Ptr<Pin>& pin);
+
 	protected:
 		Ptr<Routing> m_routing;
-		Scene m_scene;
 
 		std::map< Ptr<Machine>,		MachineItem*	> m_machineItemMap;
 		std::map< Ptr<Pin>,			PinItem*		> m_pinItemMap;
@@ -122,5 +169,7 @@ namespace RoutingEditor
 	protected slots:
 		void onAddMachine(const Ptr<Machine>& mac);
 		void onRemoveMachine(const Ptr<Machine>& mac);
+		void onAddConnection(const Ptr<Connection>& conn);
+		void onRemoveConnection(const Ptr<Connection>& conn);
 	};
 };

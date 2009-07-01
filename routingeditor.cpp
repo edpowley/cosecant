@@ -9,7 +9,7 @@ using namespace RoutingEditor;
 #include "machinechooserwidget.h"
 
 PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
-PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 20);
+PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 50);
 
 Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 : m_routing(routing), QGraphicsView(parent), m_scene(this)
@@ -20,12 +20,9 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 
 	m_scene.setSceneRect(0,0,1000,1000);
 
-//	m_scene.addRect(10,10,100,100);
-
 	BOOST_FOREACH(const Ptr<Machine>& mac, m_routing->m_machines)
 	{
 		MachineItem* mi = m_machineItemMap[mac] = new MachineItem(this, mac);
-		mi->setZValue(10);
 		m_scene.addItem(mi);
 	}
 
@@ -36,7 +33,6 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 			BOOST_FOREACH(Ptr<Connection>& conn, pin->m_connections)
 			{
 				ConnectionItem* ci = m_connectionItemMap[conn] = new ConnectionItem(this, conn);
-				ci->setZValue(20);
 				m_scene.addItem(ci);
 			}
 		}
@@ -51,12 +47,30 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 		m_routing,	SIGNAL(	signalRemoveMachine(const Ptr<Machine>&)),
 		this,		SLOT(		onRemoveMachine(const Ptr<Machine>&))
 	);
+
+	connect(
+		m_routing,	SIGNAL(	signalAddConnection(const Ptr<Connection>&)),
+		this,		SLOT(		onAddConnection(const Ptr<Connection>&))
+	);
+
+	connect(
+		m_routing,	SIGNAL(	signalRemoveConnection(const Ptr<Connection>&)),
+		this,		SLOT(		onRemoveConnection(const Ptr<Connection>&))
+	);
+}
+
+PinItem* Editor::getPinItem(const Ptr<Pin>& pin)
+{
+	std::map<Ptr<Pin>, PinItem*>::iterator iter = m_pinItemMap.find(pin);
+	if (iter != m_pinItemMap.end())
+		return iter->second;
+	else
+		return NULL;
 }
 
 void Editor::onAddMachine(const Ptr<Machine>& mac)
 {
 	MachineItem* mi = m_machineItemMap[mac] = new MachineItem(this, mac);
-	mi->setZValue(10);
 	m_scene.addItem(mi);
 }
 
@@ -64,6 +78,20 @@ void Editor::onRemoveMachine(const Ptr<Machine>& mac)
 {
 	std::map<Ptr<Machine>, MachineItem*>::iterator iter = m_machineItemMap.find(mac);
 	ASSERT(iter != m_machineItemMap.end());
+	m_scene.removeItem(iter->second);
+	delete iter->second;
+}
+
+void Editor::onAddConnection(const Ptr<Connection>& conn)
+{
+	ConnectionItem* ci = m_connectionItemMap[conn] = new ConnectionItem(this, conn);
+	m_scene.addItem(ci);
+}
+
+void Editor::onRemoveConnection(const Ptr<Connection>& conn)
+{
+	std::map<Ptr<Connection>, ConnectionItem*>::iterator iter = m_connectionItemMap.find(conn);
+	ASSERT(iter != m_connectionItemMap.end());
 	m_scene.removeItem(iter->second);
 	delete iter->second;
 }
@@ -166,6 +194,7 @@ void Scene::dropEvent(QGraphicsSceneDragDropEvent* ev)
 MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 : m_mac(machine), m_editor(editor)
 {
+	setZValue(10);
 	setFlags(ItemIsSelectable);
 	m_mouseMode = none;
 
@@ -320,8 +349,10 @@ void MachineItem::onMachinePosChanged()
 ////////////////////////////////////////////////////////////////////////////
 
 PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
-: m_pin(pin), QGraphicsPathItem(parent), m_editor(editor)
+: m_pin(pin), QGraphicsPathItem(parent), m_editor(editor), m_newConnectionItem(NULL)
 {
+	m_mouseMode = none;
+
 	prepareGeometryChange();
 
 	QPainterPath path;
@@ -356,11 +387,97 @@ PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
 	connect(parent, SIGNAL(signalMove()), this, SIGNAL(signalMove()));
 }
 
+QPainterPath PinItem::shape() const
+{
+	QPainterPath path;
+	path.addRect(QGraphicsPathItem::shape().controlPointRect());
+	return path;
+}
+
+void PinItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
+{
+	if (m_mouseMode == none)
+	{
+		switch (ev->button())
+		{
+		case Qt::LeftButton:
+			m_mouseMode = leftClick;
+			break;
+		}
+	}
+}
+
+void PinItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+	switch (m_mouseMode)
+	{
+	case leftClick:
+		m_mouseMode = drawConnection;
+		m_newConnectionItem = new NewConnectionItem(m_editor, m_pin);
+		m_editor->m_scene.addItem(m_newConnectionItem);
+		// no break -- fall through
+
+	case drawConnection:
+		m_newConnectionItem->onMouseMove(ev);
+		break;
+	}
+}
+
+void PinItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+{
+	switch (m_mouseMode)
+	{
+	case leftClick:
+		m_mouseMode = none;
+		break;
+
+	case drawConnection:
+		m_newConnectionItem->finish(ev);
+		m_editor->m_scene.removeItem(m_newConnectionItem);
+		delete m_newConnectionItem;
+		m_newConnectionItem = NULL;
+		m_mouseMode = none;
+		break;
+	}
+}
+
+class AddConnectionCommand : public QUndoCommand
+{
+public:
+	AddConnectionCommand(const Ptr<Routing>& routing, const Ptr<Connection>& conn)
+		: m_routing(routing), m_conn(conn), QUndoCommand(Editor::tr("connect"))
+	{
+	}
+
+	virtual void redo()
+	{
+		m_routing->addConnection(m_conn);
+	}
+
+	virtual void undo()
+	{
+		m_routing->removeConnection(m_conn);
+	}
+
+protected:
+	Ptr<Routing> m_routing;
+	Ptr<Connection> m_conn;
+};
+
+void NewConnectionItem::finish(QGraphicsSceneMouseEvent* ev)
+{
+	if (!m_pinEnd) return;
+
+	Ptr<Connection> conn = m_editor->getRouting()->createConnection(m_pinStart, m_pinEnd);
+	theUndo().push(new AddConnectionCommand(m_editor->getRouting(), conn));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
-ConnectionItem::ConnectionItem(Editor* editor, const Ptr<Connection>& conn)
-: m_conn(conn), m_editor(editor)
+ConnectionLineItem::ConnectionLineItem(Editor* editor)
+: m_editor(editor)
 {
+	setZValue(20);
 	m_lineItem = new QGraphicsPathItem(this);
 	addToGroup(m_lineItem);
 
@@ -374,31 +491,48 @@ ConnectionItem::ConnectionItem(Editor* editor, const Ptr<Connection>& conn)
 	tri.lineTo(-a,-a);
 	tri.closeSubpath();
 	m_triangleItem->setPath(tri);
-
-	updatePath();
-
-	QColor color = Theme::get().getSignalTypeColor(m_conn->getPin1()->m_type);
-	QPen pen;
-	pen.setColor(color);
-	pen.setWidth(2);
-	m_lineItem->setPen(pen);
-	pen.setStyle(Qt::NoPen);
-	m_triangleItem->setPen(pen);
-
-	m_triangleItem->setBrush(QBrush(color));
-
-	connect(m_editor->m_pinItemMap[m_conn->getPin1()], SIGNAL(signalMove()), this, SLOT(updatePath()));
-	connect(m_editor->m_pinItemMap[m_conn->getPin2()], SIGNAL(signalMove()), this, SLOT(updatePath()));
 }
 
-void ConnectionItem::updatePath()
+ConnectionItem::ConnectionItem(Editor* editor, const Ptr<Connection>& conn)
+: m_conn(conn), ConnectionLineItem(editor)
+{
+	updatePath();
+	updateColor();
+
+	connect(m_editor->getPinItem(m_conn->getPin1()), SIGNAL(signalMove()), this, SLOT(updatePath()));
+	connect(m_editor->getPinItem(m_conn->getPin2()), SIGNAL(signalMove()), this, SLOT(updatePath()));
+}
+
+void ConnectionLineItem::updatePath()
 {
 	prepareGeometryChange();
 
-	QPointF pos1 = m_editor->m_pinItemMap[m_conn->getPin1()]->scenePos();
-	QPointF pos2 = m_editor->m_pinItemMap[m_conn->getPin2()]->scenePos();
-	QPointF off1 = getPinBezierOffset(m_conn->getPin1()->m_side);
-	QPointF off2 = getPinBezierOffset(m_conn->getPin2()->m_side);
+	Ptr<Pin> pin1 = getPin1();
+	Ptr<Pin> pin2 = getPin2();
+
+	QPointF pos1, pos2, off1, off2;
+
+	if (pin1)
+	{
+		pos1 = m_editor->getPinItem(pin1)->scenePos();
+		off1 = getPinBezierOffset(pin1->m_side);
+	}
+	else
+	{
+		pos1 = getPos1();
+		off1 = QPointF(0,0);
+	}
+
+	if (pin2)
+	{
+		pos2 = m_editor->getPinItem(pin2)->scenePos();
+		off2 = getPinBezierOffset(pin2->m_side);
+	}
+	else
+	{
+		pos2 = getPos2();
+		off2 = QPointF(0,0);
+	}
 
 	QPainterPath path;
 	path.moveTo(pos1);
@@ -411,7 +545,24 @@ void ConnectionItem::updatePath()
 	m_triangleItem->setTransform(QTransform().rotate(-path.angleAtPercent(middle)));
 }
 
-QPointF ConnectionItem::getPinBezierOffset(Pin::Side side)
+void ConnectionLineItem::updateColor()
+{
+	CosecantAPI::SignalType::st signaltype;
+	if		(getPin1()) signaltype = getPin1()->m_type;
+	else if	(getPin2()) signaltype = getPin2()->m_type;
+	else	return;
+
+	QColor color = Theme::get().getSignalTypeColor(signaltype);
+	QPen pen;
+	pen.setColor(color);
+	pen.setWidth(2);
+	m_lineItem->setPen(pen);
+	pen.setStyle(Qt::NoPen);
+	m_triangleItem->setPen(pen);
+	m_triangleItem->setBrush(QBrush(color));
+}
+
+QPointF ConnectionLineItem::getPinBezierOffset(Pin::Side side)
 {
 	double a = Editor::s_prefConnBezierOffset();
 
@@ -423,4 +574,54 @@ QPointF ConnectionItem::getPinBezierOffset(Pin::Side side)
 	case Pin::right:	return QPointF( a, 0);
 	default:	THROW_ERROR(Error, "Bad side");
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+NewConnectionItem::NewConnectionItem(Editor* editor, const Ptr<Pin>& pin)
+: ConnectionLineItem(editor), m_pinStart(pin)
+{
+	updatePath();
+	updateColor();
+
+	qDebug() << zValue();
+}
+
+Ptr<Pin> NewConnectionItem::getPin1()
+{
+	if (m_pinStart->m_direction == Pin::out)
+		return m_pinStart;
+	else
+		return m_pinEnd;
+}
+
+Ptr<Pin> NewConnectionItem::getPin2()
+{
+	if (m_pinStart->m_direction == Pin::out)
+		return m_pinEnd;
+	else
+		return m_pinStart;
+}
+
+void NewConnectionItem::onMouseMove(QGraphicsSceneMouseEvent* ev)
+{
+	m_mousePos = ev->scenePos();
+	
+	m_pinEnd = NULL;
+	foreach(QGraphicsItem* item, m_editor->m_scene.items(m_mousePos))
+	{
+		if (PinItem* pinitem = dynamic_cast<PinItem*>(item))
+		{
+			Ptr<Pin> pin = pinitem->getPin();
+			if (	pin->m_direction != m_pinStart->m_direction
+				&&	pin->m_type == m_pinStart->m_type
+			)
+			{
+				m_pinEnd = pin;
+				break;
+			}
+		}
+	}
+
+	updatePath();
 }

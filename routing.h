@@ -24,6 +24,8 @@ signals:
 	void signalTopologyChange();
 	void signalAddMachine(const Ptr<Machine>& mac);
 	void signalRemoveMachine(const Ptr<Machine>& mac);
+	void signalAddConnection(const Ptr<Connection>& conn);
+	void signalRemoveConnection(const Ptr<Connection>& conn);
 
 public:
 	size_t getNumMachines() { return m_machines.size(); }
