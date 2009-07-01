@@ -12,7 +12,7 @@ PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 20);
 
 Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
-: m_routing(routing), QGraphicsView(parent)
+: m_routing(routing), QGraphicsView(parent), m_scene(this)
 {
 	setScene(&m_scene);
 	setRenderHints(QPainter::Antialiasing);
@@ -41,8 +41,6 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 			}
 		}
 	}
-
-	setAcceptDrops(true);
 
 	connect(
 		m_routing,	SIGNAL(	signalAddMachine(const Ptr<Machine>&)),
@@ -84,8 +82,11 @@ QList<MachineItem*> Editor::getSelectedMachineItems()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-bool Editor::shouldAcceptDropEvent(QDropEvent* ev)
+bool Scene::shouldAcceptDropEvent(QGraphicsSceneDragDropEvent* ev)
 {
+	QGraphicsItem* item = itemAt(ev->scenePos());
+	if (item) return false;
+
 	if (ev->mimeData()->hasFormat(MachineChooserWidget::c_dndMimeType)
 		&& ev->source() // it comes from within this app
 		&& ev->mimeData()->data(MachineChooserWidget::c_dndMimeType).size() > 0
@@ -99,20 +100,16 @@ bool Editor::shouldAcceptDropEvent(QDropEvent* ev)
 	}
 }
 
-void Editor::dragEnterEvent(QDragEnterEvent* ev)
+void Scene::dragEnterEvent(QGraphicsSceneDragDropEvent* ev)
 {
-	QGraphicsView::dragEnterEvent(ev);
-
 	if (shouldAcceptDropEvent(ev))
 		ev->acceptProposedAction();
 	else
 		ev->ignore();
 }
 
-void Editor::dragMoveEvent(QDragMoveEvent* ev)
+void Scene::dragMoveEvent(QGraphicsSceneDragDropEvent* ev)
 {
-	QGraphicsView::dragMoveEvent(ev);
-
 	if (shouldAcceptDropEvent(ev))
 		ev->acceptProposedAction();
 	else
@@ -142,10 +139,8 @@ protected:
 	Ptr<Machine> m_mac;
 };
 
-void Editor::dropEvent(QDropEvent* ev)
+void Scene::dropEvent(QGraphicsSceneDragDropEvent* ev)
 {
-	QGraphicsView::dropEvent(ev);
-
 	if (shouldAcceptDropEvent(ev))
 	{
 		QByteArray data = ev->mimeData()->data(MachineChooserWidget::c_dndMimeType);
@@ -154,8 +149,8 @@ void Editor::dropEvent(QDropEvent* ev)
 		foreach(QString id, ids)
 		{
 			Ptr<Machine> mac = MachineFactory::get(id)->createMachine();
-			mac->m_pos = mapToScene(ev->pos());
-			theUndo().push(new AddMachineCommand(m_routing, mac));
+			mac->m_pos = ev->scenePos();
+			theUndo().push(new AddMachineCommand(m_editor->m_routing, mac));
 		}
 
 		ev->acceptProposedAction();

@@ -77,6 +77,24 @@ namespace RoutingEditor
 
 	/////////////////////////////////////////////////////////////////////////
 
+	class Scene : public QGraphicsScene
+	{
+		Q_OBJECT
+
+	public:
+		Scene(Editor* editor) : m_editor(editor) {}
+
+	protected:
+		Editor* m_editor;
+		virtual void dragEnterEvent(QGraphicsSceneDragDropEvent* ev);
+		virtual void dragMoveEvent(QGraphicsSceneDragDropEvent* ev);
+		virtual void dropEvent(QGraphicsSceneDragDropEvent* ev);
+
+		bool shouldAcceptDropEvent(QGraphicsSceneDragDropEvent* ev);
+	};
+
+	/////////////////////////////////////////////////////////////////////////
+
 	class Editor : public QGraphicsView
 	{
 		Q_OBJECT
@@ -84,6 +102,7 @@ namespace RoutingEditor
 		friend MachineItem;
 		friend PinItem;
 		friend ConnectionItem;
+		friend Scene;
 
 	public:
 		Editor(const Ptr<Routing>& routing, QWidget* parent);
@@ -94,17 +113,11 @@ namespace RoutingEditor
 
 	protected:
 		Ptr<Routing> m_routing;
-		QGraphicsScene m_scene;
+		Scene m_scene;
 
 		std::map< Ptr<Machine>,		MachineItem*	> m_machineItemMap;
 		std::map< Ptr<Pin>,			PinItem*		> m_pinItemMap;
 		std::map< Ptr<Connection>,	ConnectionItem*	> m_connectionItemMap;
-
-		virtual void dragEnterEvent(QDragEnterEvent* ev);
-		virtual void dragMoveEvent(QDragMoveEvent* ev);
-		virtual void dropEvent(QDropEvent* ev);
-
-		bool shouldAcceptDropEvent(QDropEvent* ev);
 
 	protected slots:
 		void onAddMachine(const Ptr<Machine>& mac);
