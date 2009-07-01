@@ -468,8 +468,18 @@ void NewConnectionItem::finish(QGraphicsSceneMouseEvent* ev)
 {
 	if (!m_pinEnd) return;
 
-	Ptr<Connection> conn = m_editor->getRouting()->createConnection(m_pinStart, m_pinEnd);
-	theUndo().push(new AddConnectionCommand(m_editor->getRouting(), conn));
+	try
+	{
+		Ptr<Connection> conn = m_editor->getRouting()->createConnection(m_pinStart, m_pinEnd);
+		theUndo().push(new AddConnectionCommand(m_editor->getRouting(), conn));
+	}
+	catch (const Routing::CreateConnectionError& err)
+	{
+		QMessageBox msgbox;
+		msgbox.setText(err.msg());
+		msgbox.setIcon(QMessageBox::Critical);
+		msgbox.exec();
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
