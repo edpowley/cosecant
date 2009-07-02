@@ -23,6 +23,7 @@ namespace RoutingEditor
 		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev);
 		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
 		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev);
 
 		enum { none, leftClick, move } m_mouseMode;
 

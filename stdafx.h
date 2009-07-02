@@ -35,6 +35,7 @@ typedef boost::filesystem::wpath bpath;
 // Qt
 #include <QtGui>
 #include <QtXml>
+#include <QtScript>
 
 // PortAudio
 #include <portaudio.h>

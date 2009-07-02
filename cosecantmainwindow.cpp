@@ -6,10 +6,15 @@
 #include "routingeditor.h"
 #include "machinechooserwidget.h"
 
+CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
+
 CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
 {
 	ui.setupUi(this);
+
+	ASSERT(s_singleton == NULL);
+	s_singleton = this;
 
 	QAction* undoaction = theUndo().createUndoAction(this);
 	undoaction->setShortcut(tr("Ctrl+Z"));

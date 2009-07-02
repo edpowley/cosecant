@@ -7,6 +7,8 @@ using namespace RoutingEditor;
 #include "theme.h"
 #include "undo_command_ids.h"
 #include "machinechooserwidget.h"
+#include "cosecantmainwindow.h"
+#include "parameditor.h"
 
 PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 50);
@@ -338,6 +340,16 @@ void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 		m_mouseMode = none;
 		break;
 	}
+}
+
+void MachineItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
+{
+	CosecantMainWindow* w = CosecantMainWindow::get();
+
+	QDockWidget* dock = new QDockWidget(tr("Parameters"), w);
+	dock->setAllowedAreas(Qt::AllDockWidgetAreas);
+	dock->setWidget(new ParamEditor(m_mac, w));
+	w->addDockWidget(Qt::LeftDockWidgetArea, dock);
 }
 
 void MachineItem::onMachinePosChanged()
