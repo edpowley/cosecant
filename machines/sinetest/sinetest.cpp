@@ -6,21 +6,19 @@
 class SineTest : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, const InfoCallbacks* cb)
+	static bool getInfo(MachineInfo* info, InfoCallbacks* cb)
 	{
-		cb->setName(info, "Sin");
-		cb->setTypeHint(info, MachineTypeHint::generator);
+		info->setName("Sin")->setTypeHint(MachineTypeHint::generator)
+			->addOutPin(cb->createPin()->setName("Output")->setType(SignalType::stereoAudio));
 
-		cb->addOutPin(info, "Output", SignalType::stereoAudio);
+		ParamInfo::Group* params = info->getParams();
 
-		ParamGroup* params = cb->createParamGroup("", 0);
-		cb->setParams(info, params);
-		cb->addTimeParam(params, "Frequency", 'freq', TimeUnit::hertz, 20.0, 2000.0, 440.0,
-			TimeUnit::hertz | TimeUnit::notenum, TimeUnit::hertz);
-		cb->addRealParam(params, "Volume",    'volu',  0.0,    1.0,   0.5, 0);
-		ParamGroup* g = cb->createParamGroup("Subgroup test", 0);
-		cb->addSubGroup(params, g);
-		cb->addEnumParam(g, "Test enum", 'tint', "Hello\nWorld\nhow\nare\nyou", 3);
+		using namespace TimeUnit;
+
+		params->addParam(cb->createTimeParam('freq')->setName("Frequency")
+			->setRange(20, hertz, 2000, hertz)->setDefault(440, hertz)
+			->setInternalUnit(hertz)->addDisplayUnits(hertz | notenum)->setDefaultDisplayUnit(hertz));
+		params->addParam(cb->createRealParam('volu')->setName("Volume")->setRange(0,1)->setDefault(0.5));
 
 		return true;
 	}

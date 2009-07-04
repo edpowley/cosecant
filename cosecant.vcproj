@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dllmachine.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\eventlist.cpp"
 				>
 			</File>
@@ -206,10 +210,6 @@
 			</File>
 			<File
 				RelativePath=".\machinechooserwidget.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\machinedll.cpp"
 				>
 			</File>
 			<File
@@ -259,6 +259,22 @@
 			<File
 				RelativePath=".\song_load.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\song_save.cpp"
@@ -469,6 +485,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dllmachine.h"
+				>
+			</File>
+			<File
 				RelativePath=".\error.h"
 				>
 			</File>
@@ -531,10 +551,6 @@
 						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\machinedll.h"
-				>
 			</File>
 			<File
 				RelativePath=".\machinfo.h"
@@ -954,13 +970,6 @@
 				RelativePath=".\GeneratedFiles\Release\moc_cosecantmainwindow.cpp"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -971,6 +980,18 @@
 			</File>
 			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_cosecantmainwindow.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Debug\moc_machine.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -992,6 +1013,13 @@
 				RelativePath=".\GeneratedFiles\Release\moc_machine.cpp"
 				>
 				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1001,7 +1029,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_machine.cpp"
+				RelativePath=".\GeneratedFiles\Debug\moc_machinechooserwidget.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1025,31 +1053,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_machinechooserwidget.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_machinfo.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\GeneratedFiles\Release\moc_machinfo.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_object.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1073,18 +1077,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_object.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_parameditor.cpp"
 				>
 				<FileConfiguration
@@ -1095,43 +1087,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\GeneratedFiles\Release\moc_parameditor.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\GeneratedFiles\Release\moc_routing.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
@@ -1152,8 +1111,13 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_routing.cpp"
+				>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1171,35 +1135,9 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\GeneratedFiles\Release\moc_routingeditor.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\GeneratedFiles\Release\moc_sequence.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1223,7 +1161,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_song.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_sequence.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1247,7 +1185,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_spattern.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_song.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1263,6 +1201,18 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_spattern.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

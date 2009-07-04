@@ -3,7 +3,7 @@
 class Gain : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, const InfoCallbacks* cb);
+	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
 	Gain(HostMachine* mac, Callbacks* cb);
 
@@ -20,7 +20,7 @@ protected:
 class MonoMonoToStereo : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, const InfoCallbacks* cb);
+	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
 	MonoMonoToStereo(HostMachine* mac, Callbacks* cb) : Mi(mac,cb) {}
 
@@ -31,7 +31,7 @@ public:
 class StereoToMonoMono : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, const InfoCallbacks* cb);
+	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
 	StereoToMonoMono(HostMachine* mac, Callbacks* cb) : Mi(mac,cb) {}
 

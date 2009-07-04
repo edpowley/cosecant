@@ -9,7 +9,7 @@
 #include "perfmonitor.h"
 #include "parameditor.h"
 */
-#include "machinedll.h"
+#include "dllmachine.h"
 
 unsigned char unHex(QChar qc)
 {
@@ -351,11 +351,13 @@ Ptr<Sequence::Pattern> Machine::createPattern(SongLoadContext& ctx, xmlpp::Eleme
 	return pat;
 }
 
+/*
 void DllMachine::Pattern::load(SongLoadContext& ctx, xmlpp::Element* el)
 {
 	if (!m_instance->m_functions->patLoad(m_ppat, getUniqueElement(el, "machine_specific_data")))
 		THROW_ERROR(SongLoadError, "Machine's patLoad function failed");
 }
+*/
 
 /////////////////////////////////////////////////////////////////////////
 /*

@@ -1,18 +1,15 @@
 #include "stdafx.h"
 #include "buzzybox.h"
 
-bool Gain::getInfo(MachineInfo* info, const InfoCallbacks* cb)
+bool Gain::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
-	cb->setName(info, "Gain");
-	cb->setTypeHint(info, MachineTypeHint::effect);
+	info->setName("Gain")->setTypeHint(MachineTypeHint::effect)
+		->addInPin (cb->createPin()->setName("Input") ->setType(SignalType::stereoAudio))
+		->addOutPin(cb->createPin()->setName("Output")->setType(SignalType::stereoAudio));
 
-	cb->addInPin (info, "Input",  SignalType::stereoAudio);
-	cb->addOutPin(info, "Output", SignalType::stereoAudio);
-
-	ParamGroup* params = cb->createParamGroup("", 0);
-	cb->setParams(info, params);
-	cb->addRealParam(params, "Gain", 'gain', 0.0, 2.0, 1.0, 0);
-	cb->addRealParam(params, "Pan",  'pan ', 0.0, 2.0, 1.0, 0);
+	info->getParams()
+		->addParam(cb->createRealParam('gain')->setName("Gain")->setRange(0,2)->setDefault(1))
+		->addParam(cb->createRealParam('pan ')->setName("Pan") ->setRange(0,2)->setDefault(1));
 
 	return true;
 }

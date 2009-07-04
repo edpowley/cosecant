@@ -1,26 +1,22 @@
 #include "stdafx.h"
 #include "buzzybox.h"
 
-bool StereoToMonoMono::getInfo(MachineInfo* info, const InfoCallbacks* cb)
+bool StereoToMonoMono::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
-	cb->setName(info, "Stereo to 2\xc3\x97Mono");
-	cb->setTypeHint(info, MachineTypeHint::effect);
-
-	cb->addInPin (info, "Input",    SignalType::stereoAudio);
-	cb->addOutPin(info, "Output L", SignalType::monoAudio);
-	cb->addOutPin(info, "Output R", SignalType::monoAudio);
+	info->setName("Stereo to 2\xc3\x97Mono")->setTypeHint(MachineTypeHint::effect)
+		->addInPin (cb->createPin()->setName("Input")	->setType(SignalType::stereoAudio))
+		->addOutPin(cb->createPin()->setName("Output L")->setType(SignalType::monoAudio))
+		->addOutPin(cb->createPin()->setName("Output R")->setType(SignalType::monoAudio));
 
 	return true;
 }
 
-bool MonoMonoToStereo::getInfo(MachineInfo* info, const InfoCallbacks* cb)
+bool MonoMonoToStereo::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
-	cb->setName(info, "2\xc3\x97Mono to Stereo");
-	cb->setTypeHint(info, MachineTypeHint::effect);
-
-	cb->addInPin (info, "Input L", SignalType::monoAudio);
-	cb->addInPin (info, "Input L", SignalType::monoAudio);
-	cb->addOutPin(info, "Output",  SignalType::stereoAudio);
+	info->setName("2\xc3\x97Mono to Stereo")->setTypeHint(MachineTypeHint::effect)
+		->addInPin (cb->createPin()->setName("Input L")	->setType(SignalType::monoAudio))
+		->addInPin (cb->createPin()->setName("Input R")	->setType(SignalType::monoAudio))
+		->addOutPin(cb->createPin()->setName("Output")	->setType(SignalType::stereoAudio));
 
 	return true;
 }

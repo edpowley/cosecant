@@ -53,7 +53,7 @@ public:
 	LadspaMachineFactory(const std::wstring& dllname, int index, const LADSPA_Descriptor* desc)
 		: m_dllname(dllname), m_index(index), m_ladspaId(desc->UniqueID) {}
 
-	virtual bool getInfo(MachineInfo* info, const InfoCallbacks* cb);
+	virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 	
 	virtual Mi* createMachine(HostMachine* mac, Callbacks* cb)
 	{	return new LadspaMachine(mac, cb, m_dllname, m_index);   }

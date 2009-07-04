@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "common.h"
 #include "machine.h"
+#include "callbacks.h"
 
 std::map<QString, Ptr<MachineFactory> > MachineFactory::s_factories;
 
@@ -25,6 +26,7 @@ Ptr<MachineFactory> MachineFactory::get(const QString &id)
 Ptr<Machine> MachineFactory::createMachine()
 {
 	Ptr<Machine> machine = createMachineImpl();
+	machine->createMi(new CallbacksImpl); // TODO: memory leak
 	machine->init(getMachInfo());
 
 	return machine;

@@ -44,9 +44,7 @@ namespace PseudoMachine
 	class Base : public Machine
 	{
 	public:
-		virtual void changeParam(ParamTag, ParamValue) {}
-		virtual void work(PinBuffer*, PinBuffer*, int, int)
-		{	THROW_ERROR(Error, "PseudoMachine work should never be called");   }
+		virtual Mi* createMi(Callbacks* cb) { THROW_ERROR(Error, "PseudoMachine should never be createMi'd"); }
 	};
 
 	class FanIn : public Base

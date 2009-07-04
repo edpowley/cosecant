@@ -6,19 +6,27 @@
 class Lfo : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, const InfoCallbacks* cb)
+	static bool getInfo(MachineInfo* info, InfoCallbacks* cb)
 	{
-		cb->setName(info, "LFO");
-		cb->setTypeHint(info, MachineTypeHint::control);
+		info->setName("LFO")->setTypeHint(MachineTypeHint::control);
+		info->addOutPin(
+			cb->createPin()->setName("Output")->setType(SignalType::paramControl) );
 
-		cb->addOutPin(info, "Output", SignalType::paramControl);
+		ParamInfo::Group* params = info->getParams();
 
-		ParamGroup* params = cb->createParamGroup("", 0);
-		cb->setParams(info, params);
-		cb->addTimeParam(params, "Speed", 'sped',
-			TimeUnit::samples, 2.0, 441000.0, 44100.0,
-			TimeUnit::seconds | TimeUnit::samples | TimeUnit::ticks | TimeUnit::hertz, TimeUnit::seconds);
-		cb->addRealParam(params, "Send step", 'step', 1, 256, 16, ParamFlags::integer);
+		using namespace TimeUnit;
+		params->addParam(
+			cb->createTimeParam('sped')->setName("Speed")
+			->setRange(2, samples, 10, seconds)->setDefault(1, seconds)
+			->setInternalUnit(samples)
+			->addDisplayUnits(seconds | samples | ticks | hertz)->setDefaultDisplayUnit(seconds)
+		);
+
+		params->addParam(
+			cb->createRealParam('step')->setName("Send step")
+			->setRange(1, 256)->setDefault(16)
+			->addFlags(ParamFlags::integer)
+		);
 
 		return true;
 	}

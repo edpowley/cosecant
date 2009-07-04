@@ -5,7 +5,7 @@
 #include "routing.h"
 #include "sequence.h"
 #include "machine.h"
-#include "machinedll.h"
+#include "dllmachine.h"
 /*#include "notebookwindow.h"
 #include "parameditor.h"
 #include "routingeditor.h"

@@ -1,126 +1,145 @@
 #pragma once
-#include "common.h"
-
-#include "object.h"
 
 #include "cosecant_api.h"
-using namespace CosecantAPI;
 
-class PinInfo : public Object
+namespace InfoImpl
 {
-public:
-	QString m_name;
-	SignalType::st m_type;
-
-	PinInfo(const QString& name, SignalType::st type) : m_name(name), m_type(type) {}
-};
-
-////////////////////////////////////////////////////////////////////////////
-
-namespace ParamInfo
-{
-	class Base : public Object
+	namespace ParamInfo
 	{
-		Q_OBJECT
+		class Group : public CosecantAPI::ParamInfo::Group
+		{
+		public:
+			virtual Group* copy() { THROW_ERROR(Error, "Not yet implemented"); }
+			virtual Group* setName(const char* name) { m_name = name; return this; }
+			virtual Group* setTagMask(CosecantAPI::ParamTag mask) { m_tagMask = mask; return this; }
+			virtual Group* addParam(CosecantAPI::ParamInfo::Base* param)
+			{ m_params.push_back(param); return this; }
+
+			QString m_name;
+			CosecantAPI::ParamTag m_tagMask;
+			std::vector<CosecantAPI::ParamInfo::Base*> m_params;
+		};
+
+		class Real : public CosecantAPI::ParamInfo::Real
+		{
+		public:
+			Real(CosecantAPI::ParamTag tag) : m_tag(tag), m_min(0), m_max(1), m_def(0), m_flags(0) {}
+
+			virtual Real* copy() { return new Real(*this); }
+
+			virtual Real* setName(const char* name) { m_name = name; return this; }
+			virtual Real* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
+			virtual Real* setRange(CosecantAPI::ParamValue mn, CosecantAPI::ParamValue mx)
+			{ m_min = mn; m_max = mx; return this; }
+			virtual Real* setDefault(CosecantAPI::ParamValue def) { m_def = def; return this; }
+			virtual Real* addFlags(unsigned int flags) { m_flags |= flags; return this; }
+
+			QString m_name;
+			CosecantAPI::ParamTag m_tag;
+			CosecantAPI::ParamValue m_min, m_max, m_def;
+			unsigned int m_flags;
+		};
+
+		class Time : public CosecantAPI::ParamInfo::Time
+		{
+		public:
+			Time(CosecantAPI::ParamTag tag)
+				: m_tag(tag),
+				m_internalUnit(CosecantAPI::TimeUnit::seconds),
+				m_defaultDisplayUnit(CosecantAPI::TimeUnit::seconds),
+				m_displayUnits(0)
+			{}
+
+			virtual Time* copy() { return new Time(*this); }
+
+			virtual Time* setName(const char* name) { m_name = name; return this; }
+			virtual Time* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
+			virtual Time* setRange(CosecantAPI::TimeValue mn, CosecantAPI::TimeValue mx)
+			{ m_min = mn; m_max = mx; return this; }
+			virtual Time* setDefault(CosecantAPI::TimeValue def) { m_def = def; return this; }
+
+			virtual Time* setInternalUnit(CosecantAPI::TimeUnit::unit unit)
+			{ m_internalUnit = unit; return this; }
+			virtual Time* addDisplayUnits(unsigned int units)
+			{ m_displayUnits |= units; return this; }
+			virtual Time* setDefaultDisplayUnit(CosecantAPI::TimeUnit::unit unit)
+			{ m_defaultDisplayUnit = unit; return this; }
+
+			QString m_name;
+			CosecantAPI::ParamTag m_tag;
+			CosecantAPI::TimeValue m_min, m_max, m_def;
+			CosecantAPI::TimeUnit::unit m_internalUnit, m_defaultDisplayUnit;
+			unsigned int m_displayUnits;
+		};
+
+		class Enum : public CosecantAPI::ParamInfo::Enum
+		{
+		public:
+			Enum(CosecantAPI::ParamTag tag) : m_tag(tag) {}
+			virtual Enum* copy() { return new Enum(*this); }
+
+			virtual Enum* setName(const char* name) { m_name = name; return this; }
+			virtual Enum* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
+			virtual Enum* addItems(char separator, const char* text);
+			virtual Enum* setDefault(int def) { m_def = def; return this; }
+
+			Enum* setItems(const QStringList& items) { m_items = items; return this; }
+
+			QString m_name;
+			CosecantAPI::ParamTag m_tag;
+			QStringList m_items;
+			int m_def;
+		};
+	};
+
+	class PinInfo : public CosecantAPI::PinInfo
+	{
+	public:
+		virtual PinInfo* setName(const char* name) { m_name = name; return this; }
+		virtual PinInfo* setType(CosecantAPI::SignalType::st type) { m_type = type; return this; }
+
+		QString m_name;
+		CosecantAPI::SignalType::st m_type;
+	};
+
+	class MachineInfo : public CosecantAPI::MachineInfo
+	{
+	public:
+		MachineInfo()
+			: m_typeHint(CosecantAPI::MachineTypeHint::none), m_flags(0)
+		{}
+
+		virtual MachineInfo* setName(const char* name) { m_name = name; return this; }
+		virtual MachineInfo* setTypeHint(CosecantAPI::MachineTypeHint::mt type) { m_typeHint = type; return this; }
+		virtual MachineInfo* addFlags(unsigned int flags) { m_flags |= flags; return this; }
+
+		virtual MachineInfo* addInPin (CosecantAPI::PinInfo* pin) { addPin(pin, m_inpins);  return this; }
+		virtual MachineInfo* addOutPin(CosecantAPI::PinInfo* pin) { addPin(pin, m_outpins); return this; }
+
+		virtual ParamInfo::Group* getParams() { return &m_params; }
 
 	public:
 		QString m_name;
-		ParamTag m_tag;
+		ParamInfo::Group m_params;
+		CosecantAPI::MachineTypeHint::mt m_typeHint;
+		unsigned int m_flags;
 
-		Base(const QString& name, ParamTag tag) : m_name(name), m_tag(tag) {}
+		std::vector<PinInfo*> m_inpins, m_outpins;
 
-		virtual double sanitise(double value) { return value; }
-
-	signals:
-		void signalRangeChange();
+	protected:
+		void addPin(CosecantAPI::PinInfo* pin, std::vector<PinInfo*>& pins);
 	};
 
-	class Group : public Base
+	class InfoCallbacks : public CosecantAPI::InfoCallbacks
 	{
 	public:
-		std::vector< Ptr<Base> > m_params;
+		virtual unsigned int getHostVersion() { return CosecantAPI::version; }
 
-		Group(const QString& name, ParamTag tag) : Base(name, tag) {}
+		virtual PinInfo* createPin() { return new PinInfo; }
 
-		Group* add(const Ptr<Base>& param)
-		{	m_params.push_back(param); return this;   }
+		virtual ParamInfo::Group* createParamGroup() { return new ParamInfo::Group; }
+		virtual ParamInfo::Real* createRealParam(CosecantAPI::ParamTag tag) { return new ParamInfo::Real(tag); }
+		virtual ParamInfo::Time* createTimeParam(CosecantAPI::ParamTag tag) { return new ParamInfo::Time(tag); }
+		virtual ParamInfo::Enum* createEnumParam(CosecantAPI::ParamTag tag) { return new ParamInfo::Enum(tag); }
 	};
-
-	class Scalar : public Base
-	{
-	public:
-		double m_min, m_max, m_def;
-		bool m_isLogarithmic, m_isInteger;
-
-		Scalar(const QString& name, ParamTag tag, double mn, double mx, double def, unsigned long flags);
-
-		virtual double sanitise(double value)
-		{
-			if (m_isInteger)
-				return clamp(ceil(value - 0.5), m_min, m_max);
-			else
-				return clamp(value, m_min, m_max);
-		}
-	};
-
-	class Real : public Scalar
-	{
-	public:
-		Real(const QString& name, ParamTag tag, double mn, double mx, double def, unsigned long flags)
-			: Scalar(name, tag, mn, mx, def, flags) {}
-	};
-
-	class Time : public Scalar
-	{
-	public:
-		Time(const QString& name, ParamTag tag, 
-				 TimeUnit::unit internalUnit, double mn, double mx, double def,
-				 unsigned int guiUnits, TimeUnit::unit guiDefaultUnit);
-
-		TimeUnit::unit m_internalUnit;
-		unsigned int m_guiUnits;
-		TimeUnit::unit m_guiUnit;
-	};
-
-	class Enum : public Scalar
-	{
-	public:
-		Enum(const QString& name, ParamTag tag, const std::vector<QString>& items, double def);
-
-		std::vector<QString> m_items;
-		void itemsChanged();
-	};
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
-class MachInfo : public Object
-{
-public:
-	QString m_id;
-	QString m_name;
-	MachineTypeHint::mt m_typehint;
-	std::vector< Ptr<PinInfo> > m_inpins, m_outpins;
-	Ptr<ParamInfo::Group> m_params;
-	unsigned int m_flags;
-
-	MachInfo(const QString& id) : m_id(id), m_flags(0), m_typehint(MachineTypeHint::none) {}
-	
-	MachInfo* setName(const QString& name)
-	{	m_name = name; return this;   }
-
-	MachInfo* setTypeHint(MachineTypeHint::mt typehint)
-	{	m_typehint = typehint; return this;   }
-
-	MachInfo* addInPin(const Ptr<PinInfo> pin)
-	{	m_inpins.push_back(pin); return this;   }
-
-	MachInfo* addOutPin(const Ptr<PinInfo> pin)
-	{	m_outpins.push_back(pin); return this;   }
-
-	MachInfo* setParams(const Ptr<ParamInfo::Group> params)
-	{	m_params = params; return this;   }
-
-	MachInfo* addFlags(unsigned int flags)
-	{	m_flags |= flags; return this;   }
 };

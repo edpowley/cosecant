@@ -6,11 +6,12 @@
 #include "song.h"
 #include "spattern.h"
 //#include "spatterneditor.h"
+#include "timeunit_convert.h"
 
 Machine::Machine()
 : m_pos(0,0), m_halfsize(50,25), m_name("Unnamed"), m_parameditor(NULL),
 m_routing(NULL), m_perfCount(0),
-m_dead(false)
+m_dead(false), m_mi(NULL)
 {
 }
 
@@ -18,15 +19,13 @@ Machine::~Machine()
 {
 }
 
-void Machine::init(const Ptr<MachInfo>& info)
+void Machine::init(InfoImpl::MachineInfo* info)
 {
 	m_info = info;
 	m_name = info->m_name;
-	m_colorhint = info->m_typehint;
+	m_colorhint = info->m_typeHint;
 
-	m_params = info->m_params;
-	initParamStates(m_params);
-	m_paramChanges = m_paramStates;
+	initParams(&info->m_params);
 
 	initPins(Pin::in,  info->m_inpins);
 	initPins(Pin::out, info->m_outpins);
@@ -42,27 +41,115 @@ void Machine::init(const Ptr<MachInfo>& info)
 	}
 }
 
-void Machine::initParamStates(const Ptr<ParamInfo::Group>& group)
-{
-	if (!group) return;
-
-	BOOST_FOREACH(ParamInfo::Base* p, group->m_params)
-	{
-		if (ParamInfo::Group* pg = dynamic_cast<ParamInfo::Group*>(p))
-		{
-			initParamStates(pg);
-		}
-		else if (ParamInfo::Scalar* ps = dynamic_cast<ParamInfo::Scalar*>(p))
-		{
-			m_paramStates[ps->m_tag] = ps->m_def;
-		}
-	}
-}
-
 void Machine::setPos(const QPointF& newpos)
 {
 	m_pos = newpos;
 	signalChangePos();
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void Machine::initParams(InfoImpl::ParamInfo::Group* group)
+{
+	m_params = new Parameter::Group(group);
+	m_params->initParamStuff(this);
+}
+
+Parameter::Group::Group(InfoImpl::ParamInfo::Group* info)
+{
+	setName(info->m_name);
+
+	BOOST_FOREACH(CosecantAPI::ParamInfo::Base* p, info->m_params)
+	{
+		if (InfoImpl::ParamInfo::Group* q = dynamic_cast<InfoImpl::ParamInfo::Group*>(p))
+		{
+			m_params.push_back(new Group(q));
+		}
+		else if (InfoImpl::ParamInfo::Real* q = dynamic_cast<InfoImpl::ParamInfo::Real*>(p))
+		{
+			m_params.push_back(new Real(q));
+		}
+		else if (InfoImpl::ParamInfo::Time* q = dynamic_cast<InfoImpl::ParamInfo::Time*>(p))
+		{
+			m_params.push_back(new Time(q));
+		}
+		else if (InfoImpl::ParamInfo::Enum* q = dynamic_cast<InfoImpl::ParamInfo::Enum*>(p))
+		{
+			m_params.push_back(new Enum(q));
+		}
+	}
+}
+
+void Parameter::Group::initParamStuff(Machine* mac)
+{
+	BOOST_FOREACH(Ptr<Parameter::Base> p, m_params)
+	{
+		p->initParamStuff(mac);
+	}
+}
+
+Parameter::Scalar::Scalar(ParamTag tag)
+: m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0)
+{
+}
+
+Parameter::Scalar::Scalar(ParamTag tag, double min, double max, double def)
+: m_tag(tag), m_min(min), m_max(max), m_def(def), m_state(def)
+{
+}
+
+void Parameter::Scalar::initParamStuff(Machine* mac)
+{
+	mac->m_paramMap[m_tag] = this;
+	mac->m_paramChanges[m_tag] = m_state;
+}
+
+void Parameter::Scalar::setRange(double min, double max)
+{
+	m_min = min;
+	m_max = max;
+}
+
+void Parameter::Scalar::setDefault(double def)
+{
+	m_def = clamp(def, m_min, m_max);
+}
+
+void Parameter::Scalar::setState(double state)
+{
+	m_state = clamp(state, m_min, m_max);
+}
+
+Parameter::Real::Real(InfoImpl::ParamInfo::Real* info)
+: Scalar(info->m_tag, info->m_min, info->m_max, info->m_def)
+{
+	setName(info->m_name);
+}
+
+Parameter::Time::Time(InfoImpl::ParamInfo::Time* info)
+:	Scalar(info->m_tag),
+	m_tmin(info->m_min), m_tmax(info->m_max), m_tdef(info->m_def), m_tstate(info->m_def),
+	m_internalUnit(info->m_internalUnit)
+{
+	setName(info->m_name);
+	setRange(ConvertTimeUnits(m_tmin, m_internalUnit), ConvertTimeUnits(m_tmax, m_internalUnit));
+	setDefault(ConvertTimeUnits(m_tdef, m_internalUnit));
+	setState(getDefault());
+}
+
+Parameter::Enum::Enum(InfoImpl::ParamInfo::Enum* info)
+:	Scalar(info->m_tag)
+{
+	setName(info->m_name);
+	setItems(info->m_items);
+	setDefault(info->m_def);
+	setState(info->m_def);
+}
+
+void Parameter::Enum::setItems(const QStringList& items)
+{
+	m_items = items;
+	setRange(0, m_items.length()-1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,7 +188,7 @@ PatternEditor* Machine::createPatternEditor(const Ptr<Sequence::Pattern>& patter
 
 //////////////////////////////////////////////////////////////////////////
 
-void Machine::initPins(Pin::Direction direction, const std::vector< Ptr<PinInfo> >& pins)
+void Machine::initPins(Pin::Direction direction, const std::vector<InfoImpl::PinInfo*>& pins)
 {
 	std::vector< Ptr<Pin> >& pinvector = (direction == Pin::in) ? m_inpins : m_outpins;
 	Pin::Side side = (direction == Pin::in) ? Pin::left : Pin::right;
@@ -110,7 +197,7 @@ void Machine::initPins(Pin::Direction direction, const std::vector< Ptr<PinInfo>
 	float posstep = 1.0f / (float)(npins + 1);
 	float pos = posstep;
 
-	for (std::vector< Ptr<PinInfo> >::const_iterator i = pins.begin(); i != pins.end(); ++i)
+	for (std::vector<InfoImpl::PinInfo*>::const_iterator i = pins.begin(); i != pins.end(); ++i)
 	{
 		Ptr<Pin> pin = new Pin(this, direction, (*i)->m_type);
 		pin->m_side = side;

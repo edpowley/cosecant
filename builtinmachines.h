@@ -2,19 +2,33 @@
 
 #include "machine.h"
 
-template<class MachineClass>
+template<class MiClass>
+class BuiltinMachine : public Machine
+{
+public:
+	virtual Mi* createMi(Callbacks* cb)
+	{
+		m_mi = new MiClass(this, cb);
+		return m_mi;
+	}
+};
+
+template<class MiClass>
 class BuiltinMachineFactory : public MachineFactory
 {
 public:
-	virtual Ptr<MachInfo> getMachInfo()
+	virtual InfoImpl::MachineInfo* getMachInfo()
 	{
-		return MachineClass::getInfo();
+		InfoImpl::MachineInfo* info = new InfoImpl::MachineInfo;
+		InfoImpl::InfoCallbacks cb;
+		MiClass::getInfo(info, &cb); // TODO: check return value
+		return info;
 	}
 
 protected:
 	virtual Ptr<Machine> createMachineImpl()
 	{
-		return new MachineClass();
+		return new BuiltinMachine<MiClass>();
 	}
 };
 

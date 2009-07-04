@@ -115,7 +115,7 @@ void WorkMachine::sendParamChanges()
 	typedef std::pair<ParamTag, ParamValue> parampair;
 	BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
 	{
-		m_machine->changeParam(p.first, p.second);
+		m_machine->getMi()->changeParam(p.first, p.second);
 	}
 
 	// Clear parameter changes
@@ -222,7 +222,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 			{
 				if (ppb.iter != ppb.enditer && ppb.iter->first == frame)
 				{
-					m_machine->changeParam(ppb.tag, ppb.iter->second);
+					m_machine->getMi()->changeParam(ppb.tag, ppb.iter->second);
 					++ ppb.iter;
 				}
 			}
@@ -241,15 +241,15 @@ void WorkMachine::work(int firstframe, int lastframe)
 					if (ev.vel > 0.0) // note on
 					{
 						if (idIter != m_machine->m_noteIdMap.end())
-							m_machine->noteOff(idIter->second);
+							m_machine->getMi()->noteOff(idIter->second);
 
-						m_machine->m_noteIdMap[ev.id] = m_machine->noteOn(ev.note, ev.vel);
+						m_machine->m_noteIdMap[ev.id] = m_machine->getMi()->noteOn(ev.note, ev.vel);
 					}
 					else // note off
 					{
 						if (idIter != m_machine->m_noteIdMap.end())
 						{
-							m_machine->noteOff(idIter->second);
+							m_machine->getMi()->noteOff(idIter->second);
 							m_machine->m_noteIdMap.erase(idIter);
 						}
 					}
@@ -268,7 +268,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 
 			if (breakpoint != frame)
 			{
-				m_machine->work(m_inPinBuffer, m_outPinBuffer, frame, breakpoint);
+				m_machine->getMi()->work(m_inPinBuffer, m_outPinBuffer, frame, breakpoint);
 			}
 
 			double posIncrement = (breakpoint - frame) * m_queue->m_ticksPerFrame;

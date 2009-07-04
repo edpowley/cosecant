@@ -54,6 +54,37 @@ template<typename C1, typename C2> bool containersIntersect(const C1& c1, const 
 
 /////////////////////////////////////////////////////////////////////////////
 
+template<typename K, typename V> class MyMap : public std::map<K,V>
+{
+public:
+	ERROR_CLASS(KeyError);
+
+	bool contains(const K& key) const
+	{
+		return find(key) != end();
+	}
+
+	V& get(const K& key)
+	{
+		iterator iter = find(key);
+		if (iter != end())
+			return iter->second;
+		else
+			throw KeyError("Missing key");
+	}
+
+	const V& get(const K& key) const
+	{
+		const_iterator iter = find(key);
+		if (iter != end())
+			return iter->second;
+		else
+			throw KeyError("Missing key");
+	}
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
 // Just a nicer class for timed mutex locks than boost provides
 // (takes care of all that boost::system_time and boost::posix_time crap, and throws an exception
 // instead of using a boolean)

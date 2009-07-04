@@ -6,7 +6,7 @@
 class SimpleSynth : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, const InfoCallbacks* cb);
+	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
 	static const int c_polyphony = 16;
 
@@ -45,19 +45,22 @@ protected:
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-bool SimpleSynth::getInfo(MachineInfo* info, const InfoCallbacks* cb)
+bool SimpleSynth::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
-	cb->setName(info, "Synth");
-	cb->setTypeHint(info, MachineTypeHint::generator);
-	cb->addFlags(info, MachineFlags::hasNoteTrigger | MachineFlags::createSequenceTrack);
-	cb->addOutPin(info, "Output", SignalType::stereoAudio);
+	info->setName("Synth")->setTypeHint(MachineTypeHint::generator)
+		->addFlags(MachineFlags::hasNoteTrigger | MachineFlags::createSequenceTrack)
+		->addOutPin(cb->createPin()->setName("Output")->setType(SignalType::stereoAudio));
 
-	ParamGroup* params = cb->createParamGroup("", 0);
-	cb->setParams(info, params);
-	cb->addTimeParam(params, "Attack", 'enva', TimeUnit::samples, 1, 44100.0 * 10.0, 44100.0 * 0.2,
-		TimeUnit::seconds | TimeUnit::samples | TimeUnit::ticks, TimeUnit::seconds);
-	cb->addTimeParam(params, "Release", 'envr', TimeUnit::samples, 1, 44100.0 * 10.0, 44100.0 * 1.0,
-		TimeUnit::seconds | TimeUnit::samples | TimeUnit::ticks, TimeUnit::seconds);
+	using namespace TimeUnit;
+
+	ParamInfo::Time* param = cb->createTimeParam('enva');
+	param->setName("Attack")->setRange(1, samples, 10, seconds)->setDefault(0.2, seconds)
+		->setInternalUnit(samples)->setDefaultDisplayUnit(seconds)->addDisplayUnits(seconds | samples | ticks);
+	info->getParams()->addParam(param);
+
+	param = param->copy()->setTag('envr');
+	param->setName("Release")->setDefault(1, seconds);
+	info->getParams()->addParam(param);
 
 	return true;
 }

@@ -8,55 +8,51 @@ namespace Builtin
 
 ///////////////////////////////////////////////////////////////////////
 
-class AudioInOut : public Machine
+class AudioInOut : public QObject, public Mi
 {
 	Q_OBJECT
-
-public slots:
-	void sanitiseChannelParamState()
-	{
-		if (m_paramStates['chan'] >= getNumChannels()/2 + 1)
-		{
-			boost::unique_lock<boost::mutex> lock(m_paramChangesMutex);
-			m_paramChanges['chan'] = m_paramStates['chan'] = 0.0;
-			// TODO fixme:
-			//m_signalParamChange['chan']();
-		}
-	}
 
 public:
 	virtual void changeParam(ParamTag tag, ParamValue value)
 	{
+		qDebug() << "changeParam" << tag << value;
 		if (tag == 'chan')
 		{
 			int c = static_cast<int>(value) - 1;
 			m_leftChannel  = c*2;
 			m_rightChannel = c*2+1;
+			qDebug() << "channels" << m_leftChannel << m_rightChannel;
 		}
 	}
 
 protected:
 	int m_leftChannel, m_rightChannel;
 
-	AudioInOut() : m_leftChannel(-1), m_rightChannel(-1)
+	AudioInOut(Machine* mac, Callbacks* cb) : Mi(mac, cb), m_leftChannel(-1), m_rightChannel(-1)
 	{
-		connect(
+		// TODO:
+/*		connect(
 			&AudioIO::get(), SIGNAL(signalOpen()),
 			this, SLOT(sanitiseChannelParamState())
 		);
-	}
+*/	}
 
 	virtual int getNumChannels() = 0;
 
-	static void populateChannelParam(const Ptr<ParamInfo::Enum>& param, int nChans, boost::function<QString(int)> getName)
+	static QStringList getChannelParamItems(int nChans, boost::function<QString(int)> getName)
 	{
-		param->m_items.resize(1 + nChans/2);
-		param->m_items[0] = "None";
+		QStringList items("None");
 		for (int i=0; i<nChans/2; i++)
 		{
-			param->m_items[i+1] = QString("%1\t / %2").arg(getName(i*2), getName(i*2+1));
+			items << QString("%1\t / %2").arg(getName(i*2), getName(i*2+1));
 		}
-		param->itemsChanged();
+		return items;
+	}
+
+	void populateChannelParam(int nChans, boost::function<QString(int)> getName)
+	{
+		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(m_mac->m_paramMap.get('chan').c_ptr());
+		param->setItems(getChannelParamItems(nChans, getName));
 	}
 };
 
@@ -67,6 +63,8 @@ class AudioOut : public AudioInOut
 	Q_OBJECT
 
 public:
+	AudioOut(Machine* mac, Callbacks* cb) : AudioInOut(mac, cb) {}
+
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
 		int nChans = AudioIO::get().m_numOutputChannels;
@@ -82,39 +80,26 @@ public:
 		}
 	}
 
-	static Ptr<MachInfo> getInfo()
+	static bool getInfo(InfoImpl::MachineInfo* info, InfoImpl::InfoCallbacks* cb)
 	{
-		if (!s_channelParam)
-		{
-			s_channelParam = new ParamInfo::Enum("Channel", 'chan', std::vector<QString>(), 0);
-			s_channelParam->m_def = 1;
-			populateChannelParam();
-			// TODO: fixme
-/*			connect(
-				&AudioIO::get(), SIGNAL(signalOpen()),
-				????
-			);
-*/		}
-
-		return (new MachInfo("builtin/aout"))
-			->setName("AOut")
-			->setTypeHint(MachineTypeHint::master)
-			->addInPin(new PinInfo("To soundcard", SignalType::stereoAudio))
-			->setParams((new ParamInfo::Group("",0))
-				->add(s_channelParam)
-			)
-		;
+		info->setName("AOut")->setTypeHint(MachineTypeHint::master)
+			->addInPin(cb->createPin()->setName("To soundcard")->setType(SignalType::stereoAudio));
+		info->getParams()->addParam(
+			cb->createEnumParam('chan')->setName("Channel")
+			->setItems(getChannelParamItems(AudioIO::get().m_numOutputChannels,
+				boost::bind(&AudioIO::getOutputChannelName, &AudioIO::get(), _1)
+			))->setDefault(1)
+		);
+		return true;
 	}
 
-	static void populateChannelParam()
+	void populateChannelParam()
 	{
-		AudioInOut::populateChannelParam(s_channelParam, AudioIO::get().m_numOutputChannels,
+		AudioInOut::populateChannelParam(AudioIO::get().m_numOutputChannels,
 			boost::bind(&AudioIO::getOutputChannelName, &AudioIO::get(), _1));
 	}
 
 protected:
-	static Ptr<ParamInfo::Enum> s_channelParam;
-
 	virtual int getNumChannels() { return AudioIO::get().m_numOutputChannels; }
 };
 
@@ -125,6 +110,8 @@ class AudioIn : public AudioInOut
 	Q_OBJECT
 
 public:
+	AudioIn(Machine* mac, Callbacks* cb) : AudioInOut(mac, cb) {}
+
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
 		int nChans = AudioIO::get().m_numInputChannels;
@@ -138,36 +125,22 @@ public:
 		}
 	}
 
-	static Ptr<MachInfo> getInfo()
+	static bool getInfo(InfoImpl::MachineInfo* info, InfoImpl::InfoCallbacks* cb)
 	{
-		if (!s_channelParam)
-		{
-			s_channelParam = new ParamInfo::Enum("Channel", 'chan', std::vector<QString>(), 0);
-			s_channelParam->m_def = 1;
-			populateChannelParam();
-			// TODO: fixme
-//			AudioIO::get().m_signalOpen.connect(sigc::ptr_fun(&AudioIn::populateChannelParam));
-		}
-
-		return (new MachInfo("builtin/ain"))
-			->setName("AIn")
-			->setTypeHint(MachineTypeHint::master)
-			->addOutPin(new PinInfo("From soundcard", SignalType::stereoAudio))
-			->setParams((new ParamInfo::Group("",0))
-				->add(s_channelParam)
-			)
-		;
+		info->setName("AIn")->setTypeHint(MachineTypeHint::master)
+			->addOutPin(cb->createPin()->setName("From soundcard")->setType(SignalType::stereoAudio));
+		info->getParams()->addParam(
+			cb->createEnumParam('chan')->setName("Channel")->addItem("None") );
+		return true;
 	}
 
-	static void populateChannelParam()
+	void populateChannelParam()
 	{
-		AudioInOut::populateChannelParam(s_channelParam, AudioIO::get().m_numInputChannels,
+		AudioInOut::populateChannelParam(AudioIO::get().m_numInputChannels,
 			boost::bind(&AudioIO::getInputChannelName, &AudioIO::get(), _1));
 	}
 
 protected:
-	static Ptr<ParamInfo::Enum> s_channelParam;
-
 	virtual int getNumChannels() { return AudioIO::get().m_numInputChannels; }
 };
 

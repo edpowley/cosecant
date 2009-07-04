@@ -50,7 +50,7 @@ void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factori
 
 /////////////////////////////////////////////////////////////////////////
 
-bool LadspaMachineFactory::getInfo(MachineInfo* info, const InfoCallbacks* cb)
+bool LadspaMachineFactory::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
 	LadspaDll dll;
 	try
@@ -65,9 +65,8 @@ bool LadspaMachineFactory::getInfo(MachineInfo* info, const InfoCallbacks* cb)
 	const LADSPA_Descriptor* desc = dll.callDescriptorFunc(m_index);
 	if (!desc) return false;
 
-	cb->setName(info, desc->Name);
-	ParamGroup* params = cb->createParamGroup("", 0);
-	cb->setParams(info, params);
+	info->setName(desc->Name);
+	ParamInfo::Group* params = info->getParams();
 
 	bool hasAudioInput = false;
 	bool hasAudioOutput = false;
@@ -117,33 +116,35 @@ bool LadspaMachineFactory::getInfo(MachineInfo* info, const InfoCallbacks* cb)
 			unsigned long flags = 0;
 			if (LADSPA_IS_HINT_INTEGER(h))		flags |= ParamFlags::integer;
 			if (LADSPA_IS_HINT_LOGARITHMIC(h))	flags |= ParamFlags::logarithmic;
-			cb->addRealParam(params, pname, tag, min, max, def, flags);
+			params->addParam(
+				cb->createRealParam(tag)->setName(pname)->setRange(min,max)->setDefault(def)->addFlags(flags)
+			);
 		}
 		else if (LADSPA_IS_PORT_OUTPUT(pdesc) && LADSPA_IS_PORT_CONTROL(pdesc))
 		{
-			cb->addOutPin(info, pname, SignalType::paramControl);
+			info->addOutPin(cb->createPin()->setName(pname)->setType(SignalType::paramControl));
 		}
 		else if (LADSPA_IS_PORT_AUDIO(pdesc))
 		{
 			if (LADSPA_IS_PORT_INPUT(pdesc))
 			{
-				cb->addInPin(info, pname, SignalType::monoAudio);
+				info->addInPin(cb->createPin()->setName(pname)->setType(SignalType::monoAudio));
 				hasAudioInput = true;
 			}
 			else
 			{
-				cb->addOutPin(info, pname, SignalType::monoAudio);
+				info->addOutPin(cb->createPin()->setName(pname)->setType(SignalType::monoAudio));
 				hasAudioOutput = true;
 			}
 		}
 	}
 
 	if (hasAudioInput)
-		cb->setTypeHint(info, MachineTypeHint::effect);
+		info->setTypeHint(MachineTypeHint::effect);
 	else if (hasAudioOutput)
-		cb->setTypeHint(info, MachineTypeHint::generator);
+		info->setTypeHint(MachineTypeHint::generator);
 	else
-		cb->setTypeHint(info, MachineTypeHint::control);
+		info->setTypeHint(MachineTypeHint::control);
 
 	return true;
 }

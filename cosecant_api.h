@@ -6,10 +6,8 @@
 #include <iomanip>
 
 #ifdef COSECANT_API_HOST
-	class MachInfo;
-	namespace ParamInfo { class Group; };
 	namespace WorkBuffer { class Base; };
-	class DllMachine;
+	class Machine;
 #endif
 
 namespace CosecantAPI
@@ -87,6 +85,15 @@ namespace CosecantAPI
 		};
 	};
 
+	struct TimeValue
+	{
+		double value;
+		TimeUnit::unit unit;
+
+		TimeValue() : value(0), unit(TimeUnit::seconds) {}
+		TimeValue(double v, TimeUnit::unit u) : value(v), unit(u) {}
+	};
+
 	////////////////////////////////////////////////////////////////////
 
 	typedef unsigned long ParamTag;
@@ -124,14 +131,10 @@ namespace CosecantAPI
 	////////////////////////////////////////////////////////////////////
 
 #ifdef COSECANT_API_HOST
-	typedef ::MachInfo MachineInfo;
-	typedef ::ParamInfo::Group ParamGroup;
-	typedef ::DllMachine HostMachine;
+	typedef ::Machine HostMachine;
 	typedef xmlpp::Element XmlElement;
 	class MiUndoable;
 #else
-	typedef void MachineInfo;
-	typedef void ParamGroup;
 	typedef void HostMachine;
 	typedef void XmlElement;
 
@@ -148,29 +151,97 @@ namespace CosecantAPI
 
 	////////////////////////////////////////////////////////////////////
 
-	struct InfoCallbacks
+	namespace ParamInfo
 	{
-		unsigned int hostVersion;
+		class Base
+		{
+		public:
+			virtual ~Base() {}
 
-		void (*setName)(MachineInfo* info, const char* name);
-		void (*setTypeHint)(MachineInfo* info, MachineTypeHint::mt type);
+			virtual Base* copy() = 0;
+		};
 
-		void (*addInPin )(MachineInfo* info, const char* name, SignalType::st type);
-		void (*addOutPin)(MachineInfo* info, const char* name, SignalType::st type);
+		class Group : public Base
+		{
+		public:
+			virtual Group* copy() = 0;
+			virtual Group* setName(const char* name) = 0;
+			virtual Group* setTagMask(ParamTag mask) = 0;
+			virtual Group* addParam(Base* param) = 0;
+		};
 
-		void (*setParams)(MachineInfo* info, ParamGroup* params);
-		
-		ParamGroup* (*createParamGroup)(const char* name, ParamTag tag);
-		void (*addRealParam)(ParamGroup* group, const char* name, ParamTag tag,
-							double mini, double maxi, double def, unsigned long flags);
-		void (*addTimeParam)(ParamGroup* group, const char* name, ParamTag tag,
-							TimeUnit::unit internalUnit, double mini, double maxi, double def,
-							unsigned int guiUnits, TimeUnit::unit guiDefaultUnit);
-		void (*addEnumParam)(ParamGroup* group, const char* name, ParamTag tag,
-							const char* items, unsigned int def);
-		void (*addSubGroup)(ParamGroup* group, ParamGroup* sub);
+		class Real : public Base
+		{
+		public:
+			virtual Real* copy() = 0;
+			virtual Real* setName(const char* name) = 0;
+			virtual Real* setTag(ParamTag tag) = 0;
+			virtual Real* setRange(ParamValue mn, ParamValue mx) = 0;
+			virtual Real* setDefault(ParamValue def) = 0;
+			virtual Real* addFlags(unsigned int flags) = 0;
+		};
 
-		void (*addFlags)(MachineInfo*, unsigned int);
+		class Time : public Base
+		{
+		public:
+			virtual Time* copy() = 0;
+			virtual Time* setName(const char* name) = 0;
+			virtual Time* setTag(ParamTag tag) = 0;
+			virtual Time* setRange(TimeValue mn, TimeValue mx) = 0;
+			virtual Time* setDefault(TimeValue def) = 0;
+			virtual Time* setInternalUnit(TimeUnit::unit unit) = 0;
+			virtual Time* addDisplayUnits(unsigned int units) = 0;
+			virtual Time* setDefaultDisplayUnit(TimeUnit::unit unit) = 0;
+
+			Time* setRange(double mn, TimeUnit::unit mnu, double mx, TimeUnit::unit mxu)
+			{ return setRange(TimeValue(mn, mnu), TimeValue(mx, mxu)); }
+			Time* setDefault(double def, TimeUnit::unit unit)
+			{ return setDefault(TimeValue(def, unit)); }
+		};
+
+		class Enum : public Base
+		{
+		public:
+			virtual Enum* copy() = 0;
+			virtual Enum* setName(const char* name) = 0;
+			virtual Enum* setTag(ParamTag tag) = 0;
+			virtual Enum* addItems(char separator, const char* text) = 0;
+			virtual Enum* setDefault(int def) = 0;
+			
+			Enum* addItem(const char* text) { return addItems('\0', text); }
+		};
+	};
+
+	class PinInfo
+	{
+	public:
+		virtual PinInfo* setName(const char* name) = 0;
+		virtual PinInfo* setType(SignalType::st type) = 0;
+	};
+
+	class MachineInfo
+	{
+	public:
+		virtual MachineInfo* setName(const char* name) = 0;
+		virtual MachineInfo* setTypeHint(MachineTypeHint::mt type) = 0;
+		virtual MachineInfo* addFlags(unsigned int flags) = 0;
+		virtual MachineInfo* addInPin (PinInfo* pin) = 0;
+		virtual MachineInfo* addOutPin(PinInfo* pin) = 0;
+
+		virtual ParamInfo::Group* getParams() = 0;
+	};
+
+	class InfoCallbacks
+	{
+	public:
+		virtual unsigned int getHostVersion() = 0;
+
+		virtual PinInfo* createPin() = 0;
+
+		virtual ParamInfo::Group* createParamGroup() = 0;
+		virtual ParamInfo::Real* createRealParam(ParamTag tag) = 0;
+		virtual ParamInfo::Time* createTimeParam(ParamTag tag) = 0;
+		virtual ParamInfo::Enum* createEnumParam(ParamTag tag) = 0;
 	};
 
 	////////////////////////////////////////////////////////////////////
@@ -187,27 +258,28 @@ namespace CosecantAPI
 		double pos;
 	};
 
-	struct Callbacks
+	class Callbacks
 	{
-		unsigned int hostVersion;
+	public:
+		virtual unsigned int getHostVersion() = 0;
 
-		bool (*lockMutex)(HostMachine*);
-		void (*unlockMutex)(HostMachine*);
+		virtual bool lockMutex(HostMachine*) = 0;
+		virtual void unlockMutex(HostMachine*) = 0;
 
-		double (*getTicksPerFrame)();
+		virtual double getTicksPerFrame() = 0;
 
-		void (*addParamChange)(PinBuffer* buf, int time, ParamValue value);
-		void (*addNoteEvent  )(PinBuffer* buf, int time, NoteEvent* ev);
+		virtual void addParamChange(PinBuffer* buf, int time, ParamValue value) = 0;
+		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;
 
-		void (*doUndoable)(HostMachine*, MiUndoable*);
+		virtual void doUndoable(HostMachine*, MiUndoable*) = 0;
 
-		void (*xmlSetAttribute_c)(XmlElement*, const char* name, const char* value);
-		XmlElement* (*xmlAddChild)(XmlElement*, const char* tag);
+		virtual void xmlSetAttribute_c(XmlElement*, const char* name, const char* value) = 0;
+		virtual XmlElement* xmlAddChild(XmlElement*, const char* tag) = 0;
 
-		int (*xmlGetAttribute_c)(XmlElement*, const char* name, char* value, int value_size);
-		int (*xmlGetTagName_c)(XmlElement*, char* value, int value_size);
-		XmlElement* (*xmlGetFirstChild)(XmlElement*);
-		XmlElement* (*xmlGetNextSibling)(XmlElement*);
+		virtual int xmlGetAttribute_c(XmlElement*, const char* name, char* value, int value_size) = 0;
+		virtual int xmlGetTagName_c(XmlElement*, char* value, int value_size) = 0;
+		virtual XmlElement* xmlGetFirstChild(XmlElement*) = 0;
+		virtual XmlElement* xmlGetNextSibling(XmlElement*) = 0;
 
 		///////////////////////////////////////////////////////////////////////
 
@@ -281,11 +353,6 @@ namespace CosecantAPI
 		const Note noteInvalid = -256;
 	};
 
-#ifdef COSECANT_API_HOST
-	class Mi;
-	class MiPattern;
-	class MiPatternEditor;
-#else
 	class Mi;
 
 	class MiPattern
@@ -345,51 +412,19 @@ namespace CosecantAPI
 		Callbacks* m_cb;
 	};
 
-#endif
-
-	////////////////////////////////////////////////////////////////////
-
-	struct MachineFunctions
-	{
-		unsigned int hostVersion;
-
-		void (*destroy)(Mi*);
-		void (*work)(Mi*, PinBuffer* inpins, PinBuffer* outpins, int first, int last);
-		void (*changeParam)(Mi*, ParamTag tag, ParamValue value);
-		void* (*noteOn)(Mi*, double note, double vel);
-		void (*noteOff)(Mi*, void* note);
-		void (*playPattern)(Mi*, void* track, MiPattern*, double pos);
-
-		MiPattern* (*newPattern)(Mi*, int length);
-		bool (*patLoad)(MiPattern*, XmlElement*);
-		void (*patSave)(MiPattern*, XmlElement*);
-		MiUndoable* (*patChangeLength)(MiPattern*, int length);
-		void (*deletePattern)(MiPattern*);
-
-		MiPatternEditor* (*createPatternEditor)(Mi*, WindowHandle parent, MiPattern*);
-		void (*patedTakeFocus)(MiPatternEditor*);
-		void (*patedKeyJazz)(MiPatternEditor*, KeyJazz::Type, KeyJazz::Note);
-		void (*destroyPatternEditor)(MiPatternEditor*);
-
-		void (*undoableDo)(MiUndoable*);
-		void (*undoableUndo)(MiUndoable*);
-		const char* (*undoableDescribe)(MiUndoable*);
-		void (*undoableDestroy)(MiUndoable*);
-	};
-
 	////////////////////////////////////////////////////////////////////
 
 	class MiFactory
 	{
 	public:
-		virtual bool getInfo(MachineInfo* info, const InfoCallbacks* cb) = 0;
+		virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb) = 0;
 		virtual Mi* createMachine(HostMachine* mac, Callbacks* cb) = 0;
 	};
 
 	template<class TMiClass> class MiFactory_T : public MiFactory
 	{
 	public:
-		virtual bool getInfo(MachineInfo* info, const InfoCallbacks* cb)
+		virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb)
 		{   return TMiClass::getInfo(info, cb);   }
 
 		virtual Mi* createMachine(HostMachine* mac, Callbacks* cb)

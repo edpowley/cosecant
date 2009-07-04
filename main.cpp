@@ -5,7 +5,7 @@
 #include "song.h"
 #include "audioio.h"
 #include "builtinmachines.h"
-#include "machinedll.h"
+#include "dllmachine.h"
 #include "theme.h"
 
 int main(int argc, char *argv[])

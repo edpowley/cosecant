@@ -68,6 +68,80 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////
 
+namespace Parameter
+{
+	class Base : public Object
+	{
+		Q_OBJECT
+
+	public:
+		void setName(const QString& name) { m_name = name; }
+
+		virtual void initParamStuff(Machine* mac) = 0;
+
+	protected:
+		QString m_name;
+	};
+
+	class Group : public Base
+	{
+	public:
+		explicit Group(InfoImpl::ParamInfo::Group* info);
+
+		std::vector< Ptr<Base> > m_params;
+
+		virtual void initParamStuff(Machine* mac);
+	};
+
+	class Scalar : public Base
+	{
+	public:
+		Scalar(ParamTag tag);
+		Scalar(ParamTag tag, double min, double max, double def);
+
+		void setRange(double min, double max);
+		void setDefault(double def);
+		void setState(double state);
+
+		double getDefault() { return m_def; }
+
+		virtual void initParamStuff(Machine* mac);
+
+	protected:
+		double m_min, m_max, m_def, m_state;
+		ParamTag m_tag;
+	};
+
+	class Real : public Scalar
+	{
+	public:
+		explicit Real(InfoImpl::ParamInfo::Real* info);
+	};
+
+	class Time : public Scalar
+	{
+	public:
+		explicit Time(InfoImpl::ParamInfo::Time* info);
+
+	protected:
+		TimeUnit::unit m_internalUnit;
+		TimeValue m_tmin, m_tmax, m_tdef, m_tstate;
+	};
+
+	class Enum : public Scalar
+	{
+	public:
+		explicit Enum(InfoImpl::ParamInfo::Enum* info);
+
+		void setItems(const QStringList& items);
+
+	protected:
+		QStringList m_items;
+	};
+};
+
+///////////////////////////////////////////////////////////////////////
+
 class ParamEditor;
 class Routing;
 
@@ -81,7 +155,10 @@ public:
 	Machine();
 	virtual ~Machine();
 
-	Ptr<MachInfo> m_info;
+	virtual CosecantAPI::Mi* createMi(CosecantAPI::Callbacks* cb) = 0;
+	CosecantAPI::Mi* getMi() { return m_mi; }
+
+	InfoImpl::MachineInfo* m_info;
 	QString m_name;
 	CosecantAPI::MachineTypeHint::mt m_colorhint;
 	QPointF m_pos, m_halfsize;
@@ -107,18 +184,14 @@ public:
 	std::vector< Ptr<Pin> > m_inpins, m_outpins;
 	Ptr<Pin> m_noteTriggerPin;
 
-	Ptr<ParamInfo::Group> m_params;
-	Ptr<ParamInfo::Base> getParam(ParamTag tag);
+	Ptr<Parameter::Group> m_params;
+	MyMap< ParamTag, Ptr<Parameter::Base> > m_paramMap;
 
 	ParamEditor* m_parameditor;
 
 	boost::mutex m_paramChangesMutex;
-	std::map<ParamTag, ParamValue> m_paramChanges, m_paramStates;
+	std::map<ParamTag, ParamValue> m_paramChanges;
 //	std::map<ParamTag, sigc::signal<void> > m_signalParamChange;
-
-	virtual void changeParam(ParamTag tag, ParamValue value) = 0;
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
-	virtual void playPattern(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev, double pos) {}
 
 	void addPin(const Ptr<Pin>& pin);
 	void removePin(const Ptr<Pin>& pin);
@@ -130,10 +203,7 @@ public:
 
 	std::map<void*, void*> m_noteIdMap;
 
-	virtual void* noteOn(double note, double vel) { return NULL; }
-	virtual void noteOff(void* note) {}
-
-	virtual void load(class SongLoadContext& ctx, xmlpp::Element* el);
+//	virtual void load(class SongLoadContext& ctx, xmlpp::Element* el);
 	void save(xmlpp::Element* el);
 
 	Ptr<Sequence::Pattern> createPattern(double length);
@@ -154,36 +224,16 @@ public:
 	std::vector<EventPlayRec> m_playingEvents;
 
 protected:
-	void init(const Ptr<MachInfo>& info);
-	void initPins(Pin::Direction direction, const std::vector< Ptr<PinInfo> >& pininfos);
-	void initParamStates(const Ptr<ParamInfo::Group>& group);
+	CosecantAPI::Mi* m_mi;
+
+	void init(InfoImpl::MachineInfo* info);
+	void initPins(Pin::Direction direction, const std::vector<InfoImpl::PinInfo*>& pininfos);
+	void initParams(InfoImpl::ParamInfo::Group* group);
 
 	virtual Ptr<Sequence::Pattern> newPattern(double length);
 };
 
 //////////////////////////////////////////////////////////////////////////
-
-class DummyMachine : public Machine
-{
-public:
-	DummyMachine()
-	{
-		m_dead = true;
-		m_deadWhy = "This is a placeholder for a machine which you do not have installed.";
-	}
-
-	virtual void changeParam(ParamTag tag, ParamValue value) {}
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) {}
-
-	static Ptr<MachInfo> getInfo()
-	{
-		return (new MachInfo("builtin/dummy"))->setName("Dummy");
-	}
-
-	virtual void load(class SongLoadContext& ctx, xmlpp::Element* el);
-};
-
-////////////////////////////////////////////////////////////////////////
 
 class MachineFactory : public Object
 {
@@ -194,7 +244,7 @@ public:
 
 	Ptr<Machine> createMachine();
 
-	virtual Ptr<MachInfo> getMachInfo() = 0;
+	virtual InfoImpl::MachineInfo* getMachInfo() = 0;
 
 	static std::map<QString, Ptr<MachineFactory> > s_factories;
 
