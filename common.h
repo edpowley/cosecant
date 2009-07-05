@@ -12,6 +12,11 @@ template<typename T> T clamp(T x, T a, T b)
 	return (x < a) ? a : ((x > b) ? b : x);
 }
 
+inline double remap(double x, double oldmin, double oldmax, double newmin, double newmax)
+{
+	return (x-oldmin) / (oldmax-oldmin) * (newmax-newmin) + newmin;
+}
+
 inline int truemod(int a, int b)
 {
 	int m = a % b;

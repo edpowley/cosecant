@@ -75,37 +75,57 @@ namespace Parameter
 		Q_OBJECT
 
 	public:
+		Base(const Ptr<Machine>& mac) : m_mac(mac) {}
+
 		void setName(const QString& name) { m_name = name; }
 
+		// "Stuff" = the mapping from tags to parameters, and the initial value changes
 		virtual void initParamStuff(Machine* mac) = 0;
 
+		virtual int addToParamEditor(QGridLayout* grid, int row) = 0;
+
 	protected:
+		Ptr<Machine> m_mac;
 		QString m_name;
 	};
 
 	class Group : public Base
 	{
 	public:
-		explicit Group(InfoImpl::ParamInfo::Group* info);
-
-		std::vector< Ptr<Base> > m_params;
+		Group(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Group* info);
 
 		virtual void initParamStuff(Machine* mac);
+
+		virtual int addToParamEditor(QGridLayout* grid, int row);
+		void populateParamEditorGrid(QGridLayout* grid);
+
+	protected:
+		std::vector< Ptr<Base> > m_params;
 	};
 
 	class Scalar : public Base
 	{
+		Q_OBJECT
+
 	public:
-		Scalar(ParamTag tag);
-		Scalar(ParamTag tag, double min, double max, double def);
+		Scalar(const Ptr<Machine>& mac, ParamTag tag);
 
 		void setRange(double min, double max);
 		void setDefault(double def);
 		void setState(double state);
 
-		double getDefault() { return m_def; }
+		double getMin()		{ return m_min; }
+		double getMax()		{ return m_max; }
+		double getRange()	{ return m_max - m_min; }
+		double getDefault()	{ return m_def; }
+		double getState()	{ return m_state; }
 
 		virtual void initParamStuff(Machine* mac);
+
+		void change(double newval);
+
+	signals:
+		void valueChanged(double v);
 
 	protected:
 		double m_min, m_max, m_def, m_state;
@@ -115,13 +135,15 @@ namespace Parameter
 	class Real : public Scalar
 	{
 	public:
-		explicit Real(InfoImpl::ParamInfo::Real* info);
+		Real(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Real* info);
+		virtual int addToParamEditor(QGridLayout* grid, int row);
 	};
 
 	class Time : public Scalar
 	{
 	public:
-		explicit Time(InfoImpl::ParamInfo::Time* info);
+		Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info);
+		virtual int addToParamEditor(QGridLayout* grid, int row);
 
 	protected:
 		TimeUnit::unit m_internalUnit;
@@ -131,9 +153,11 @@ namespace Parameter
 	class Enum : public Scalar
 	{
 	public:
-		explicit Enum(InfoImpl::ParamInfo::Enum* info);
-
+		Enum(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Enum* info);
 		void setItems(const QStringList& items);
+		QStringList getItems() { return m_items; }
+
+		virtual int addToParamEditor(QGridLayout* grid, int row);
 
 	protected:
 		QStringList m_items;

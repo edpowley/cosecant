@@ -19,7 +19,12 @@ public:
 			->setRange(20, hertz, 2000, hertz)->setDefault(440, hertz)
 			->setInternalUnit(hertz)->addDisplayUnits(hertz | notenum)->setDefaultDisplayUnit(hertz));
 		params->addParam(cb->createRealParam('volu')->setName("Volume")->setRange(0,1)->setDefault(0.5));
-
+		
+		ParamInfo::Group* subgroup = cb->createParamGroup()->setName("Test");
+		params->addParam(subgroup);
+		subgroup->addParam(cb->createEnumParam('tst1')->setName("Enum test")
+			->addItem("Hello")->addItem("World")->addItems('|', "How|are|you")->setDefault(1));
+		subgroup->addParam(cb->createRealParam('tst2')->setName("Real test")->setRange(-1000,10000)->setDefault(0));
 		return true;
 	}
 

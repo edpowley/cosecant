@@ -51,11 +51,12 @@ void Machine::setPos(const QPointF& newpos)
 
 void Machine::initParams(InfoImpl::ParamInfo::Group* group)
 {
-	m_params = new Parameter::Group(group);
+	m_params = new Parameter::Group(this, group);
 	m_params->initParamStuff(this);
 }
 
-Parameter::Group::Group(InfoImpl::ParamInfo::Group* info)
+Parameter::Group::Group(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Group* info)
+: Base(mac)
 {
 	setName(info->m_name);
 
@@ -63,19 +64,19 @@ Parameter::Group::Group(InfoImpl::ParamInfo::Group* info)
 	{
 		if (InfoImpl::ParamInfo::Group* q = dynamic_cast<InfoImpl::ParamInfo::Group*>(p))
 		{
-			m_params.push_back(new Group(q));
+			m_params.push_back(new Group(mac, q));
 		}
 		else if (InfoImpl::ParamInfo::Real* q = dynamic_cast<InfoImpl::ParamInfo::Real*>(p))
 		{
-			m_params.push_back(new Real(q));
+			m_params.push_back(new Real(mac, q));
 		}
 		else if (InfoImpl::ParamInfo::Time* q = dynamic_cast<InfoImpl::ParamInfo::Time*>(p))
 		{
-			m_params.push_back(new Time(q));
+			m_params.push_back(new Time(mac, q));
 		}
 		else if (InfoImpl::ParamInfo::Enum* q = dynamic_cast<InfoImpl::ParamInfo::Enum*>(p))
 		{
-			m_params.push_back(new Enum(q));
+			m_params.push_back(new Enum(mac, q));
 		}
 	}
 }
@@ -88,13 +89,8 @@ void Parameter::Group::initParamStuff(Machine* mac)
 	}
 }
 
-Parameter::Scalar::Scalar(ParamTag tag)
-: m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0)
-{
-}
-
-Parameter::Scalar::Scalar(ParamTag tag, double min, double max, double def)
-: m_tag(tag), m_min(min), m_max(max), m_def(def), m_state(def)
+Parameter::Scalar::Scalar(const Ptr<Machine>& mac, ParamTag tag)
+: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0)
 {
 }
 
@@ -120,14 +116,30 @@ void Parameter::Scalar::setState(double state)
 	m_state = clamp(state, m_min, m_max);
 }
 
-Parameter::Real::Real(InfoImpl::ParamInfo::Real* info)
-: Scalar(info->m_tag, info->m_min, info->m_max, info->m_def)
+void Parameter::Scalar::change(double newval)
 {
-	setName(info->m_name);
+	newval = clamp(newval, m_min, m_max);
+	if (newval != m_state)
+	{
+		setState(newval);
+		valueChanged(newval);
+
+		boost::unique_lock<boost::mutex> lock(m_mac->m_paramChangesMutex);
+		m_mac->m_paramChanges[m_tag] = newval;
+	}
 }
 
-Parameter::Time::Time(InfoImpl::ParamInfo::Time* info)
-:	Scalar(info->m_tag),
+Parameter::Real::Real(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Real* info)
+: Scalar(mac, info->m_tag)
+{
+	setName(info->m_name);
+	setRange(info->m_min, info->m_max);
+	setDefault(info->m_def);
+	setState(info->m_def);
+}
+
+Parameter::Time::Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info)
+:	Scalar(mac, info->m_tag),
 	m_tmin(info->m_min), m_tmax(info->m_max), m_tdef(info->m_def), m_tstate(info->m_def),
 	m_internalUnit(info->m_internalUnit)
 {
@@ -137,8 +149,8 @@ Parameter::Time::Time(InfoImpl::ParamInfo::Time* info)
 	setState(getDefault());
 }
 
-Parameter::Enum::Enum(InfoImpl::ParamInfo::Enum* info)
-:	Scalar(info->m_tag)
+Parameter::Enum::Enum(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Enum* info)
+:	Scalar(mac, info->m_tag)
 {
 	setName(info->m_name);
 	setItems(info->m_items);

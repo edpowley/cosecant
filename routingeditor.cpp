@@ -346,10 +346,11 @@ void MachineItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
 {
 	CosecantMainWindow* w = CosecantMainWindow::get();
 
-	QDockWidget* dock = new QDockWidget(tr("Parameters"), w);
+	QDockWidget* dock = new QDockWidget(tr("Parameters: %1").arg(m_mac->m_name), w);
 	dock->setAllowedAreas(Qt::AllDockWidgetAreas);
 	dock->setWidget(new ParamEditor(m_mac, w));
 	w->addDockWidget(Qt::LeftDockWidgetArea, dock);
+	dock->setFloating(true);
 }
 
 void MachineItem::onMachinePosChanged()

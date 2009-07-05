@@ -44,7 +44,7 @@ protected:
 		QStringList items("None");
 		for (int i=0; i<nChans/2; i++)
 		{
-			items << QString("%1\t / %2").arg(getName(i*2), getName(i*2+1));
+			items << QString("%1, %2").arg(getName(i*2), getName(i*2+1));
 		}
 		return items;
 	}
