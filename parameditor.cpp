@@ -2,6 +2,7 @@
 #include "common.h"
 #include "parameditor.h"
 #include "machine.h"
+#include "song.h"
 #include "expanderbox.h"
 
 using namespace ParamEditorWidget;
@@ -20,6 +21,31 @@ ParamEditor::ParamEditor(const Ptr<Machine>& mac, QWidget* parent)
 
 	setWidget(w);
 	setWidgetResizable(true);
+}
+
+ScalarChangeCommand::ScalarChangeCommand(const Ptr<Parameter::Scalar>& param, double newval, bool mergeable)
+: m_param(param), m_oldValue(param->getState()), m_newValue(newval), m_mergeable(mergeable)
+{
+	setText(ParamEditor::tr("change parameter '%1' on '%2'")
+		.arg(param->getName()).arg(param->getMachine()->m_name)
+	);
+}
+
+void ScalarChangeCommand::redo() { m_param->change(m_newValue); }
+void ScalarChangeCommand::undo() { m_param->change(m_oldValue); }
+
+bool ScalarChangeCommand::mergeWith(const QUndoCommand* qcommand)
+{
+	if (!m_mergeable) return false;
+	const ScalarChangeCommand* cmd = dynamic_cast<const ScalarChangeCommand*>(qcommand);
+	if (cmd && cmd->m_param == m_param)
+	{
+		if (!cmd->m_mergeable) return false;
+		m_newValue = cmd->m_newValue;
+		return true;
+	}
+	else
+		return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -84,15 +110,18 @@ int ScalarSlider::valueToInt(double value)
 
 void ScalarSlider::onValueChanged(int value)
 {
-	m_valueChanging = true;
-	double pval = remap(value, 0, c_intRangeMax, m_param->getMin(), m_param->getMax());
-	m_param->change(pval);
-	m_valueChanging = false;
+	if (!m_valueChanging)
+	{
+		double pval = remap(value, 0, c_intRangeMax, m_param->getMin(), m_param->getMax());
+		theUndo().push(new ScalarChangeCommand(m_param, pval, true));
+	}
 }
 
 void ScalarSlider::onParameterChanged(double value)
 {
+	m_valueChanging = true;
 	setValue(valueToInt(value));
+	m_valueChanging = false;
 }
 
 ScalarEdit::ScalarEdit(const Ptr<Parameter::Scalar>& param)
@@ -126,7 +155,7 @@ void ScalarEdit::onReturnPressed()
 	double v = text().toDouble(&ok);
 	if (ok)
 	{
-		m_param->change(v);
+		theUndo().push(new ScalarChangeCommand(m_param, v, false));
 	}
 }
 
@@ -162,7 +191,7 @@ int Parameter::Enum::addToParamEditor(QGridLayout* grid, int row)
 }
 
 EnumCombo::EnumCombo(const Ptr<Parameter::Enum>& param)
-: m_param(param)
+: m_param(param), m_valueChanging(false)
 {
 	setSizeAdjustPolicy(AdjustToMinimumContentsLength);
 	addItems(m_param->getItems());
@@ -178,10 +207,12 @@ EnumCombo::EnumCombo(const Ptr<Parameter::Enum>& param)
 
 void EnumCombo::onParameterChanged(double value)
 {
+	m_valueChanging = true;
 	setCurrentIndex((int)value);
+	m_valueChanging = false;
 }
 
 void EnumCombo::onCurrentIndexChanged(int index)
 {
-	m_param->change(index);
+	if (!m_valueChanging) theUndo().push(new ScalarChangeCommand(m_param, index, false));
 }

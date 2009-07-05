@@ -3,4 +3,5 @@
 enum UndoCommandIds
 {
 	ucidMachineChangePos,
+	ucidScalarParameterChange,
 };

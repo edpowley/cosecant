@@ -76,6 +76,8 @@ namespace Parameter
 
 	public:
 		Base(const Ptr<Machine>& mac) : m_mac(mac) {}
+		Ptr<Machine> getMachine() { return m_mac; }
+		QString getName() { return m_name; }
 
 		void setName(const QString& name) { m_name = name; }
 
