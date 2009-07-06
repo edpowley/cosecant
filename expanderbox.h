@@ -11,4 +11,11 @@ public:
 
 protected:
 	QWidget* m_content;
+	QTimeLine* m_showTimeLine;
+	QTimeLine* m_hideTimeLine;
+
+protected slots:
+	void onToggled(bool toggle);
+	void setContentHeight(int h);
+	void unsetContentHeight();
 };

@@ -27,6 +27,13 @@ public:
 		subgroup->addParam(cb->createRealParam('tst2')->setName("Log test")->setRange(1,10000)->setDefault(5000)
 			->addFlags(ParamFlags::logarithmic));
 		subgroup->addParam(cb->createIntParam('tst3')->setName("Int test")->setRange(0,20)->setDefault(10));
+
+		ParamInfo::Group* subsubgroup = cb->createParamGroup()->setName("Subsub");
+		subgroup->addParam(subsubgroup);
+		subsubgroup->addParam(cb->createEnumParam('tst4')->setName("Hello world")
+			->addItem("Hello")->addItem("World")->addItems('|', "How|are|you")->setDefault(1));
+
+		params->addParam(cb->createRealParam('tst9')->setName("Foo")->setRange(0,1)->setDefault(0.5));
 		return true;
 	}
 
