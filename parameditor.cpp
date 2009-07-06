@@ -4,6 +4,7 @@
 #include "machine.h"
 #include "song.h"
 #include "expanderbox.h"
+#include "timeunit_convert.h"
 
 using namespace ParamEditorWidget;
 
@@ -129,6 +130,7 @@ ScalarEdit::ScalarEdit(const Ptr<Parameter::Scalar>& param)
 	m_locale.setNumberOptions(QLocale::OmitGroupSeparator);
 	setValidator(new QDoubleValidator(this));
 	setTextFromValue(m_param->getState());
+	setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
 	connect(
 		m_param, SIGNAL(valueChanged(double)),
@@ -140,7 +142,13 @@ ScalarEdit::ScalarEdit(const Ptr<Parameter::Scalar>& param)
 
 void ScalarEdit::setTextFromValue(double value)
 {
-	setText(m_locale.toString(value, 'g', 5));
+	setText(m_locale.toString(value, 'g', -1));
+	setCursorPosition(0);
+}
+
+double ScalarEdit::getValueFromText()
+{
+	return text().toDouble();
 }
 
 void ScalarEdit::onParameterChanged(double value)
@@ -150,12 +158,8 @@ void ScalarEdit::onParameterChanged(double value)
 
 void ScalarEdit::onReturnPressed()
 {
-	bool ok = false;
-	double v = text().toDouble(&ok);
-	if (ok)
-	{
-		theUndo().push(new ScalarChangeCommand(m_param, v, false));
-	}
+	double v = getValueFromText();
+	theUndo().push(new ScalarChangeCommand(m_param, v, false));
 }
 
 void ScalarEdit::focusOutEvent(QFocusEvent* ev)
@@ -233,7 +237,9 @@ int Parameter::Int::addToParamEditor(QGridLayout* grid, int row)
 IntSlider::IntSlider(const Ptr<Parameter::Int>& param)
 : ScalarSlider(param), m_param(param)
 {
+	m_valueChanging = true;
 	setRange(m_param->getMin(), m_param->getMax());
+	m_valueChanging = false;
 }
 
 int IntSlider::valueToInt(double value)
@@ -252,10 +258,145 @@ int Parameter::Time::addToParamEditor(QGridLayout* grid, int row)
 {
 	grid->addWidget(new QLabel(m_name), row, 0);
 
-//	ScalarSlider* slider = new ScalarSlider(this);
-//	grid->addWidget(slider, row, 1);
+	TimeSlider* slider = new TimeSlider(this);
+	slider->initFromState();
+	grid->addWidget(slider, row, 1);
+
+	TimeEdit* edit = new TimeEdit(this);
+	grid->addWidget(edit, row, 2);
+
+	TimeUnitCombo* unitcombo = new TimeUnitCombo(this);
+	grid->addWidget(unitcombo, row, 3);
+
+	connect(
+		unitcombo, SIGNAL(signalUnitChanged(TimeUnit::unit)),
+		slider, SLOT(setUnit(TimeUnit::unit)) );
+	connect(
+		unitcombo, SIGNAL(signalUnitChanged(TimeUnit::unit)),
+		edit, SLOT(setUnit(TimeUnit::unit)) );
 
 	return row+1;
+}
+
+TimeSlider::TimeSlider(const Ptr<Parameter::Time>& param)
+: RealSlider(param), m_param(param)
+{
+	setUnit(m_param->getDisplayUnit());
+}
+
+void TimeSlider::setUnit(TimeUnit::unit unit)
+{
+	m_unit = unit;
+	m_min = ConvertTimeUnits(m_param->getTMin(), m_unit);
+	m_max = ConvertTimeUnits(m_param->getTMax(), m_unit);
+	if (m_min > m_max) std::swap(m_min, m_max);
+	m_logarithmic = (m_unit == TimeUnit::hertz);
+	
+	initFromState();
+}
+
+int TimeSlider::valueToInt(double value)
+{
+	value = ConvertTimeUnits(m_param->getInternalUnit(), m_unit, value);
+
+	if (m_logarithmic)
+	{
+		return remap( log(value), log(m_min), log(m_max), 0, c_intRangeMax );
+	}
+	else
+	{
+		return remap(value, m_min, m_max, 0, c_intRangeMax);
+	}
+}
+
+double TimeSlider::intToValue(int i)
+{
+	double v;
+	if (m_logarithmic)
+	{
+		v = exp(remap( i, 0, c_intRangeMax, log(m_min), log(m_max) ));
+	}
+	else
+	{
+		v = remap(i, 0, c_intRangeMax, m_min, m_max);
+	}
+
+	return ConvertTimeUnits(m_unit, m_param->getInternalUnit(), v);
+}
+
+TimeEdit::TimeEdit(const Ptr<Parameter::Time>& param)
+: ScalarEdit(param), m_param(param)
+{
+	setUnit(m_param->getDisplayUnit());
+}
+
+void TimeEdit::setUnit(TimeUnit::unit unit)
+{
+	m_unit = unit;
+	setTextFromValue(m_param->getState());
+}
+
+void TimeEdit::setTextFromValue(double value)
+{
+	ScalarEdit::setTextFromValue(ConvertTimeUnits(m_param->getInternalUnit(), m_unit, value));
+}
+
+double TimeEdit::getValueFromText()
+{
+	return ConvertTimeUnits(m_unit, m_param->getInternalUnit(), ScalarEdit::getValueFromText());
+}
+
+TimeUnitCombo::TimeUnitCombo(const Ptr<Parameter::Time>& param)
+: m_param(param)
+{
+	unsigned int units = m_param->getDisplayUnits();
+
+	for (unsigned int i = 0; i < TimeUnit::numUnits; ++i)
+	{
+		if (units & (1 << i))
+		{
+			addItem(getUnitName(1 << i), QVariant::fromValue<unsigned int>(1 << i));
+		}
+	}
+
+	int index = findUnit(m_param->getDisplayUnit());
+	if (index != -1)
+		setCurrentIndex(index);
+	else
+		qDebug() << "Warning: failed to find display unit in TimeUnitCombo";
+
+	connect(
+		this, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(onCurrentIndexChanged(int)) );
+}
+
+int TimeUnitCombo::findUnit(TimeUnit::unit unit)
+{
+	return findData( QVariant::fromValue<unsigned int>(unit) );
+}
+
+QString TimeUnitCombo::getUnitName(TimeUnit::unit unit)
+{
+	switch (unit)
+	{
+	case TimeUnit::seconds:		return tr("seconds");
+	case TimeUnit::ticks:		return tr("ticks");
+	case TimeUnit::samples:		return tr("samples");
+	case TimeUnit::hertz:		return tr("Hz");
+	case TimeUnit::fracfreq:	return tr("Fs");
+	case TimeUnit::notenum:		return tr("note");
+	default:					return "???";
+	}
+}
+
+void TimeUnitCombo::onCurrentIndexChanged(int index)
+{
+//	if (!m_valueChanging)
+	{
+		TimeUnit::unit unit = static_cast<TimeUnit::unit>( itemData(index).value<unsigned int>() );
+		m_param->setDisplayUnit(unit);
+		signalUnitChanged(unit);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

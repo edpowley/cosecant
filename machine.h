@@ -166,8 +166,17 @@ namespace Parameter
 		Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 
+		TimeUnit::unit getInternalUnit() { return m_internalUnit; }
+		TimeUnit::unit getDisplayUnit() { return m_displayUnit; }
+		void setDisplayUnit(TimeUnit::unit unit) { m_displayUnit = unit; }
+		unsigned int getDisplayUnits() { return m_displayUnits; }
+
+		TimeValue getTMin() { return m_tmin; }
+		TimeValue getTMax() { return m_tmax; }
+
 	protected:
-		TimeUnit::unit m_internalUnit;
+		TimeUnit::unit m_internalUnit, m_displayUnit;
+		unsigned int m_displayUnits;
 		TimeValue m_tmin, m_tmax, m_tdef, m_tstate;
 		virtual double sanitise(double v);
 	};

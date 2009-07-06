@@ -37,6 +37,8 @@ protected:
 	double m_oldValue, m_newValue;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
 namespace ParamEditorWidget
 {
 	class ScalarSlider : public QSlider
@@ -62,6 +64,31 @@ namespace ParamEditorWidget
 		void onParameterChanged(double value);
 	};
 
+	////////////////////////////////////////////////////////////////////////////
+
+	class ScalarEdit : public QLineEdit
+	{
+		Q_OBJECT
+
+	public:
+		ScalarEdit(const Ptr<Parameter::Scalar>& param);
+
+	protected:
+		Ptr<Parameter::Scalar> m_param;
+		QLocale m_locale;
+
+		virtual void setTextFromValue(double value);
+		virtual double getValueFromText();
+
+		virtual void focusOutEvent(QFocusEvent* ev);
+
+	protected slots:
+		void onParameterChanged(double value);
+		void onReturnPressed();
+	};
+
+	//////////////////////////////////////////////////////////////////////
+
 	class RealSlider : public ScalarSlider
 	{
 	public:
@@ -73,6 +100,8 @@ namespace ParamEditorWidget
 		virtual int valueToInt(double value);
 		virtual double intToValue(int i);
 	};
+
+	////////////////////////////////////////////////////////////////////////////
 
 	class IntSlider : public ScalarSlider
 	{
@@ -86,25 +115,72 @@ namespace ParamEditorWidget
 		virtual double intToValue(int i);
 	};
 
-	class ScalarEdit : public QLineEdit
+	///////////////////////////////////////////////////////////////////////////////
+
+	class TimeSlider : public RealSlider
 	{
 		Q_OBJECT
 
 	public:
-		ScalarEdit(const Ptr<Parameter::Scalar>& param);
+		TimeSlider(const Ptr<Parameter::Time>& param);
+
+	public slots:
+		void setUnit(TimeUnit::unit unit);
 
 	protected:
-		Ptr<Parameter::Scalar> m_param;
-		QLocale m_locale;
+		Ptr<Parameter::Time> m_param;
+		TimeUnit::unit m_unit;
+		double m_min, m_max;
 
-		void setTextFromValue(double value);
+		virtual int valueToInt(double value);
+		virtual double intToValue(int i);
+	};
 
-		virtual void focusOutEvent(QFocusEvent* ev);
+	//////////////////////////////////////////////////////////////////////////////
+
+	class TimeEdit : public ScalarEdit
+	{
+		Q_OBJECT
+
+	public:
+		TimeEdit(const Ptr<Parameter::Time>& param);
+
+	public slots:
+		void setUnit(TimeUnit::unit unit);
+
+	protected:
+		Ptr<Parameter::Time> m_param;
+		TimeUnit::unit m_unit;
+
+		virtual void setTextFromValue(double value);
+		virtual double getValueFromText();
+	};
+
+	//////////////////////////////////////////////////////////////////////////////
+
+	class TimeUnitCombo : public QComboBox
+	{
+		Q_OBJECT
+
+	public:
+		TimeUnitCombo(const Ptr<Parameter::Time>& param);
+
+	signals:
+		void signalUnitChanged(TimeUnit::unit unit);
+
+	protected:
+		Ptr<Parameter::Time> m_param;
+
+		QString getUnitName(TimeUnit::unit unit);
+		QString getUnitName(unsigned int unit) { return getUnitName( static_cast<TimeUnit::unit>(unit) ); }
+
+		int findUnit(TimeUnit::unit unit);
 
 	protected slots:
-		void onParameterChanged(double value);
-		void onReturnPressed();
+		void onCurrentIndexChanged(int index);
 	};
+
+	//////////////////////////////////////////////////////////////////////////////////
 
 	class EnumCombo : public QComboBox
 	{
@@ -122,4 +198,5 @@ namespace ParamEditorWidget
 		void onParameterChanged(double value);
 		void onCurrentIndexChanged(int index);
 	};
-};
+
+}; // end namespace ParamEditorWidget

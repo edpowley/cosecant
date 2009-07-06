@@ -161,7 +161,8 @@ double Parameter::Int::sanitise(double v)
 Parameter::Time::Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info)
 :	Scalar(mac, info->m_tag),
 	m_tmin(info->m_min), m_tmax(info->m_max), m_tdef(info->m_def), m_tstate(info->m_def),
-	m_internalUnit(info->m_internalUnit)
+	m_internalUnit(info->m_internalUnit), m_displayUnit(info->m_defaultDisplayUnit),
+	m_displayUnits(info->m_displayUnits)
 {
 	setName(info->m_name);
 	setRange(ConvertTimeUnits(m_tmin, m_internalUnit), ConvertTimeUnits(m_tmax, m_internalUnit));
