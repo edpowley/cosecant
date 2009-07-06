@@ -14,6 +14,6 @@ void MachineInfo::addPin(CosecantAPI::PinInfo* pin, std::vector<PinInfo*>& pins)
 
 ParamInfo::Enum* ParamInfo::Enum::addItems(char separator, const char* text)
 {
-	m_items.append(QString(text).split(separator));
+	m_items.append(QString::fromUtf8(text).split(separator));
 	return this;
 }

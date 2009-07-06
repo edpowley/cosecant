@@ -10,7 +10,7 @@ namespace InfoImpl
 		{
 		public:
 			virtual Group* copy() { THROW_ERROR(Error, "Not yet implemented"); }
-			virtual Group* setName(const char* name) { m_name = name; return this; }
+			virtual Group* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 			virtual Group* setTagMask(CosecantAPI::ParamTag mask) { m_tagMask = mask; return this; }
 			virtual Group* addParam(CosecantAPI::ParamInfo::Base* param)
 			{ m_params.push_back(param); return this; }
@@ -27,7 +27,7 @@ namespace InfoImpl
 
 			virtual Real* copy() { return new Real(*this); }
 
-			virtual Real* setName(const char* name) { m_name = name; return this; }
+			virtual Real* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 			virtual Real* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
 			virtual Real* setRange(CosecantAPI::ParamValue mn, CosecantAPI::ParamValue mx)
 			{ m_min = mn; m_max = mx; return this; }
@@ -46,7 +46,7 @@ namespace InfoImpl
 			Int(CosecantAPI::ParamTag tag) : m_tag(tag), m_min(0), m_max(1), m_def(0) {}
 
 			virtual Int* copy() { return new Int(*this); }
-			virtual Int* setName(const char* name) { m_name = name; return this; }
+			virtual Int* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 			virtual Int* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
 			virtual Int* setRange(int mn, int mx) { m_min = mn; m_max = mx; return this; }
 			virtual Int* setDefault(int def) { m_def = def; return this; }
@@ -68,7 +68,7 @@ namespace InfoImpl
 
 			virtual Time* copy() { return new Time(*this); }
 
-			virtual Time* setName(const char* name) { m_name = name; return this; }
+			virtual Time* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 			virtual Time* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
 			virtual Time* setRange(CosecantAPI::TimeValue mn, CosecantAPI::TimeValue mx)
 			{ m_min = mn; m_max = mx; return this; }
@@ -94,7 +94,7 @@ namespace InfoImpl
 			Enum(CosecantAPI::ParamTag tag) : m_tag(tag) {}
 			virtual Enum* copy() { return new Enum(*this); }
 
-			virtual Enum* setName(const char* name) { m_name = name; return this; }
+			virtual Enum* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 			virtual Enum* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
 			virtual Enum* addItems(char separator, const char* text);
 			virtual Enum* setDefault(int def) { m_def = def; return this; }
@@ -111,7 +111,7 @@ namespace InfoImpl
 	class PinInfo : public CosecantAPI::PinInfo
 	{
 	public:
-		virtual PinInfo* setName(const char* name) { m_name = name; return this; }
+		virtual PinInfo* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 		virtual PinInfo* setType(CosecantAPI::SignalType::st type) { m_type = type; return this; }
 
 		QString m_name;
@@ -125,7 +125,7 @@ namespace InfoImpl
 			: m_typeHint(CosecantAPI::MachineTypeHint::none), m_flags(0)
 		{}
 
-		virtual MachineInfo* setName(const char* name) { m_name = name; return this; }
+		virtual MachineInfo* setName(const char* name) { m_name = QString::fromUtf8(name); return this; }
 		virtual MachineInfo* setTypeHint(CosecantAPI::MachineTypeHint::mt type) { m_typeHint = type; return this; }
 		virtual MachineInfo* addFlags(unsigned int flags) { m_flags |= flags; return this; }
 
