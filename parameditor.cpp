@@ -7,8 +7,8 @@
 
 using namespace ParamEditorWidget;
 
-ParamEditor::ParamEditor(const Ptr<Machine>& mac, QWidget* parent)
-: QScrollArea(parent), m_mac(mac)
+ParamEditor::ParamEditor(const Ptr<Machine>& mac, QDockWidget* parent)
+: QScrollArea(parent), m_mac(mac), m_parent(parent)
 {
 	QWidget* w = new QWidget(this);
 	QGridLayout* grid = new QGridLayout(w);
@@ -21,6 +21,15 @@ ParamEditor::ParamEditor(const Ptr<Machine>& mac, QWidget* parent)
 
 	setWidget(w);
 	setWidgetResizable(true);
+
+	if (!m_mac->m_parameditor)
+		m_mac->m_parameditor = this;
+}
+
+ParamEditor::~ParamEditor()
+{
+	if (m_mac->m_parameditor == this)
+		m_mac->m_parameditor = NULL;
 }
 
 ScalarChangeCommand::ScalarChangeCommand(const Ptr<Parameter::Scalar>& param, double newval, bool mergeable)

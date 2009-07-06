@@ -8,10 +8,15 @@ class ParamEditor : public QScrollArea
 	Q_OBJECT
 
 public:
-	ParamEditor(const Ptr<Machine>& mac, QWidget* parent);
+	ParamEditor(const Ptr<Machine>& mac, QDockWidget* parent);
+
+	virtual ~ParamEditor();
+
+	QDockWidget* getDock() { return m_parent; }
 
 protected:
 	Ptr<Machine> m_mac;
+	QDockWidget* m_parent;
 };
 
 class ScalarChangeCommand : public QUndoCommand
