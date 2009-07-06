@@ -40,6 +40,22 @@ namespace InfoImpl
 			unsigned int m_flags;
 		};
 
+		class Int : public CosecantAPI::ParamInfo::Int
+		{
+		public:
+			Int(CosecantAPI::ParamTag tag) : m_tag(tag), m_min(0), m_max(1), m_def(0) {}
+
+			virtual Int* copy() { return new Int(*this); }
+			virtual Int* setName(const char* name) { m_name = name; return this; }
+			virtual Int* setTag(CosecantAPI::ParamTag tag) { m_tag = tag; return this; }
+			virtual Int* setRange(int mn, int mx) { m_min = mn; m_max = mx; return this; }
+			virtual Int* setDefault(int def) { m_def = def; return this; }
+
+			QString m_name;
+			CosecantAPI::ParamTag m_tag;
+			int m_min, m_max, m_def;
+		};
+
 		class Time : public CosecantAPI::ParamInfo::Time
 		{
 		public:
@@ -139,6 +155,7 @@ namespace InfoImpl
 
 		virtual ParamInfo::Group* createParamGroup() { return new ParamInfo::Group; }
 		virtual ParamInfo::Real* createRealParam(CosecantAPI::ParamTag tag) { return new ParamInfo::Real(tag); }
+		virtual ParamInfo::Int*  createIntParam (CosecantAPI::ParamTag tag) { return new ParamInfo::Int (tag); }
 		virtual ParamInfo::Time* createTimeParam(CosecantAPI::ParamTag tag) { return new ParamInfo::Time(tag); }
 		virtual ParamInfo::Enum* createEnumParam(CosecantAPI::ParamTag tag) { return new ParamInfo::Enum(tag); }
 	};

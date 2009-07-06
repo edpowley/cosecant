@@ -41,17 +41,44 @@ namespace ParamEditorWidget
 	public:
 		ScalarSlider(const Ptr<Parameter::Scalar>& param);
 
+		void initFromState();
+
 	protected:
 		Ptr<Parameter::Scalar> m_param;
-		static const int c_intRangeMax = 1 << 30;
+		bool m_logarithmic;
 
-		int valueToInt(double value);
+		virtual int valueToInt(double value) = 0;
+		virtual double intToValue(int i) = 0;
 
 		bool m_valueChanging;
 
 	protected slots:
 		void onValueChanged(int value);
 		void onParameterChanged(double value);
+	};
+
+	class RealSlider : public ScalarSlider
+	{
+	public:
+		RealSlider(const Ptr<Parameter::Scalar>& param);
+
+	protected:
+		static const int c_intRangeMax = 1 << 30;
+
+		virtual int valueToInt(double value);
+		virtual double intToValue(int i);
+	};
+
+	class IntSlider : public ScalarSlider
+	{
+	public:
+		IntSlider(const Ptr<Parameter::Int>& param);
+
+	protected:
+		Ptr<Parameter::Int> m_param;
+
+		virtual int valueToInt(double value);
+		virtual double intToValue(int i);
 	};
 
 	class ScalarEdit : public QLineEdit

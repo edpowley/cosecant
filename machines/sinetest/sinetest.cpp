@@ -24,7 +24,9 @@ public:
 		params->addParam(subgroup);
 		subgroup->addParam(cb->createEnumParam('tst1')->setName("Enum test")
 			->addItem("Hello")->addItem("World")->addItems('|', "How|are|you")->setDefault(1));
-		subgroup->addParam(cb->createRealParam('tst2')->setName("Real test")->setRange(-1000,10000)->setDefault(0));
+		subgroup->addParam(cb->createRealParam('tst2')->setName("Log test")->setRange(1,10000)->setDefault(5000)
+			->addFlags(ParamFlags::logarithmic));
+		subgroup->addParam(cb->createIntParam('tst3')->setName("Int test")->setRange(0,20)->setDefault(10));
 		return true;
 	}
 

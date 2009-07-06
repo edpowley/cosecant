@@ -62,22 +62,17 @@ Parameter::Group::Group(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Group* inf
 
 	BOOST_FOREACH(CosecantAPI::ParamInfo::Base* p, info->m_params)
 	{
-		if (InfoImpl::ParamInfo::Group* q = dynamic_cast<InfoImpl::ParamInfo::Group*>(p))
-		{
-			m_params.push_back(new Group(mac, q));
-		}
-		else if (InfoImpl::ParamInfo::Real* q = dynamic_cast<InfoImpl::ParamInfo::Real*>(p))
-		{
-			m_params.push_back(new Real(mac, q));
-		}
-		else if (InfoImpl::ParamInfo::Time* q = dynamic_cast<InfoImpl::ParamInfo::Time*>(p))
-		{
-			m_params.push_back(new Time(mac, q));
-		}
-		else if (InfoImpl::ParamInfo::Enum* q = dynamic_cast<InfoImpl::ParamInfo::Enum*>(p))
-		{
-			m_params.push_back(new Enum(mac, q));
-		}
+#		define MY_IF_MACRO(NAME) \
+			if (InfoImpl::ParamInfo::NAME* q = dynamic_cast<InfoImpl::ParamInfo::NAME*>(p)) \
+				m_params.push_back(new NAME(mac, q));
+
+		MY_IF_MACRO(Group)
+		else MY_IF_MACRO(Real)
+		else MY_IF_MACRO(Int)
+		else MY_IF_MACRO(Time)
+		else MY_IF_MACRO(Enum)
+
+#		undef MY_IF_MACRO
 	}
 }
 
@@ -90,7 +85,7 @@ void Parameter::Group::initParamStuff(Machine* mac)
 }
 
 Parameter::Scalar::Scalar(const Ptr<Machine>& mac, ParamTag tag)
-: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0)
+: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0), m_flags(0)
 {
 }
 
@@ -108,17 +103,22 @@ void Parameter::Scalar::setRange(double min, double max)
 
 void Parameter::Scalar::setDefault(double def)
 {
-	m_def = clamp(def, m_min, m_max);
+	m_def = sanitise(def);
 }
 
 void Parameter::Scalar::setState(double state)
 {
-	m_state = clamp(state, m_min, m_max);
+	m_state = sanitise(state);
+}
+
+void Parameter::Scalar::setFlags(unsigned int flags)
+{
+	m_flags = flags;
 }
 
 void Parameter::Scalar::change(double newval)
 {
-	newval = clamp(newval, m_min, m_max);
+	newval = sanitise(newval);
 	if (newval != m_state)
 	{
 		setState(newval);
@@ -133,9 +133,29 @@ Parameter::Real::Real(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Real* info)
 : Scalar(mac, info->m_tag)
 {
 	setName(info->m_name);
+	setFlags(info->m_flags);
 	setRange(info->m_min, info->m_max);
 	setDefault(info->m_def);
 	setState(info->m_def);
+}
+
+double Parameter::Real::sanitise(double v)
+{
+	return clamp(v, m_min, m_max);
+}
+
+Parameter::Int::Int(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Int* info)
+: Scalar(mac, info->m_tag)
+{
+	setName(info->m_name);
+	setRange(info->m_min, info->m_max);
+	setDefault(info->m_def);
+	setState(info->m_def);
+}
+
+double Parameter::Int::sanitise(double v)
+{
+	return clamp(floor(v+0.5), m_min, m_max);
 }
 
 Parameter::Time::Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info)
@@ -149,6 +169,11 @@ Parameter::Time::Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info)
 	setState(getDefault());
 }
 
+double Parameter::Time::sanitise(double v)
+{
+	return v;
+}
+
 Parameter::Enum::Enum(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Enum* info)
 :	Scalar(mac, info->m_tag)
 {
@@ -156,6 +181,11 @@ Parameter::Enum::Enum(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Enum* info)
 	setItems(info->m_items);
 	setDefault(info->m_def);
 	setState(info->m_def);
+}
+
+double Parameter::Enum::sanitise(double v)
+{
+	return clamp(floor(v+0.5), m_min, m_max);
 }
 
 void Parameter::Enum::setItems(const QStringList& items)

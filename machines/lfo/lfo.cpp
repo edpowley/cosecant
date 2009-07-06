@@ -23,9 +23,8 @@ public:
 		);
 
 		params->addParam(
-			cb->createRealParam('step')->setName("Send step")
+			cb->createIntParam('step')->setName("Send step")
 			->setRange(1, 256)->setDefault(16)
-			->addFlags(ParamFlags::integer)
 		);
 
 		return true;

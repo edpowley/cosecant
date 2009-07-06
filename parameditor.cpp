@@ -76,24 +76,10 @@ int Parameter::Group::addToParamEditor(QGridLayout* grid, int row)
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-int Parameter::Real::addToParamEditor(QGridLayout* grid, int row)
-{
-	grid->addWidget(new QLabel(m_name), row, 0);
-
-	ScalarSlider* slider = new ScalarSlider(this);
-	grid->addWidget(slider, row, 1);
-
-	ScalarEdit* edit = new ScalarEdit(this);
-	grid->addWidget(edit, row, 2);
-
-	return row+1;
-}
-
 ScalarSlider::ScalarSlider(const Ptr<Parameter::Scalar>& param)
 : m_param(param), QSlider(Qt::Horizontal), m_valueChanging(false)
 {
-	setRange(0, c_intRangeMax);
-	setValue(valueToInt(m_param->getState()));
+	m_logarithmic = m_param->hasFlag(ParamFlags::logarithmic);
 
 	connect(
 		this, SIGNAL(valueChanged(int)),
@@ -103,16 +89,18 @@ ScalarSlider::ScalarSlider(const Ptr<Parameter::Scalar>& param)
 		this, SLOT(onParameterChanged(double)) );
 }
 
-int ScalarSlider::valueToInt(double value)
+void ScalarSlider::initFromState()
 {
-	return remap(value, m_param->getMin(), m_param->getMax(), 0, c_intRangeMax);
+	m_valueChanging = true;
+	setValue(valueToInt(m_param->getState()));
+	m_valueChanging = false;
 }
 
 void ScalarSlider::onValueChanged(int value)
 {
 	if (!m_valueChanging)
 	{
-		double pval = remap(value, 0, c_intRangeMax, m_param->getMin(), m_param->getMax());
+		double pval = intToValue(value);
 		theUndo().push(new ScalarChangeCommand(m_param, pval, true));
 	}
 }
@@ -123,6 +111,8 @@ void ScalarSlider::onParameterChanged(double value)
 	setValue(valueToInt(value));
 	m_valueChanging = false;
 }
+
+///////////////////////////////////////////////////////////////////////////////////
 
 ScalarEdit::ScalarEdit(const Ptr<Parameter::Scalar>& param)
 : m_param(param)
@@ -164,6 +154,87 @@ void ScalarEdit::focusOutEvent(QFocusEvent* ev)
 	QLineEdit::focusOutEvent(ev);
 
 	setTextFromValue(m_param->getState());
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+int Parameter::Real::addToParamEditor(QGridLayout* grid, int row)
+{
+	grid->addWidget(new QLabel(m_name), row, 0);
+
+	RealSlider* slider = new RealSlider(this);
+	slider->initFromState();
+	grid->addWidget(slider, row, 1);
+
+	ScalarEdit* edit = new ScalarEdit(this);
+	grid->addWidget(edit, row, 2);
+
+	return row+1;
+}
+
+RealSlider::RealSlider(const Ptr<Parameter::Scalar>& param)
+: ScalarSlider(param)
+{
+	setRange(0, c_intRangeMax);
+}
+
+int RealSlider::valueToInt(double value)
+{
+	if (m_logarithmic)
+	{
+		return remap( log(value), log(m_param->getMin()), log(m_param->getMax()), 0, c_intRangeMax );
+	}
+	else
+	{
+		return remap(value, m_param->getMin(), m_param->getMax(), 0, c_intRangeMax);
+	}
+}
+
+double RealSlider::intToValue(int i)
+{
+	double v;
+	if (m_logarithmic)
+	{
+		v = exp(remap( i, 0, c_intRangeMax, log(m_param->getMin()), log(m_param->getMax()) ));
+	}
+	else
+	{
+		v = remap(i, 0, c_intRangeMax, m_param->getMin(), m_param->getMax());
+	}
+
+	return v;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+int Parameter::Int::addToParamEditor(QGridLayout* grid, int row)
+{
+	grid->addWidget(new QLabel(m_name), row, 0);
+
+	IntSlider* slider = new IntSlider(this);
+	slider->initFromState();
+	grid->addWidget(slider, row, 1);
+
+	ScalarEdit* edit = new ScalarEdit(this);
+	grid->addWidget(edit, row, 2);
+
+	return row+1;
+}
+
+IntSlider::IntSlider(const Ptr<Parameter::Int>& param)
+: ScalarSlider(param), m_param(param)
+{
+	setRange(m_param->getMin(), m_param->getMax());
+}
+
+int IntSlider::valueToInt(double value)
+{
+	return (int)floor(value + 0.5);
+}
+
+double IntSlider::intToValue(int i)
+{
+	return i;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

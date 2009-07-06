@@ -115,12 +115,15 @@ namespace Parameter
 		void setRange(double min, double max);
 		void setDefault(double def);
 		void setState(double state);
+		void setFlags(unsigned int flags);
 
 		double getMin()		{ return m_min; }
 		double getMax()		{ return m_max; }
 		double getRange()	{ return m_max - m_min; }
 		double getDefault()	{ return m_def; }
 		double getState()	{ return m_state; }
+		
+		bool hasFlag(unsigned int f) { return (m_flags & f) == f; }
 
 		virtual void initParamStuff(Machine* mac);
 
@@ -132,6 +135,9 @@ namespace Parameter
 	protected:
 		double m_min, m_max, m_def, m_state;
 		ParamTag m_tag;
+		unsigned int m_flags;
+
+		virtual double sanitise(double v) = 0;
 	};
 
 	class Real : public Scalar
@@ -139,6 +145,19 @@ namespace Parameter
 	public:
 		Real(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Real* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
+
+	protected:
+		virtual double sanitise(double v);
+	};
+
+	class Int : public Scalar
+	{
+	public:
+		Int(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Int* info);
+		virtual int addToParamEditor(QGridLayout* grid, int row);
+
+	protected:
+		virtual double sanitise(double v);
 	};
 
 	class Time : public Scalar
@@ -150,6 +169,7 @@ namespace Parameter
 	protected:
 		TimeUnit::unit m_internalUnit;
 		TimeValue m_tmin, m_tmax, m_tdef, m_tstate;
+		virtual double sanitise(double v);
 	};
 
 	class Enum : public Scalar
@@ -163,6 +183,7 @@ namespace Parameter
 
 	protected:
 		QStringList m_items;
+		virtual double sanitise(double v);
 	};
 };
 

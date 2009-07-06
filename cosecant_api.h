@@ -65,7 +65,6 @@ namespace CosecantAPI
 		enum
 		{
 			logarithmic = 1 << 0,
-			integer = 1 << 1,
 		};
 	};
 
@@ -181,6 +180,16 @@ namespace CosecantAPI
 			virtual Real* addFlags(unsigned int flags) = 0;
 		};
 
+		class Int : public Base
+		{
+		public:
+			virtual Int* copy() = 0;
+			virtual Int* setName(const char* name) = 0;
+			virtual Int* setTag(ParamTag tag) = 0;
+			virtual Int* setRange(int mn, int mx) = 0;
+			virtual Int* setDefault(int def) = 0;
+		};
+
 		class Time : public Base
 		{
 		public:
@@ -240,6 +249,7 @@ namespace CosecantAPI
 
 		virtual ParamInfo::Group* createParamGroup() = 0;
 		virtual ParamInfo::Real* createRealParam(ParamTag tag) = 0;
+		virtual ParamInfo::Int*  createIntParam (ParamTag tag) = 0;
 		virtual ParamInfo::Time* createTimeParam(ParamTag tag) = 0;
 		virtual ParamInfo::Enum* createEnumParam(ParamTag tag) = 0;
 	};

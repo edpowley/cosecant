@@ -114,11 +114,20 @@ bool LadspaMachineFactory::getInfo(MachineInfo* info, InfoCallbacks* cb)
 			ParamTag tag = 0x10000 + port;
 
 			unsigned long flags = 0;
-			if (LADSPA_IS_HINT_INTEGER(h))		flags |= ParamFlags::integer;
 			if (LADSPA_IS_HINT_LOGARITHMIC(h))	flags |= ParamFlags::logarithmic;
-			params->addParam(
-				cb->createRealParam(tag)->setName(pname)->setRange(min,max)->setDefault(def)->addFlags(flags)
-			);
+
+			if (LADSPA_IS_HINT_INTEGER(h))
+			{
+				params->addParam(
+					cb->createIntParam(tag)->setName(pname)->setRange((int)min,(int)max)->setDefault((int)def)
+				);
+			}
+			else
+			{
+				params->addParam(
+					cb->createRealParam(tag)->setName(pname)->setRange(min,max)->setDefault(def)->addFlags(flags)
+				);
+			}
 		}
 		else if (LADSPA_IS_PORT_OUTPUT(pdesc) && LADSPA_IS_PORT_CONTROL(pdesc))
 		{
