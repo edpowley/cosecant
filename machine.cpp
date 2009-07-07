@@ -7,6 +7,8 @@
 #include "spattern.h"
 //#include "spatterneditor.h"
 #include "timeunit_convert.h"
+#include "parameditor.h"
+#include "cosecantmainwindow.h"
 
 Machine::Machine()
 : m_pos(0,0), m_halfsize(50,25), m_name("Unnamed"), m_parameditor(NULL),
@@ -48,6 +50,28 @@ void Machine::setPos(const QPointF& newpos)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+
+void Machine::showParamEditor()
+{
+	if (m_parameditor)
+	{
+		m_parameditor->getDock()->setFloating(true);
+		m_parameditor->activateWindow();
+	}
+	else
+	{
+		CosecantMainWindow* w = CosecantMainWindow::get();
+
+		QDockWidget* dock = new QDockWidget(tr("Parameters: %1").arg(m_name), w);
+		dock->setAttribute(Qt::WA_DeleteOnClose);
+		dock->setAllowedAreas(Qt::AllDockWidgetAreas);
+		ParamEditor* ed = new ParamEditor(this, dock);
+		dock->setWidget(ed);
+		w->addDockWidget(Qt::LeftDockWidgetArea, dock);
+		dock->setFloating(true);
+		ed->activateWindow();
+	}
+}
 
 void Machine::initParams(InfoImpl::ParamInfo::Group* group)
 {

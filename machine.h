@@ -244,6 +244,7 @@ public:
 	MyMap< ParamTag, Ptr<Parameter::Base> > m_paramMap;
 
 	ParamEditor* m_parameditor;
+	void showParamEditor();
 
 	boost::mutex m_paramChangesMutex;
 	std::map<ParamTag, ParamValue> m_paramChanges;
