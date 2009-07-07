@@ -39,8 +39,8 @@ public:
 
 	std::vector< Ptr<Connection> > m_connections;
 
-	void load(class SongLoadContext& ctx, xmlpp::Element* el);
-	void save(xmlpp::Element* el);
+	void load(class SongLoadContext& ctx, const QDomElement& el);
+	void save(const QDomElement& el);
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -51,14 +51,14 @@ public:
 	Connection(const Ptr<Pin>& pin1, const Ptr<Pin>& pin2, bool feedback)
 		: m_pin1(pin1), m_pin2(pin2), m_feedback(feedback) {}
 
-	Connection(SongLoadContext& ctx, xmlpp::Element* el);
+	Connection(SongLoadContext& ctx, const QDomElement& el);
 
 	bool m_feedback;
 
 	Ptr<Pin> getPin1() { return m_pin1; }
 	Ptr<Pin> getPin2() { return m_pin2; }
 
-	void save(xmlpp::Element* el);
+	void save(const QDomElement& el);
 
 	Ptr<DelayLine::Base> m_feedbackDelayLine;
 
@@ -260,11 +260,11 @@ public:
 
 	std::map<void*, void*> m_noteIdMap;
 
-//	virtual void load(class SongLoadContext& ctx, xmlpp::Element* el);
-	void save(xmlpp::Element* el);
+//	virtual void load(class SongLoadContext& ctx, const QDomElement& el);
+	void save(const QDomElement& el);
 
 	Ptr<Sequence::Pattern> createPattern(double length);
-	Ptr<Sequence::Pattern> createPattern(class SongLoadContext& ctx, xmlpp::Element* el);
+	Ptr<Sequence::Pattern> createPattern(class SongLoadContext& ctx, const QDomElement& el);
 	std::vector< Ptr<Sequence::Pattern> > m_patterns;
 	void addPattern(const Ptr<Sequence::Pattern>& pat);
 	void removePattern(const Ptr<Sequence::Pattern>& pat);

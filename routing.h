@@ -12,7 +12,7 @@ class Routing : public ObjectWithUuid
 
 public:
 	Routing();
-	Routing(class SongLoadContext& ctx, xmlpp::Element* el);
+	Routing(class SongLoadContext& ctx, const QDomElement& el);
 
 signals:
 	// m_signalTopologyChange fires when the topology (machines, pins, connections) of the routing changes
@@ -56,7 +56,7 @@ public:
 
 	std::vector< Ptr<Machine> > m_machines;
 
-	void save(xmlpp::Element* el);
+	void save(const QDomElement& el);
 
 	class ChangeBatch
 	{

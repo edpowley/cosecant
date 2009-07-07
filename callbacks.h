@@ -18,14 +18,6 @@ public:
 
 	virtual void doUndoable(HostMachine*, MiUndoable*);
 
-	virtual void xmlSetAttribute_c(XmlElement*, const char* name, const char* value);
-	virtual XmlElement* xmlAddChild(XmlElement*, const char* tag);
-
-	virtual int xmlGetAttribute_c(XmlElement*, const char* name, char* value, int value_size);
-	virtual int xmlGetTagName_c(XmlElement*, char* value, int value_size);
-	virtual XmlElement* xmlGetFirstChild(XmlElement*);
-	virtual XmlElement* xmlGetNextSibling(XmlElement*);
-
 protected:
 	int returnString(const QString& s, char* buf, int buf_size);
 };

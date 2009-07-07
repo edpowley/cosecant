@@ -26,8 +26,8 @@ namespace Sequence
 		void showEditor(NotebookWindow* win);
 		void onEditorClose(PatternEditor* editor);
 
-		virtual void load(SongLoadContext& ctx, xmlpp::Element* el) = 0;
-		virtual void save(xmlpp::Element* el) = 0;
+//		virtual void load(SongLoadContext& ctx, const QDomElement& el) = 0;
+//		virtual void save(const QDomElement& el) = 0;
 
 		virtual QUndoCommand* createUndoableForLengthChange(double newlength) = 0;
 
@@ -62,8 +62,8 @@ namespace Sequence
 			bool operator()(const Ptr<Event> a, const Ptr<Event> b) const { return a->m_startTime < b->m_startTime; }
 		};
 
-		Event(class SongLoadContext& ctx, xmlpp::Element* el);
-		void save(xmlpp::Element* el);
+		Event(class SongLoadContext& ctx, const QDomElement& el);
+		void save(const QDomElement& el);
 
 		static Ptr<Event> dummy(double time) { return new Event(time); }
 
@@ -82,8 +82,8 @@ namespace Sequence
 		typedef std::set<Ptr<Event>, Event::StartTimeLessComparer> Events;
 		Events m_events;
 
-		Track(class SongLoadContext& ctx, xmlpp::Element* el);
-		void save(xmlpp::Element* el);
+		Track(class SongLoadContext& ctx, const QDomElement& el);
+		void save(const QDomElement& el);
 
 		Ptr<Event> getEventAtTime(double t);
 		Ptr<Event> getNextEvent(double t);
@@ -125,8 +125,8 @@ namespace Sequence
 
 		std::vector< Ptr<Sequence::Track> > m_tracks;
 
-		Seq(class SongLoadContext& ctx, xmlpp::Element* el);
-		void save(xmlpp::Element* el);
+		Seq(class SongLoadContext& ctx, const QDomElement& el);
+		void save(const QDomElement& el);
 
 		boost::shared_mutex m_playPosMutex;
 		double m_playPos, m_loopStart, m_loopEnd;

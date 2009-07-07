@@ -131,11 +131,9 @@ namespace CosecantAPI
 
 #ifdef COSECANT_API_HOST
 	typedef ::Machine HostMachine;
-	typedef xmlpp::Element XmlElement;
 	class MiUndoable;
 #else
-	typedef void HostMachine;
-	typedef void XmlElement;
+	class HostMachine;
 
 	class MiUndoable
 	{
@@ -282,59 +280,6 @@ namespace CosecantAPI
 		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;
 
 		virtual void doUndoable(HostMachine*, MiUndoable*) = 0;
-
-		virtual void xmlSetAttribute_c(XmlElement*, const char* name, const char* value) = 0;
-		virtual XmlElement* xmlAddChild(XmlElement*, const char* tag) = 0;
-
-		virtual int xmlGetAttribute_c(XmlElement*, const char* name, char* value, int value_size) = 0;
-		virtual int xmlGetTagName_c(XmlElement*, char* value, int value_size) = 0;
-		virtual XmlElement* xmlGetFirstChild(XmlElement*) = 0;
-		virtual XmlElement* xmlGetNextSibling(XmlElement*) = 0;
-
-		///////////////////////////////////////////////////////////////////////
-
-		template<typename T>
-		void xmlSetAttribute(XmlElement* el, const char* name, const T& value)
-		{
-			std::ostringstream ss;
-			ss << value;
-			xmlSetAttribute_c(el, name, ss.str().c_str());
-		}
-
-		template<typename T>
-		T xmlGetAttribute(XmlElement* el, const char* name)
-		{
-			int numchars = xmlGetAttribute_c(el, name, NULL, -1);
-			if (numchars == 0)
-				throw LoadError(std::string("Attribute '") + name + std::string("' not found"));
-
-			char* attr = new char[numchars];
-			xmlGetAttribute_c(el, name, attr, numchars);
-			std::string attrstr(attr);
-			delete[] attr;
-
-			T value;
-			std::istringstream ss(attrstr);
-			ss.exceptions(std::istringstream::failbit | std::istringstream::badbit);
-
-			ss >> value;
-			return value;
-		}
-
-		std::string xmlGetTagName(XmlElement* el)
-		{
-			int numchars = xmlGetTagName_c(el, NULL, -1);
-			if (numchars > 0)
-			{
-				char* buf = new char[numchars];
-				xmlGetTagName_c(el, buf, numchars);
-				std::string ret(buf);
-				delete[] buf;
-				return ret;
-			}
-			else
-				return std::string();
-		}
 	};
 
 	class MutexLock
@@ -372,8 +317,8 @@ namespace CosecantAPI
 		MiPattern(Mi* mi, int length) : m_mi(mi), m_length(length) {}
 		virtual ~MiPattern() {}
 
-		virtual void load(XmlElement* el) = 0;
-		virtual void save(XmlElement* el) = 0;
+//		virtual void load(XmlElement* el) = 0;
+//		virtual void save(XmlElement* el) = 0;
 
 		virtual MiUndoable* createUndoableForLengthChange(int newlength) = 0;
 

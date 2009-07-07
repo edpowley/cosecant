@@ -2,8 +2,8 @@
 #include "common.h"
 #include "spattern.h"
 #include "xmlutils.h"
-
-void Spattern::load(SongLoadContext& ctx, xmlpp::Element* el)
+/*
+void Spattern::load(SongLoadContext& ctx, const QDomElement& el)
 {
 	BOOST_FOREACH(xmlpp::Node* node, el->get_children("note"))
 	{
@@ -29,7 +29,7 @@ void Spattern::save(xmlpp::Element* el)
 		setAttribute(child, "length",	iter->second->m_length);
 	}
 }
-
+*/
 QUndoCommand* Spattern::createUndoableForLengthChange(double newlength)
 {
 	return NULL;

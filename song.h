@@ -59,8 +59,8 @@ public:
 	Ptr<Sequence::Seq> m_sequence;
 	QUndoStack m_undo;
 
-	bool load(const bpath& filepath);
-	void save(const bpath& filepath);
+	bool load(const QString& filepath);
+	void save(const QString& filepath);
 
 	void doOpen();
 	void doSave();
@@ -70,7 +70,7 @@ public slots:
 	void updateWorkQueue();
 
 protected:
-	bpath m_savePath;
+	QString m_savePath;
 
 	void clear();
 };

@@ -25,12 +25,6 @@
 // Boost
 #include <boost/thread.hpp>
 #include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
-typedef boost::filesystem::wpath bpath;
-
-// libxml++
-// TODO: remove dependency, and remove associated include dir from project settings
-#include <libxml++/libxml++.h>
 
 // Qt
 #include <QtGui>

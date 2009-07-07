@@ -426,7 +426,7 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 		QAction* action = menu.exec(ev->screenPos());
 		if (action == actRename)
 		{
-			Dlg_MachineRename dlg(m_mac);
+			Dlg_MachineRename dlg(m_mac, m_editor);
 			dlg.exec();
 		}
 		else if (action == actDelete)

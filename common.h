@@ -36,14 +36,3 @@ inline QPointF multElementWise(const QPointF& a, const QPointF& b)
 {
 	return QPointF(a.x() * b.x(), a.y() * b.y());
 }
-
-/////////////////////////////////////////////////////////////////////
-
-// TODO: remove stuff below
-
-#include "wustring.h"
-
-inline Glib::ustring q2ustring(const QString& str)
-{
-	return str.toUtf8().constData();
-}

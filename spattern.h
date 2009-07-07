@@ -13,8 +13,8 @@ public:
 
 	virtual double getLength() { return m_length; }
 
-	virtual void load(SongLoadContext& ctx, xmlpp::Element* el);
-	virtual void save(xmlpp::Element* el);
+//	virtual void load(SongLoadContext& ctx, const QDomElement& el);
+//	virtual void save(const QDomElement& el);
 
 	virtual QUndoCommand* createUndoableForLengthChange(double newlength);
 
