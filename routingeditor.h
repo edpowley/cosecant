@@ -38,6 +38,7 @@ namespace RoutingEditor
 
 	protected slots:
 		void onMachinePosChanged();
+		void slotUpdate() { update(); }
 	};
 
 	class NewConnectionItem;

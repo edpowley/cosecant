@@ -9,6 +9,7 @@
 #include "timeunit_convert.h"
 #include "parameditor.h"
 #include "cosecantmainwindow.h"
+#include "theme.h"
 
 Machine::Machine()
 : m_pos(0,0), m_halfsize(50,25), m_name("Unnamed"), m_parameditor(NULL),
@@ -49,6 +50,11 @@ void Machine::setPos(const QPointF& newpos)
 	signalChangePos();
 }
 
+QColor Machine::getColor()
+{
+	return Theme::get().getMachineTypeHintColor(m_colorhint);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 void Machine::showParamEditor()
@@ -62,7 +68,7 @@ void Machine::showParamEditor()
 	{
 		CosecantMainWindow* w = CosecantMainWindow::get();
 
-		QDockWidget* dock = new QDockWidget(tr("Parameters: %1").arg(m_name), w);
+		QDockWidget* dock = new QDockWidget(w);
 		dock->setAttribute(Qt::WA_DeleteOnClose);
 		dock->setAllowedAreas(Qt::AllDockWidgetAreas);
 		ParamEditor* ed = new ParamEditor(this, dock);

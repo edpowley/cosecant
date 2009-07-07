@@ -214,9 +214,15 @@ public:
 	virtual CosecantAPI::Mi* createMi(CosecantAPI::Callbacks* cb) = 0;
 	CosecantAPI::Mi* getMi() { return m_mi; }
 
+	QString getName() { return m_name; }
+	void setName(const QString& name) { m_name = name; signalRename(name); }
+
+	MachineTypeHint::mt getColorHint() { return m_colorhint; }
+	void setColorHint(MachineTypeHint::mt hint) { m_colorhint = hint; signalChangeAppearance(); }
+
+	QColor getColor();
+
 	InfoImpl::MachineInfo* m_info;
-	QString m_name;
-	CosecantAPI::MachineTypeHint::mt m_colorhint;
 	QPointF m_pos, m_halfsize;
 	Routing* m_routing;
 
@@ -231,6 +237,9 @@ signals:
 	void signalAdd();
 	void signalRemove();
 	void signalChangePos();
+
+	void signalRename(const QString& newname);
+	void signalChangeAppearance();
 
 public:
 	void added() { signalAdd(); }
@@ -288,6 +297,9 @@ protected:
 	void initParams(InfoImpl::ParamInfo::Group* group);
 
 	virtual Ptr<Sequence::Pattern> newPattern(double length);
+
+	QString m_name;
+	CosecantAPI::MachineTypeHint::mt m_colorhint;
 };
 
 //////////////////////////////////////////////////////////////////////////

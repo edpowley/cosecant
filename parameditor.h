@@ -17,6 +17,9 @@ public:
 protected:
 	Ptr<Machine> m_mac;
 	QDockWidget* m_parent;
+
+protected slots:
+	void updateWindowTitle(const QString& macname);
 };
 
 class ScalarChangeCommand : public QUndoCommand

@@ -25,6 +25,12 @@ ParamEditor::ParamEditor(const Ptr<Machine>& mac, QDockWidget* parent)
 
 	if (!m_mac->m_parameditor)
 		m_mac->m_parameditor = this;
+
+	updateWindowTitle(m_mac->getName());
+
+	connect(
+		m_mac, SIGNAL(signalRename(const QString&)),
+		this, SLOT(updateWindowTitle(const QString&)) );
 }
 
 ParamEditor::~ParamEditor()
@@ -33,11 +39,16 @@ ParamEditor::~ParamEditor()
 		m_mac->m_parameditor = NULL;
 }
 
+void ParamEditor::updateWindowTitle(const QString& macname)
+{
+	m_parent->setWindowTitle(tr("Parameters - %1").arg(macname));
+}
+
 ScalarChangeCommand::ScalarChangeCommand(const Ptr<Parameter::Scalar>& param, double newval, bool mergeable)
 : m_param(param), m_oldValue(param->getState()), m_newValue(newval), m_mergeable(mergeable)
 {
 	setText(ParamEditor::tr("change parameter '%1' on '%2'")
-		.arg(param->getName()).arg(param->getMachine()->m_name)
+		.arg(param->getName()).arg(param->getMachine()->getName())
 	);
 }
 

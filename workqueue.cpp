@@ -315,7 +315,7 @@ struct CtorHelper
 			qDebug() << "\t{";
 			BOOST_FOREACH(const Ptr<Machine>& m, ms)
 			{
-				qDebug() << "\t\t" << m->m_name << " " << m->m_objectUuid.str();
+				qDebug() << "\t\t" << m->getName() << " " << m->m_objectUuid.str();
 			}
 			qDebug() << "\t}";
 		}
@@ -582,7 +582,7 @@ void WorkUnit::Base::dumpToDot(std::ostream& stream)
 
 void WorkUnit::WorkMachine::dumpToDot(std::ostream& stream)
 {
-	QString label = QString("Work machine '%1'\\n(%2)").arg(m_machine->m_name).arg(typeid(*m_machine).name());
+	QString label = QString("Work machine '%1'\\n(%2)").arg(m_machine->getName()).arg(typeid(*m_machine).name());
 
 	stream << quote(m_objectUuid.str()) << " [label=" << quote(label) << "];" << std::endl;
 }

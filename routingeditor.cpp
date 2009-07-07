@@ -151,7 +151,7 @@ class AddMachineCommand : public QUndoCommand
 {
 public:
 	AddMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
-		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("add machine '%1'").arg(mac->m_name))
+		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("add machine '%1'").arg(mac->getName()))
 	{
 	}
 
@@ -205,16 +205,14 @@ MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 	setPos(m_mac->m_pos);
 	setRect(QRectF(-m_mac->m_halfsize, m_mac->m_halfsize));
 	
-	setBrush(QBrush(Theme::get().getMachineTypeHintColor(m_mac->m_colorhint)));
-	
 	QPen pen;
-	pen.setColor(QColor("Black"));
+	pen.setColor(Qt::black);
 	pen.setWidth(2);
 	pen.setJoinStyle(Qt::MiterJoin);
 	setPen(pen);
 
 	m_selectedPen = pen;
-	m_selectedPen.setColor(QColor("Yellow"));
+	m_selectedPen.setColor(Qt::yellow);
 
 	BOOST_FOREACH(const Ptr<Pin>& pin, m_mac->m_inpins)
 	{
@@ -226,7 +224,15 @@ MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 		PinItem* pi = editor->m_pinItemMap[pin] = new PinItem(editor, pin, this);
 	}
 
-	connect(m_mac, SIGNAL(signalChangePos()), this, SLOT(onMachinePosChanged()));
+	connect(
+		m_mac, SIGNAL(signalChangePos()),
+		this, SLOT(onMachinePosChanged()) );
+	connect(
+		m_mac, SIGNAL(signalRename(const QString&)),
+		this, SLOT(slotUpdate()) );
+	connect(
+		m_mac, SIGNAL(signalChangeAppearance()),
+		this, SLOT(slotUpdate()) );
 }
 
 void MachineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -238,13 +244,14 @@ void MachineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* optio
 	else
 		painter->setPen(pen());
 
+	setBrush(m_mac->getColor());
 	painter->setBrush(brush());
 	painter->drawRect(rect());
 
 	QRectF r = rect();
 	r.adjust(5,5,-5,-5);
 	painter->setPen(pen());
-	painter->drawText(r, Qt::AlignCenter | Qt::TextWordWrap, m_mac->m_name);
+	painter->drawText(r, Qt::AlignCenter | Qt::TextWordWrap, m_mac->getName());
 }
 
 QVariant MachineItem::itemChange(GraphicsItemChange change, const QVariant& value)
@@ -264,7 +271,7 @@ class MachineMoveCommand : public QUndoCommand
 public:
 	MachineMoveCommand(const Ptr<Machine>& mac, const QPointF& newpos)
 		: m_mac(mac), m_newpos(newpos), m_oldpos(mac->m_pos)
-	{ setText( QString("move machine '%1'").arg(m_mac->m_name) ); }
+	{ setText( QString("move machine '%1'").arg(m_mac->getName()) ); }
 
 	virtual int id() const { return ucidMachineChangePos; }
 
@@ -377,7 +384,7 @@ class DeleteMachineCommand : public QUndoCommand
 {
 public:
 	DeleteMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
-		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("delete machine '%1'").arg(mac->m_name))
+		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("delete machine '%1'").arg(mac->getName()))
 	{
 		BOOST_FOREACH(Ptr<Pin>& pin, m_mac->m_inpins)
 			BOOST_FOREACH(Ptr<Connection>& conn, pin->m_connections)
@@ -414,20 +421,70 @@ protected:
 	std::set< Ptr<Connection> > m_conns;
 };
 
+class RenameMachineCommand : public QUndoCommand
+{
+public:
+	RenameMachineCommand(const Ptr<Machine>& mac, const QString& newname, MachineTypeHint::mt newcolorhint)
+		: m_mac(mac), m_oldname(mac->getName()), m_newname(newname),
+		m_oldcolorhint(mac->getColorHint()), m_newcolorhint(newcolorhint)
+	{
+		if (m_oldname != m_newname)
+		{
+			QString basetext;
+			if (m_oldcolorhint != m_newcolorhint)
+				basetext = Editor::tr("rename machine '%1' to '%2' and change appearance");
+			else
+				basetext = Editor::tr("rename machine '%1' to '%2'");
+
+			setText(basetext.arg(m_oldname).arg(m_newname));
+		}
+		else
+		{
+			setText(Editor::tr("change appearance of machine '%1'").arg(m_oldname));
+		}
+	}
+
+	virtual void redo()
+	{
+		m_mac->setName(m_newname);
+		m_mac->setColorHint(m_newcolorhint);
+	}
+
+	virtual void undo()
+	{
+		m_mac->setName(m_oldname);
+		m_mac->setColorHint(m_oldcolorhint);
+	}
+
+protected:
+	Ptr<Machine> m_mac;
+	QString m_oldname, m_newname;
+	MachineTypeHint::mt m_oldcolorhint, m_newcolorhint;
+};
+
 void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 {
 	QList<MachineItem*> sel = m_editor->getSelectedMachineItems();
 	if (sel.length() == 1 && sel[0] == this)
 	{
 		QMenu menu;
-		QAction* actRename = menu.addAction(tr("&Rename"));
+		QAction* actRename = menu.addAction(tr("&Name and appearance"));
 		QAction* actDelete = menu.addAction(tr("&Delete"));
 
 		QAction* action = menu.exec(ev->screenPos());
 		if (action == actRename)
 		{
 			Dlg_MachineRename dlg(m_mac, m_editor);
-			dlg.exec();
+			if (dlg.exec() == QDialog::Accepted)
+			{
+				QString newname = dlg.getName();
+				MachineTypeHint::mt newcolorhint = dlg.getColorType();
+
+				if (newname != m_mac->getName() || newcolorhint != m_mac->getColorHint())
+				{
+					theUndo().push(new RenameMachineCommand(m_mac, newname, newcolorhint));
+				}
+			}
 		}
 		else if (action == actDelete)
 		{

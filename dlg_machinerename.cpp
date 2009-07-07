@@ -17,10 +17,12 @@ Dlg_MachineRename::Dlg_MachineRename(const Ptr<Machine>& mac, QWidget *parent, Q
 	addColorComboItem(MachineTypeHint::effect,		tr("Effect"));
 	addColorComboItem(MachineTypeHint::control,		tr("Control"));
 
-	int index = ui.comboColor->findData(QVariant::fromValue<unsigned int>(m_mac->m_colorhint));
+	int index = ui.comboColor->findData(QVariant::fromValue<unsigned int>(m_mac->getColorHint()));
 	if (index != -1) ui.comboColor->setCurrentIndex(index);
 
-	ui.editName->setText(m_mac->m_name);
+	ui.editName->setText(m_mac->getName());
+	ui.editName->setFocus();
+	ui.editName->selectAll();
 }
 
 void Dlg_MachineRename::addColorComboItem(MachineTypeHint::mt type, const QString& text)
@@ -30,6 +32,17 @@ void Dlg_MachineRename::addColorComboItem(MachineTypeHint::mt type, const QStrin
 		text,
 		QVariant::fromValue<unsigned int>(type)
 	);
+}
+
+MachineTypeHint::mt Dlg_MachineRename::getColorType()
+{
+	int index = ui.comboColor->currentIndex();
+	if (index != -1)
+	{
+		return static_cast<MachineTypeHint::mt>(ui.comboColor->itemData(index).value<unsigned int>());
+	}
+	
+	return MachineTypeHint::none;
 }
 
 Dlg_MachineRename::~Dlg_MachineRename()
