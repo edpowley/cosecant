@@ -9,6 +9,7 @@ using namespace RoutingEditor;
 #include "machinechooserwidget.h"
 #include "cosecantmainwindow.h"
 #include "parameditor.h"
+#include "dlg_machinerename.h"
 
 PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 50);
@@ -342,11 +343,6 @@ void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 		if (ev->button() == Qt::RightButton)
 		{
 			ev->accept();
-			QList<MachineItem*> sel = m_editor->getSelectedMachineItems();
-			if (sel.length() == 1)
-				doContextMenu(ev->screenPos());
-			else
-				qDebug() << "ctx menu multi";
 			m_mouseMode = none;
 		}
 		break;
@@ -418,19 +414,28 @@ protected:
 	std::set< Ptr<Connection> > m_conns;
 };
 
-void MachineItem::doContextMenu(QPoint pos)
+void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 {
-	QMenu menu;
-	QAction* actRename = menu.addAction(tr("&Rename"));
-	QAction* actDelete = menu.addAction(tr("&Delete"));
+	QList<MachineItem*> sel = m_editor->getSelectedMachineItems();
+	if (sel.length() == 1 && sel[0] == this)
+	{
+		QMenu menu;
+		QAction* actRename = menu.addAction(tr("&Rename"));
+		QAction* actDelete = menu.addAction(tr("&Delete"));
 
-	QAction* action = menu.exec(pos);
-	if (action == actRename)
-	{
+		QAction* action = menu.exec(ev->screenPos());
+		if (action == actRename)
+		{
+			Dlg_MachineRename dlg(m_mac);
+			dlg.exec();
+		}
+		else if (action == actDelete)
+		{
+			theUndo().push(new DeleteMachineCommand(m_editor->getRouting(), m_mac));
+		}
 	}
-	else if (action == actDelete)
+	else
 	{
-		theUndo().push(new DeleteMachineCommand(m_editor->getRouting(), m_mac));
 	}
 }
 

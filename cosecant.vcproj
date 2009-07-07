@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dlg_machinerename.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\dll.cpp"
 				>
 			</File>
@@ -206,6 +210,14 @@
 			</File>
 			<File
 				RelativePath=".\formatnote.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\htmlentity.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\html_entities\htmlentitymap.cpp"
 				>
 			</File>
 			<File
@@ -485,6 +497,32 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dlg_machinerename.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -fstdafx.h -fcommon.h  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_SCRIPT_LIB -DQT_SVG_LIB  -I&quot;.\GeneratedFiles\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;$(QTDIR)\include\QtScript\.&quot; -I&quot;$(QTDIR)\include\QtSvg\.&quot; -I&quot;.\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\sigc++-2.0\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\sigc++-2.0\include\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\libxml++-2.6\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\libxml++-2.6\include\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\glibmm-2.4\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\glibmm-2.4\include\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\glib-2.0\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\glib-2.0\include\.&quot; &quot;.\dlg_machinerename.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot; &quot;-fstdafx.h&quot; &quot;-f..\..\dlg_machinerename.h&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -fstdafx.h -fcommon.h  -DUNICODE -DWIN32 -DQT_THREAD_SUPPORT -DQT_CORE_LIB -DQT_GUI_LIB -DQT_XML_LIB -DQT_SCRIPT_LIB -DQT_SVG_LIB  -I&quot;.\GeneratedFiles\.&quot; -I&quot;$(QTDIR)\include\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;$(QTDIR)\include\QtScript\.&quot; -I&quot;$(QTDIR)\include\QtSvg\.&quot; -I&quot;.\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\sigc++-2.0\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\sigc++-2.0\include\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\libxml++-2.6\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\libxml++-2.6\include\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\glibmm-2.4\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\glibmm-2.4\include\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\include\glib-2.0\.&quot; -I&quot;C:\Program Files (x86)\gtkmm\lib\glib-2.0\include\.&quot; &quot;.\dlg_machinerename.h&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot; &quot;-fstdafx.h&quot; &quot;-f..\..\dlg_machinerename.h&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\dll.h"
 				>
 			</File>
@@ -528,6 +566,10 @@
 			</File>
 			<File
 				RelativePath=".\formatnote.h"
+				>
+			</File>
+			<File
+				RelativePath=".\htmlentity.h"
 				>
 			</File>
 			<File
@@ -908,6 +950,32 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\machine_rename_dlg.ui"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Uic&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\uic.exe&quot; -o &quot;.\GeneratedFiles\ui_$(InputName).h&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(QTDIR)\bin\uic.exe"
+						Outputs="&quot;.\GeneratedFiles\ui_$(InputName).h&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Uic&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\uic.exe&quot; -o &quot;.\GeneratedFiles\ui_$(InputName).h&quot; &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="$(QTDIR)\bin\uic.exe"
+						Outputs="&quot;.\GeneratedFiles\ui_$(InputName).h&quot;"
+					/>
+				</FileConfiguration>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -1035,11 +1103,37 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_expanderbox.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_dlg_machinerename.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Debug\moc_dlg_machinerename.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1051,6 +1145,18 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_expanderbox.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1083,18 +1189,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_machinechooserwidget.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_machinechooserwidget.cpp"
 				>
 				<FileConfiguration
@@ -1107,7 +1201,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_object.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_machinechooserwidget.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1123,6 +1217,18 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_object.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1179,25 +1285,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_routingeditor.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\GeneratedFiles\Release\moc_routingeditor.cpp"
 				>
 				<FileConfiguration
@@ -1210,6 +1297,25 @@
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Debug\moc_routingeditor.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1241,18 +1347,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_song.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_song.cpp"
 				>
 				<FileConfiguration
@@ -1265,7 +1359,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_spattern.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_song.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1281,6 +1375,18 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_spattern.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1310,6 +1416,10 @@
 			</File>
 			<File
 				RelativePath=".\GeneratedFiles\ui_cosecantmainwindow.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\ui_machine_rename_dlg.h"
 				>
 			</File>
 		</Filter>

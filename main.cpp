@@ -7,10 +7,13 @@
 #include "builtinmachines.h"
 #include "dllmachine.h"
 #include "theme.h"
+#include "htmlentity.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
+
+	initHtmlEntityMap();
 
 	AudioIO::initSingleton();
 	PaError err = AudioIO::get().open();

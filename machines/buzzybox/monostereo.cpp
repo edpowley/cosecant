@@ -3,7 +3,7 @@
 
 bool StereoToMonoMono::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
-	info->setName("Stereo to 2\xc3\x97Mono")->setTypeHint(MachineTypeHint::effect)
+	info->setName("Stereo to 2 &times; Mono")->setTypeHint(MachineTypeHint::effect)
 		->addInPin (cb->createPin()->setName("Input")	->setType(SignalType::stereoAudio))
 		->addOutPin(cb->createPin()->setName("Output L")->setType(SignalType::monoAudio))
 		->addOutPin(cb->createPin()->setName("Output R")->setType(SignalType::monoAudio));
@@ -13,7 +13,7 @@ bool StereoToMonoMono::getInfo(MachineInfo* info, InfoCallbacks* cb)
 
 bool MonoMonoToStereo::getInfo(MachineInfo* info, InfoCallbacks* cb)
 {
-	info->setName("2\xc3\x97Mono to Stereo")->setTypeHint(MachineTypeHint::effect)
+	info->setName("2 &times; Mono to Stereo")->setTypeHint(MachineTypeHint::effect)
 		->addInPin (cb->createPin()->setName("Input L")	->setType(SignalType::monoAudio))
 		->addInPin (cb->createPin()->setName("Input R")	->setType(SignalType::monoAudio))
 		->addOutPin(cb->createPin()->setName("Output")	->setType(SignalType::stereoAudio));

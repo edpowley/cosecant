@@ -25,7 +25,7 @@ namespace RoutingEditor
 		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
 		virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev);
 
-		void doContextMenu(QPoint pos);
+		virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* ev);
 
 		void deleteMachine();
 
