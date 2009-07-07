@@ -3,18 +3,17 @@
 #include "workunit.h"
 #include "workbuffer.h"
 
-class WorkQueue : public Object
+class WorkQueue
 {
 protected:
 	WorkQueue(const Ptr<class Routing>& routing);
 
 public:
-	static Ptr<WorkQueue> s; // singleton
+	static WorkQueue* s; // singleton
+	static boost::shared_mutex s_mutex;
 
 	static void updateFromSongRouting();
 	static void setNull();
-
-	static boost::shared_mutex s_singletonMutex;
 
 	boost::shared_mutex m_mutex;
 

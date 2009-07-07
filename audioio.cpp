@@ -51,6 +51,8 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 						PaStreamCallbackFlags status,
 						void* user)
 {
+	boost::shared_lock<boost::shared_mutex> wqlock(WorkQueue::s_mutex);
+
 	AudioIO& s = *s_singleton;
 
 	PerfClockAutoCount clock(&s_perfCount);
@@ -65,11 +67,7 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 	}
 
 	// Check for a current workqueue
-	Ptr<WorkQueue> wq;
-	{
-		boost::shared_lock<boost::shared_mutex> planlock(WorkQueue::s_singletonMutex);
-		wq = WorkQueue::s;
-	}
+	WorkQueue* wq  = WorkQueue::s;
 	if (!wq) return paContinue;
 
 	// Work

@@ -4,7 +4,7 @@
 #include "routing.h"
 #include "song.h"
 
-Ptr<WorkQueue> WorkQueue::s;
+WorkQueue* WorkQueue::s = NULL;
 
 void WorkQueue::reset()
 {
@@ -534,15 +534,15 @@ void WorkQueue::addWorkBuffer(const Ptr<WorkBuffer::Base>& wb)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-boost::shared_mutex WorkQueue::s_singletonMutex;
+boost::shared_mutex WorkQueue::s_mutex;
 
 void WorkQueue::updateFromSongRouting()
 {
-	Ptr<WorkQueue> newq = new WorkQueue(Song::get().m_routing);
+	WorkQueue* newq = new WorkQueue(Song::get().m_routing);
 
 	// Swap the new for the old
 	{
-		boost::unique_lock<boost::shared_mutex> lock(s_singletonMutex);
+		boost::unique_lock<boost::shared_mutex> lock(s_mutex);
 		if (s)
 			newq->m_shouldUpdateSequenceFromScratch = s->m_shouldUpdateSequenceFromScratch;
 		s = newq;
@@ -551,7 +551,7 @@ void WorkQueue::updateFromSongRouting()
 
 void WorkQueue::setNull()
 {
-	boost::unique_lock<boost::shared_mutex> lock(s_singletonMutex);
+	boost::unique_lock<boost::shared_mutex> lock(s_mutex);
 	s = NULL;
 }
 

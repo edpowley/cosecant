@@ -286,6 +286,18 @@ void MachineItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 		case Qt::LeftButton:
 			m_mouseMode = leftClick;
 			break;
+
+		case Qt::RightButton:
+			m_mouseMode = rightClick;
+			ev->accept();
+			if (!isSelected())
+			{
+				if (!(ev->modifiers() & Qt::ControlModifier))
+					scene()->clearSelection();
+				setSelected(true);
+			}
+
+			break;
 		}
 	}
 }
@@ -299,7 +311,7 @@ void MachineItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
 	case leftClick:
 		m_mouseMode = move;
 		if (!isSelected()) setSelected(true);
-		// no break -- fall through
+		// no break -- fall through to case move
 
 	case move:
 		{
@@ -320,7 +332,23 @@ void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 	switch (m_mouseMode)
 	{
 	case leftClick:
-		m_mouseMode = none;
+		if (ev->button() == Qt::LeftButton)
+		{
+			m_mouseMode = none;
+		}
+		break;
+
+	case rightClick:
+		if (ev->button() == Qt::RightButton)
+		{
+			ev->accept();
+			QList<MachineItem*> sel = m_editor->getSelectedMachineItems();
+			if (sel.length() == 1)
+				doContextMenu(ev->screenPos());
+			else
+				qDebug() << "ctx menu multi";
+			m_mouseMode = none;
+		}
 		break;
 
 	case move:
@@ -345,6 +373,65 @@ void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 void MachineItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
 {
 	m_mac->showParamEditor();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+class DeleteMachineCommand : public QUndoCommand
+{
+public:
+	DeleteMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
+		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("delete machine '%1'").arg(mac->m_name))
+	{
+		BOOST_FOREACH(Ptr<Pin>& pin, m_mac->m_inpins)
+			BOOST_FOREACH(Ptr<Connection>& conn, pin->m_connections)
+				m_conns.insert(conn);
+
+		BOOST_FOREACH(Ptr<Pin>& pin, m_mac->m_outpins)
+			BOOST_FOREACH(Ptr<Connection>& conn, pin->m_connections)
+				m_conns.insert(conn);
+	}
+
+	virtual void redo()
+	{
+		Routing::ChangeBatch batch(m_routing);
+
+		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
+			m_routing->removeConnection(conn);
+
+		m_routing->removeMachine(m_mac);
+	}
+
+	virtual void undo()
+	{
+		Routing::ChangeBatch batch(m_routing);
+
+		m_routing->addMachine(m_mac);
+
+		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
+			m_routing->addConnection(conn);
+	}
+
+protected:
+	Ptr<Routing> m_routing;
+	Ptr<Machine> m_mac;
+	std::set< Ptr<Connection> > m_conns;
+};
+
+void MachineItem::doContextMenu(QPoint pos)
+{
+	QMenu menu;
+	QAction* actRename = menu.addAction(tr("&Rename"));
+	QAction* actDelete = menu.addAction(tr("&Delete"));
+
+	QAction* action = menu.exec(pos);
+	if (action == actRename)
+	{
+	}
+	else if (action == actDelete)
+	{
+		theUndo().push(new DeleteMachineCommand(m_editor->getRouting(), m_mac));
+	}
 }
 
 void MachineItem::onMachinePosChanged()

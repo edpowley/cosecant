@@ -25,7 +25,11 @@ namespace RoutingEditor
 		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
 		virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev);
 
-		enum { none, leftClick, move } m_mouseMode;
+		void doContextMenu(QPoint pos);
+
+		void deleteMachine();
+
+		enum { none, leftClick, rightClick, move } m_mouseMode;
 
 		virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
