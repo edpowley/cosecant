@@ -13,6 +13,20 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+	// i18n
+	{
+		qDebug() << QLocale::system().name();
+
+		QTranslator* qtTranslator = new QTranslator(&a);
+		qtTranslator->load("qt_" + QLocale::system().name(),
+			QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+		a.installTranslator(qtTranslator);
+
+		QTranslator* myappTranslator = new QTranslator(&a);
+		myappTranslator->load("cosecant_" + QLocale::system().name());
+		a.installTranslator(myappTranslator);
+	}
+
 	initHtmlEntityMap();
 
 	AudioIO::initSingleton();

@@ -1503,6 +1503,17 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Translation Files"
+			Filter="ts"
+			UniqueIdentifier="{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}"
+			ParseFiles="false"
+			>
+			<File
+				RelativePath=".\cosecant_en_GB.ts"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\cosecant.ico"
 			>

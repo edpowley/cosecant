@@ -83,10 +83,9 @@ void Dlg_Settings::addAudioDeviceToCombo(QComboBox* combo,
 										 const PaHostApiInfo* api,
 										 int nchannels)
 {
-	//: %1 = API name (eg "ASIO"), %2 = soundcard name, %3 = number of channels
-	QString text = tr("%1 : %2 (%3 channels)", NULL, nchannels)
-		.arg(api->name).arg(dev->name)
-		.arg(nchannels);
+	//: %1 = API name (eg "ASIO"), %2 = soundcard name, %n = number of channels
+	QString text = tr("%1 : %2 (%n channel(s))", "", nchannels)
+		.arg(api->name).arg(dev->name);
 	combo->addItem(text, QVariant::fromValue(index));
 }
 

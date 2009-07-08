@@ -189,7 +189,8 @@ void AudioIO::open()
 
 	if (outdevice == paNoDevice)
 	{
-		throw Error("No output device set");
+		throw Error(tr("No output device set. One possible cause for this is if you have recently changed soundcards, "
+			"and the card specified in Cosecant's settings file is no longer present."));
 	}
 
 	PaStreamParameters spI, spO;
