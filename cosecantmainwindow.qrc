@@ -1,4 +1,16 @@
 <RCC>
-    <qresource prefix="CosecantMainWindow">
+    <qresource prefix="/CosecantMainWindow" >
+        <file>images/document-save.png</file>
+        <file>images/edit-redo.png</file>
+        <file>images/edit-undo.png</file>
+        <file>images/document-new.png</file>
+        <file>images/document-open.png</file>
+        <file>images/document-save-as.png</file>
+        <file>images/system-log-out.png</file>
+        <file>images/preferences-system.png</file>
+        <file>images/media-playback-start.png</file>
+        <file>images/media-playback-stop.png</file>
+        <file>images/media-record.png</file>
+        <file>images/media-skip-backward.png</file>
     </qresource>
 </RCC>

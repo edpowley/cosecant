@@ -19,13 +19,17 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 
 	QAction* undoaction = theUndo().createUndoAction(this);
 	undoaction->setShortcut(tr("Ctrl+Z"));
+	undoaction->setIcon(QIcon(":/CosecantMainWindow/images/edit-undo.png"));
 	ui.menu_Edit->insertAction(ui.actionUndoredo_placeholder, undoaction);
+	ui.mainToolBar->insertAction(ui.actionUndoredo_placeholder, undoaction);
 
 	QAction* redoaction = theUndo().createRedoAction(this);
 	QList<QKeySequence> redoshortcuts;
 	redoshortcuts << tr("Ctrl+Y") << tr("Shift+Ctrl+Z");
 	redoaction->setShortcuts(redoshortcuts);
+	redoaction->setIcon(QIcon(":/CosecantMainWindow/images/edit-redo.png"));
 	ui.menu_Edit->insertAction(ui.actionUndoredo_placeholder, redoaction);
+	ui.mainToolBar->insertAction(ui.actionUndoredo_placeholder, redoaction);
 
 	ui.actionUndoredo_placeholder->setVisible(false);
 
