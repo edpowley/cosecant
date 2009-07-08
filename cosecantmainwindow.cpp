@@ -5,6 +5,7 @@
 #include "song.h"
 #include "routingeditor.h"
 #include "machinechooserwidget.h"
+#include "dlg_settings.h"
 
 CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
 
@@ -58,4 +59,9 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 CosecantMainWindow::~CosecantMainWindow()
 {
 
+}
+
+void CosecantMainWindow::on_actionSettings_triggered()
+{
+	Dlg_Settings::run(this);
 }

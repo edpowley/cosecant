@@ -13,6 +13,10 @@ public:
 	CosecantMainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~CosecantMainWindow();
 
+protected slots:
+	// Auto connected slots
+	void on_actionSettings_triggered();
+
 private:
 	static CosecantMainWindow* s_singleton;
 

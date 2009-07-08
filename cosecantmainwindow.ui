@@ -43,8 +43,15 @@
      <string>Window</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionSettings"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Edit"/>
+   <addaction name="menu_View"/>
    <addaction name="menuWindow"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -56,22 +63,17 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="action_Undo">
-   <property name="text">
-    <string>&amp;Undo</string>
-   </property>
-  </action>
-  <action name="action_Redo">
-   <property name="text">
-    <string>&amp;Redo</string>
-   </property>
-  </action>
   <action name="actionUndoredo_placeholder">
    <property name="text">
     <string>undoredo_placeholder</string>
    </property>
    <property name="visible">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>&amp;Settings...</string>
    </property>
   </action>
  </widget>
