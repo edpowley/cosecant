@@ -16,10 +16,20 @@ int main(int argc, char *argv[])
 	initHtmlEntityMap();
 
 	AudioIO::initSingleton();
-	PaError err = AudioIO::get().open();
-	if (err == paNoError)
+
+	try
 	{
+		AudioIO::get().open();
 		AudioIO::get().start();
+	}
+	catch (const AudioIO::Error& err)
+	{
+		QMessageBox msg;
+		msg.setIcon(QMessageBox::Critical);
+		msg.setText(QApplication::tr("Error opening audio device. Choose 'Settings' from the 'View' menu to change "
+			"your audio device settings."));
+		msg.setInformativeText(err.msg());
+		msg.exec();
 	}
 
 	initBuiltinMachineFactories();

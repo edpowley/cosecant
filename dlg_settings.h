@@ -17,8 +17,14 @@ protected:
 	void addAudioDeviceToCombo(QComboBox* combo, int index, const PaDeviceInfo* dev, const PaHostApiInfo* api,
 								int nchannels);
 	PaDeviceIndex getAudioDeviceIndex(QComboBox* combo, int comboindex = -1);
+	int findAudioDeviceInCombo(QComboBox* combo, PaDeviceIndex dev);
+	bool selectAudioDeviceInCombo(QComboBox* combo, PaDeviceIndex dev);
+
+	bool applyAudioDeviceSettings(QString& error);
 
 protected slots:
+	void on_okButton_clicked();
+
 	void on_comboAudioInputDevice_currentIndexChanged(int index);
 	void on_comboAudioOutputDevice_currentIndexChanged(int index);
 	void on_buttonAsioPanel_clicked();

@@ -57,6 +57,24 @@ int PrefsVar_Int::sqlBind(sqlite3_stmt *stmt, int index)
 
 //////////////////////////////////////////////////////////////////////
 
+PrefsVar_String::PrefsVar_String(const QString& id, const QString& def)
+: PrefsVar_T(id, def)
+{
+	m_prefsfile->readValue(m_id, this);
+}
+
+void PrefsVar_String::sqlRetrieve(sqlite3_stmt* stmt, int column)
+{
+	m_value = QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, column)));
+}
+
+int PrefsVar_String::sqlBind(sqlite3_stmt *stmt, int index)
+{
+	return sqlite3_bind_text(stmt, index, m_value.toUtf8().constData(), -1, SQLITE_TRANSIENT);
+}
+
+//////////////////////////////////////////////////////////////////////
+
 Ptr<PrefsFile> PrefsFile::s_singleton(NULL);
 
 ERROR_CLASS(SqliteError);
@@ -125,7 +143,7 @@ void PrefsFile::readValue(const QString& id, PrefsVar_Base* var)
 	const char sql[] = "SELECT value FROM prefs WHERE key == ?1 LIMIT 1";
 	sqlDo(m_database, sqlite3_prepare(m_database, sql, sizeof(sql), &stmt, NULL));
 
-	sqlDo(m_database, sqlite3_bind_text(stmt, 1, id.toUtf8().constData(), -1, SQLITE_STATIC));
+	sqlDo(m_database, sqlite3_bind_text(stmt, 1, id.toUtf8().constData(), -1, SQLITE_TRANSIENT));
 
 	if (sqlDo(m_database, sqlite3_step(stmt)) == SQLITE_ROW)
 	{
@@ -141,7 +159,7 @@ void PrefsFile::writeValue(const QString& id, PrefsVar_Base* var)
 	const char sql[] = "INSERT OR REPLACE INTO prefs (key, value) VALUES (?1, ?2)";
 	sqlDo(m_database, sqlite3_prepare(m_database, sql, sizeof(sql), &stmt, NULL));
 
-	sqlDo(m_database, sqlite3_bind_text(stmt, 1, id.toUtf8().constData(), -1, SQLITE_STATIC));
+	sqlDo(m_database, sqlite3_bind_text(stmt, 1, id.toUtf8().constData(), -1, SQLITE_TRANSIENT));
 	sqlDo(m_database, var->sqlBind(stmt, 2));
 
 	sqlDo(m_database, sqlite3_step(stmt));

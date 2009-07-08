@@ -3,11 +3,14 @@
 #include "dlg_settings.h"
 #include "audioio.h"
 #include "cosecantmainwindow.h"
+#include "cursor_raii.h"
 
 void Dlg_Settings::run(QWidget *parent)
 {
 	Dlg_Settings dlg(parent);
-	dlg.exec();
+	if (dlg.exec() == QDialog::Accepted)
+	{
+	}
 }
 
 Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
@@ -21,6 +24,25 @@ Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
 Dlg_Settings::~Dlg_Settings()
 {
 }
+
+void Dlg_Settings::on_okButton_clicked()
+{
+	QString error;
+	if (!applyAudioDeviceSettings(error))
+	{
+		QMessageBox msg;
+		msg.setIcon(QMessageBox::Critical);
+		msg.setText(tr("Error opening audio device"));
+		msg.setInformativeText(error);
+		msg.exec();
+		return;
+	}
+
+	// No errors, so...
+	accept();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 void Dlg_Settings::populateAudioDeviceCombos()
 {
@@ -36,11 +58,23 @@ void Dlg_Settings::populateAudioDeviceCombos()
 	{
 		const PaDeviceInfo* dev = Pa_GetDeviceInfo(i);
 		const PaHostApiInfo* api = Pa_GetHostApiInfo(dev->hostApi);
+		qDebug() << i << dev->name << "    " << api->name << dev->maxInputChannels << dev->maxOutputChannels;
 		if (dev->maxInputChannels > 0)
 			addAudioDeviceToCombo(ui.comboAudioInputDevice, i, dev, api, dev->maxInputChannels);
 		if (dev->maxOutputChannels > 0)
 			addAudioDeviceToCombo(ui.comboAudioOutputDevice, i, dev, api, dev->maxOutputChannels);
 	}
+
+	if (!selectAudioDeviceInCombo(ui.comboAudioInputDevice,  AudioIO::get().getInDeviceIndex()))
+		selectAudioDeviceInCombo (ui.comboAudioInputDevice,  paNoDevice);
+	
+	if (!selectAudioDeviceInCombo(ui.comboAudioOutputDevice, AudioIO::get().getOutDeviceIndex()))
+		selectAudioDeviceInCombo (ui.comboAudioOutputDevice, Pa_GetDefaultOutputDevice());
+
+	ui.comboAudioSamplerate->addItem("44100");
+	ui.comboAudioSamplerate->addItem("48000");
+	ui.comboAudioSamplerate->addItem("96000");
+	ui.comboAudioSamplerate->setValidator(new QIntValidator(ui.comboAudioSamplerate));
 }
 
 void Dlg_Settings::addAudioDeviceToCombo(QComboBox* combo,
@@ -50,7 +84,7 @@ void Dlg_Settings::addAudioDeviceToCombo(QComboBox* combo,
 										 int nchannels)
 {
 	//: %1 = API name (eg "ASIO"), %2 = soundcard name, %3 = number of channels
-	QString text = tr("%1: %2 (%3 channels)", NULL, nchannels)
+	QString text = tr("%1 : %2 (%3 channels)", NULL, nchannels)
 		.arg(api->name).arg(dev->name)
 		.arg(nchannels);
 	combo->addItem(text, QVariant::fromValue(index));
@@ -65,6 +99,25 @@ PaDeviceIndex Dlg_Settings::getAudioDeviceIndex(QComboBox* combo, int comboindex
 		return paNoDevice;
 	else
 		return combo->itemData(comboindex).value<int>();
+}
+
+int Dlg_Settings::findAudioDeviceInCombo(QComboBox* combo, PaDeviceIndex dev)
+{
+	return combo->findData(QVariant::fromValue(dev));
+}
+
+bool Dlg_Settings::selectAudioDeviceInCombo(QComboBox* combo, PaDeviceIndex dev)
+{
+	int i = findAudioDeviceInCombo(combo, dev);
+	if (i != -1)
+	{
+		combo->setCurrentIndex(i);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void Dlg_Settings::on_comboAudioInputDevice_currentIndexChanged(int index)
@@ -120,5 +173,29 @@ void Dlg_Settings::on_buttonAsioPanel_clicked()
 	{
 		AudioIO::get().open();
 		AudioIO::get().start();
+	}
+}
+
+bool Dlg_Settings::applyAudioDeviceSettings(QString& error)
+{
+	CursorRaii cursor(Qt::WaitCursor);
+
+	AudioIO& aio = AudioIO::get();
+
+	aio.stop();
+	aio.close();
+
+	aio.setDeviceIndexes( getAudioDeviceIndex(ui.comboAudioInputDevice), getAudioDeviceIndex(ui.comboAudioOutputDevice) );
+
+	try
+	{
+		aio.open();
+		aio.start();
+		return true;
+	}
+	catch (const AudioIO::Error& err)
+	{
+		error = err.msg();
+		return false;
 	}
 }

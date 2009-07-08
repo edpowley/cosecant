@@ -4,8 +4,10 @@
 #include "workqueue.h"
 #include "perfclock.h"
 
-PrefsVar_Int AudioIO::s_prefInDeviceIndex ("audio/devices/Iindex", paNoDevice);
-PrefsVar_Int AudioIO::s_prefOutDeviceIndex("audio/devices/Oindex", paNoDevice);
+PrefsVar_String	AudioIO::s_prefInDevice ("audio/devices/i/name", "");
+PrefsVar_String	AudioIO::s_prefOutDevice("audio/devices/o/name", "");
+PrefsVar_Int AudioIO::s_prefInDeviceApi ("audio/devices/i/api", -1);
+PrefsVar_Int AudioIO::s_prefOutDeviceApi("audio/devices/o/api", -1);
 
 SingletonPtr<AudioIO> AudioIO::s_singleton;
 __int64 AudioIO::s_perfCount;
@@ -15,13 +17,11 @@ void AudioIO::initSingleton()
 	s_singleton.set(new AudioIO());
 }
 
-ERROR_CLASS(PortAudioError);
-
 int paDo(PaError retcode)
 {
 	if (retcode < 0)
 	{
-		THROW_ERROR(PortAudioError, Pa_GetErrorText(retcode));
+		throw AudioIO::Error(Pa_GetErrorText(retcode));
 	}
 	return retcode;
 }
@@ -31,19 +31,52 @@ AudioIO::AudioIO()
 {
 	paDo(Pa_Initialize());
 
-	qDebug("Default devices are %i %i\n", Pa_GetDefaultInputDevice(), Pa_GetDefaultOutputDevice());
-	qDebug("Selected device is %i %i\n", s_prefInDeviceIndex(), s_prefOutDeviceIndex());
-
-	if (s_prefOutDeviceIndex() == paNoDevice)
+	if (s_prefOutDeviceApi() == -1)
 	{
-		s_prefOutDeviceIndex.set(Pa_GetDefaultOutputDevice());
+		const PaDeviceInfo* dev = Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice());
+		if (dev)
+		{
+			const PaHostApiInfo* api = Pa_GetHostApiInfo(dev->hostApi);
+			s_prefOutDevice.set(dev->name);
+			s_prefOutDeviceApi.set(api->type);
+		}
 	}
+
+	m_inDeviceIndex  = findDevice(s_prefInDevice(),  s_prefInDeviceApi(),  input);
+	m_outDeviceIndex = findDevice(s_prefOutDevice(), s_prefOutDeviceApi(), output);
 }
 
 AudioIO::~AudioIO()
 {
 	if (m_stream) paDo(Pa_CloseStream(m_stream));
 	paDo(Pa_Terminate());
+}
+
+void AudioIO::setDeviceIndexes(PaDeviceIndex inIndex, PaDeviceIndex outIndex)
+{
+	m_inDeviceIndex  = inIndex;
+	m_outDeviceIndex = outIndex;
+	setDevicePref(inIndex,  s_prefInDevice,  s_prefInDeviceApi);
+	setDevicePref(outIndex, s_prefOutDevice, s_prefOutDeviceApi);
+}
+
+void AudioIO::setDevicePref(PaDeviceIndex index, PrefsVar_String& pref, PrefsVar_Int& prefApi)
+{
+	if (index == paNoDevice)
+	{
+		pref.set("");
+		prefApi.set(-1);
+	}
+	else
+	{
+		const PaDeviceInfo* dev = Pa_GetDeviceInfo(index);
+		ASSERT(dev);
+		const PaHostApiInfo* api = Pa_GetHostApiInfo(dev->hostApi);
+		ASSERT(api);
+
+		pref.set(dev->name);
+		prefApi.set(api->type);
+	}
 }
 
 int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
@@ -149,11 +182,14 @@ void AudioIO::abort()
 	if (m_stream) paDo(Pa_AbortStream(m_stream));
 }
 
-PaError AudioIO::open()
+void AudioIO::open()
 {
-	if (s_prefOutDeviceIndex() == paNoDevice)
+	PaDeviceIndex indevice  = getInDeviceIndex();
+	PaDeviceIndex outdevice = getOutDeviceIndex();
+
+	if (outdevice == paNoDevice)
 	{
-		return paInvalidDevice;
+		throw Error("No output device set");
 	}
 
 	PaStreamParameters spI, spO;
@@ -162,44 +198,64 @@ PaError AudioIO::open()
 
 	m_numInputChannels = m_numOutputChannels = 0;
 
-	if (s_prefInDeviceIndex() != paNoDevice)
+	if (indevice != paNoDevice)
 	{
-		m_numInputChannels = spI.channelCount = Pa_GetDeviceInfo(s_prefInDeviceIndex())->maxInputChannels;
-		spI.device = s_prefInDeviceIndex();
+		m_numInputChannels = spI.channelCount = Pa_GetDeviceInfo(indevice)->maxInputChannels;
+		spI.device = indevice;
 		spI.hostApiSpecificStreamInfo = NULL;
 		spI.sampleFormat = paFloat32;
-		spI.suggestedLatency = Pa_GetDeviceInfo(s_prefInDeviceIndex())->defaultLowInputLatency;
+		spI.suggestedLatency = Pa_GetDeviceInfo(indevice)->defaultLowInputLatency;
 	}
 
-	m_numOutputChannels = spO.channelCount = Pa_GetDeviceInfo(s_prefOutDeviceIndex())->maxOutputChannels;
-	spO.device = s_prefOutDeviceIndex();
+	m_numOutputChannels = spO.channelCount = Pa_GetDeviceInfo(outdevice)->maxOutputChannels;
+	spO.device = outdevice;
 	spO.hostApiSpecificStreamInfo = NULL;
 	spO.sampleFormat = paFloat32;
-	spO.suggestedLatency = Pa_GetDeviceInfo(s_prefOutDeviceIndex())->defaultLowOutputLatency;
+	spO.suggestedLatency = Pa_GetDeviceInfo(outdevice)->defaultLowOutputLatency;
 
-	PaError ret = Pa_OpenStream(&m_stream,
-		(s_prefInDeviceIndex() != paNoDevice) ? &spI : NULL,
+	paDo(Pa_OpenStream(&m_stream,
+		(indevice != paNoDevice) ? &spI : NULL,
 		&spO,
 		44100,
 		paFramesPerBufferUnspecified,
 		paNoFlag,
 		&paCallback,
-		(void*)this);
+		(void*)this));
 
-	if (ret == paNoError)
-		signalOpen();
-
-	return ret;
+	signalOpen();
 }
 
 void AudioIO::close()
 {
 	if (m_stream) paDo(Pa_CloseStream(m_stream));
+	m_stream = NULL;
+}
+
+PaDeviceIndex AudioIO::findDevice(const QString& name, int apiid, FindDeviceType devtype)
+{
+	if (apiid == -1) return paNoDevice;
+
+	int numDevices = Pa_GetDeviceCount();
+	if (numDevices < 0) return paNoDevice;
+
+	for (int i=0; i<numDevices; i++)
+	{
+		const PaDeviceInfo* dev = Pa_GetDeviceInfo(i);
+		const PaHostApiInfo* api = Pa_GetHostApiInfo(dev->hostApi);
+
+		if (devtype == input  && dev->maxInputChannels  <= 0) continue;
+		if (devtype == output && dev->maxOutputChannels <= 0) continue;
+
+		if (api->type == apiid && dev->name == name)
+			return i;
+	}
+
+	return paNoDevice;
 }
 
 QString AudioIO::getInputChannelName(int index)
 {
-	const PaDeviceInfo* dinfo = Pa_GetDeviceInfo(s_prefInDeviceIndex());
+	const PaDeviceInfo* dinfo = Pa_GetDeviceInfo(getInDeviceIndex());
 	if (!dinfo) return "Error";
 	const PaHostApiInfo* hinfo = Pa_GetHostApiInfo(dinfo->hostApi);
 	if (!hinfo) return "Error";
@@ -207,7 +263,7 @@ QString AudioIO::getInputChannelName(int index)
 	if (hinfo->type == paASIO)
 	{
 		const char* name = NULL;
-		PaAsio_GetInputChannelName(s_prefInDeviceIndex(), index, &name);
+		PaAsio_GetInputChannelName(getInDeviceIndex(), index, &name);
 		return name;
 	}
 	else
@@ -228,10 +284,10 @@ bool AudioIO::isOutputDeviceAsio(int index)
 
 QString AudioIO::getOutputChannelName(int index)
 {
-	if (isOutputDeviceAsio(s_prefOutDeviceIndex()))
+	if (isOutputDeviceAsio(getOutDeviceIndex()))
 	{
 		const char* name = NULL;
-		PaAsio_GetOutputChannelName(s_prefOutDeviceIndex(), index, &name);
+		PaAsio_GetOutputChannelName(getOutDeviceIndex(), index, &name);
 		return name;
 	}
 	else

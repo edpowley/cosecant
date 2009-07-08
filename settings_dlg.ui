@@ -59,7 +59,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>&amp;Samplerate</string>
+          <string>&amp;Samplerate (Hz)</string>
          </property>
          <property name="buddy">
           <cstring>comboAudioSamplerate</cstring>
@@ -68,6 +68,9 @@
        </item>
        <item row="2" column="1">
         <widget class="QComboBox" name="comboAudioSamplerate">
+         <property name="whatsThis">
+          <string>The audio sampling rate, in samples per second (Hertz)</string>
+         </property>
          <property name="editable">
           <bool>true</bool>
          </property>
@@ -75,6 +78,9 @@
        </item>
        <item row="3" column="1">
         <widget class="QPushButton" name="buttonAsioPanel">
+         <property name="whatsThis">
+          <string>Show your soundcard driver's control panel. This is only available when you choose an ASIO device in the &quot;Output device&quot; box.</string>
+         </property>
          <property name="text">
           <string>Show ASIO &amp;control panel</string>
          </property>
@@ -85,6 +91,9 @@
        </item>
        <item row="4" column="1">
         <widget class="QCheckBox" name="checkAsioPanelClosesDevice">
+         <property name="whatsThis">
+          <string>This is useful if your soundcard's ASIO control panel does not allow some settings to be changed while the device is open.</string>
+         </property>
          <property name="text">
           <string>Close audio device when showing ASIO control panel</string>
          </property>
@@ -95,15 +104,50 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tabMidi">
+      <attribute name="title">
+       <string>&amp;MIDI</string>
+      </attribute>
+     </widget>
      <widget class="QWidget" name="tabMultithreading">
       <attribute name="title">
        <string>&amp;Threads</string>
       </attribute>
      </widget>
-     <widget class="QWidget" name="tabMidi">
+     <widget class="QWidget" name="tabPaths">
       <attribute name="title">
-       <string>&amp;MIDI</string>
+       <string>&amp;Paths</string>
       </attribute>
+     </widget>
+     <widget class="QWidget" name="tabGraphics">
+      <attribute name="title">
+       <string>&amp;Graphics / Interface</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_2">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="checkGraphicsViewGL">
+         <property name="whatsThis">
+          <string>Sets whether graphics are drawn using OpenGL hardware acceleration. If you have a reasonably powerful graphics card, activating this should reduce CPU usage.</string>
+         </property>
+         <property name="text">
+          <string>OpenGL</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="checkGraphicsViewAA">
+         <property name="whatsThis">
+          <string>Sets whether graphics are drawn with smoothed edges. This looks better, at the expense of increased CPU usage.</string>
+         </property>
+         <property name="text">
+          <string>Anti-aliasing</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
@@ -130,6 +174,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="okButton">
+       <property name="whatsThis">
+        <string>Apply your settings and close this dialog.</string>
+       </property>
        <property name="text">
         <string>OK</string>
        </property>
@@ -139,7 +186,23 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="applyButton">
+       <property name="whatsThis">
+        <string>Apply your settings without closing this dialog.</string>
+       </property>
+       <property name="text">
+        <string>Apply</string>
+       </property>
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="cancelButton">
+       <property name="whatsThis">
+        <string>Close this dialog, discarding any changes.</string>
+       </property>
        <property name="text">
         <string>Cancel</string>
        </property>
@@ -151,22 +214,6 @@
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>okButton</sender>
-   <signal>clicked()</signal>
-   <receiver>SettingsDlg</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>278</x>
-     <y>253</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>96</x>
-     <y>254</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>cancelButton</sender>
    <signal>clicked()</signal>

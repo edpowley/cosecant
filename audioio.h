@@ -13,17 +13,21 @@ protected:
 	static SingletonPtr<AudioIO> s_singleton;
 
 public:
+	ERROR_CLASS(Error);
+
 	~AudioIO();
 	static void initSingleton();
 	static AudioIO& get() { return *s_singleton; }
 
-	static PrefsVar_Int s_prefInDeviceIndex, s_prefOutDeviceIndex;
+	PaDeviceIndex getInDeviceIndex()  { return m_inDeviceIndex; }
+	PaDeviceIndex getOutDeviceIndex() { return m_outDeviceIndex; }
+	void setDeviceIndexes(PaDeviceIndex inIndex, PaDeviceIndex outIndex);
 
 	void start();
 	void stop();
 	void abort();
 
-	PaError open();
+	void open();
 	void close();
 
 	static const unsigned int c_maxBufferSize = CosecantAPI::maxFramesPerBuffer;
@@ -46,4 +50,12 @@ protected:
 	PaStream* m_stream;
 	static int paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 		const PaStreamCallbackTimeInfo* time, PaStreamCallbackFlags status, void* user);
+
+	enum FindDeviceType {input, output};
+	PaDeviceIndex findDevice(const QString& name, int apiid, FindDeviceType devtype);
+
+	static PrefsVar_String s_prefInDevice, s_prefOutDevice;
+	static PrefsVar_Int s_prefInDeviceApi, s_prefOutDeviceApi;
+	PaDeviceIndex m_inDeviceIndex, m_outDeviceIndex;
+	void setDevicePref(PaDeviceIndex index, PrefsVar_String& pref, PrefsVar_Int& prefApi);
 };

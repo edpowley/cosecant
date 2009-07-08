@@ -39,7 +39,7 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 
 	m_tabWidget->setDocumentMode(true);
 
-	QDockWidget* undodock = new QDockWidget(tr("Undo stack"), this);
+	QDockWidget* undodock = new QDockWidget(tr("Undo history"), this);
 	undodock->setAllowedAreas(Qt::AllDockWidgetAreas);
 	QUndoView* undoview = new QUndoView(&theUndo(), undodock);
 	undodock->setWidget(undoview);

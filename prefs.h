@@ -56,6 +56,16 @@ protected:
 	virtual int sqlBind(sqlite3_stmt* stmt, int index);
 };
 
+class PrefsVar_String : public PrefsVar_T<QString>
+{
+public:
+	PrefsVar_String(const QString& id, const QString& def);
+
+protected:
+	virtual void sqlRetrieve(sqlite3_stmt* stmt, int column);
+	virtual int sqlBind(sqlite3_stmt* stmt, int index);
+};
+
 class PrefsFile : public Object
 {
 protected:
