@@ -104,7 +104,7 @@
     <string>&amp;New</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+N</string>
+    <string comment="file/new">Ctrl+N</string>
    </property>
   </action>
   <action name="actionFileOpen">
@@ -116,7 +116,7 @@
     <string>&amp;Open...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+O</string>
+    <string comment="file/open">Ctrl+O</string>
    </property>
   </action>
   <action name="actionFileSave">
@@ -128,7 +128,7 @@
     <string>&amp;Save</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+S</string>
+    <string comment="file/save">Ctrl+S</string>
    </property>
   </action>
   <action name="actionFileSaveAs">
@@ -140,7 +140,7 @@
     <string>Save &amp;As...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
+    <string comment="file/save as">Ctrl+Shift+S</string>
    </property>
   </action>
   <action name="actionExit">

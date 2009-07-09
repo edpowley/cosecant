@@ -12,18 +12,33 @@
 <context>
     <name>CosecantMainWindow</name>
     <message>
+        <source>Ctrl+Z</source>
+        <translation type="obsolete">Ctrl+Z</translation>
+    </message>
+    <message>
+        <source>Ctrl+Y</source>
+        <translation type="obsolete">Ctrl+Y</translation>
+    </message>
+    <message>
+        <source>Shift+Ctrl+Z</source>
+        <translation type="obsolete">Shift+Ctrl+Z</translation>
+    </message>
+    <message>
         <location filename="cosecantmainwindow.cpp" line="22"/>
         <source>Ctrl+Z</source>
+        <comment>shortcut for edit/undo</comment>
         <translation>Ctrl+Z</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.cpp" line="29"/>
         <source>Ctrl+Y</source>
+        <comment>shortcut for edit/redo</comment>
         <translation>Ctrl+Y</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.cpp" line="29"/>
         <source>Shift+Ctrl+Z</source>
+        <comment>shortcut for edit/redo</comment>
         <translation>Shift+Ctrl+Z</translation>
     </message>
     <message>
@@ -82,7 +97,30 @@
     <message>
         <location filename="cosecantmainwindow.ui" line="107"/>
         <source>Ctrl+N</source>
+        <comment>file/new</comment>
         <translation>Ctrl+N</translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="119"/>
+        <source>Ctrl+O</source>
+        <comment>file/open</comment>
+        <translation>Ctrl+O</translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="131"/>
+        <source>Ctrl+S</source>
+        <comment>file/save</comment>
+        <translation>Ctrl+S</translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="143"/>
+        <source>Ctrl+Shift+S</source>
+        <comment>file/save as</comment>
+        <translation>Ctrl+Shift+S</translation>
+    </message>
+    <message>
+        <source>Ctrl+N</source>
+        <translation type="obsolete">Ctrl+N</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="116"/>
@@ -90,9 +128,8 @@
         <translation>&amp;Openay...</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="119"/>
         <source>Ctrl+O</source>
-        <translation>Ctrl+O</translation>
+        <translation type="obsolete">Ctrl+O</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="128"/>
@@ -100,9 +137,8 @@
         <translation>Ave&amp;say</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="131"/>
         <source>Ctrl+S</source>
-        <translation>Ctrl+S</translation>
+        <translation type="obsolete">Ctrl+S</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="140"/>
@@ -110,9 +146,8 @@
         <translation>Avesay &amp;asay...</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="143"/>
         <source>Ctrl+Shift+S</source>
-        <translation>Ctrl+Shift+S</translation>
+        <translation type="obsolete">Ctrl+Shift+S</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="152"/>
@@ -190,50 +225,44 @@
 <context>
     <name>Editor</name>
     <message>
-        <location filename="routingeditor.cpp" line="154"/>
         <source>add machine &apos;%1&apos;</source>
-        <translation>adday achinemay &apos;%1&apos;</translation>
+        <translation type="obsolete">adday achinemay &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="387"/>
         <source>delete machine &apos;%1&apos;</source>
-        <translation>eleteday achinemay &apos;%1&apos;</translation>
+        <translation type="obsolete">eleteday achinemay &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="435"/>
         <source>rename machine &apos;%1&apos; to &apos;%2&apos; and change appearance</source>
-        <translation>enameray achinemay &apos;%1&apos; otay &apos;%2&apos; anday angechay appearanceay</translation>
+        <translation type="obsolete">enameray achinemay &apos;%1&apos; otay &apos;%2&apos; anday angechay appearanceay</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="437"/>
         <source>rename machine &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>enameray achinemay &apos;%1&apos; otay &apos;%2&apos;</translation>
+        <translation type="obsolete">enameray achinemay &apos;%1&apos; otay &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="443"/>
         <source>change appearance of machine &apos;%1&apos;</source>
-        <translation>angechay appearanceay ofay achinemay &apos;%1&apos;</translation>
+        <translation type="obsolete">angechay appearanceay ofay achinemay &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="604"/>
         <source>connect</source>
-        <translation>onnectcay</translation>
+        <translation type="obsolete">onnectcay</translation>
     </message>
 </context>
 <context>
     <name>MachineItem</name>
     <message>
-        <location filename="routingeditor.cpp" line="362"/>
+        <location filename="routingeditor.cpp" line="364"/>
         <source>move machines</source>
         <translation>ovemay achinesmay</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="471"/>
+        <location filename="routingeditor.cpp" line="473"/>
         <source>&amp;Name and appearance</source>
         <translation>Ame&amp;nay anday appearanceay</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="472"/>
+        <location filename="routingeditor.cpp" line="474"/>
         <source>&amp;Delete</source>
         <translation>Elete&amp;day</translation>
     </message>
@@ -285,6 +314,45 @@
         <location filename="main.cpp" line="46"/>
         <source>Error opening audio device. Choose &apos;Settings&apos; from the &apos;View&apos; menu to change your audio device settings.</source>
         <translation>Erroray openingay audioay eviceday. Oosechay &apos;Ettingssay&apos; omfray ethay &apos;Iewvay&apos; enumay otay angechay ouryay audioay eviceday ettingssay.</translation>
+    </message>
+</context>
+<context>
+    <name>RoutingEditor::Editor</name>
+    <message>
+        <location filename="routingeditor.cpp" line="6"/>
+        <source></source>
+        <comment>for lupdate</comment>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="routingeditor.cpp" line="156"/>
+        <source>add machine &apos;%1&apos;</source>
+        <translation>adday achinemay &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <location filename="routingeditor.cpp" line="389"/>
+        <source>delete machine &apos;%1&apos;</source>
+        <translation>eleteday achinemay &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <location filename="routingeditor.cpp" line="437"/>
+        <source>rename machine &apos;%1&apos; to &apos;%2&apos; and change appearance</source>
+        <translation>enameray achinemay &apos;%1&apos; otay &apos;%2&apos; anday angechay appearanceay</translation>
+    </message>
+    <message>
+        <location filename="routingeditor.cpp" line="439"/>
+        <source>rename machine &apos;%1&apos; to &apos;%2&apos;</source>
+        <translation>enameray achinemay &apos;%1&apos; otay &apos;%2&apos;</translation>
+    </message>
+    <message>
+        <location filename="routingeditor.cpp" line="445"/>
+        <source>change appearance of machine &apos;%1&apos;</source>
+        <translation>angechay appearanceay ofay achinemay &apos;%1&apos;</translation>
+    </message>
+    <message>
+        <location filename="routingeditor.cpp" line="606"/>
+        <source>connect</source>
+        <translation>onnectcay</translation>
     </message>
 </context>
 <context>

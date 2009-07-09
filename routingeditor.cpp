@@ -3,6 +3,8 @@
 #include "routingeditor.h"
 using namespace RoutingEditor;
 
+/* TRANSLATOR RoutingEditor::Editor */
+
 #include "song.h"
 #include "theme.h"
 #include "undo_command_ids.h"
