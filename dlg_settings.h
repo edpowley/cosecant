@@ -13,6 +13,8 @@ public:
 	static void run(QWidget *parent);
 
 protected:
+	bool apply();
+
 	void populateAudioDeviceCombos();
 	void addAudioDeviceToCombo(QComboBox* combo, int index, const PaDeviceInfo* dev, const PaHostApiInfo* api,
 								int nchannels);
@@ -22,8 +24,12 @@ protected:
 
 	bool applyAudioDeviceSettings(QString& error);
 
+	void populateLanguageCombo();
+	void applyLanguageSettings();
+
 protected slots:
 	void on_okButton_clicked();
+	void on_applyButton_clicked();
 
 	void on_comboAudioInputDevice_currentIndexChanged(int index);
 	void on_comboAudioOutputDevice_currentIndexChanged(int index);

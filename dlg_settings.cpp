@@ -19,13 +19,24 @@ Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
 	ui.setupUi(this);
 
 	populateAudioDeviceCombos();
+	populateLanguageCombo();
 }
 
 Dlg_Settings::~Dlg_Settings()
 {
 }
 
+void Dlg_Settings::on_applyButton_clicked()
+{
+	apply();
+}
+
 void Dlg_Settings::on_okButton_clicked()
+{
+	if (apply()) accept();
+}
+
+bool Dlg_Settings::apply()
 {
 	QString error;
 	if (!applyAudioDeviceSettings(error))
@@ -35,11 +46,13 @@ void Dlg_Settings::on_okButton_clicked()
 		msg.setText(tr("Error opening audio device"));
 		msg.setInformativeText(error);
 		msg.exec();
-		return;
+		return false;
 	}
 
+	applyLanguageSettings();
+
 	// No errors, so...
-	accept();
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -196,5 +209,57 @@ bool Dlg_Settings::applyAudioDeviceSettings(QString& error)
 	{
 		error = err.msg();
 		return false;
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void Dlg_Settings::populateLanguageCombo()
+{
+	QStringList languages = QDir().entryList(QStringList("cosecant_*.qm"), QDir::Files, QDir::Name);
+	languages.replaceInStrings(QRegExp("^cosecant_(.*).qm$"), "\\1");
+
+	QString syslocale = QLocale::system().name();
+	//: System language
+	ui.comboLanguage->addItem(tr("System (current: %1)").arg(syslocale), "system_locale");
+
+	foreach(QString lang, languages)
+	{
+		ui.comboLanguage->addItem(lang, lang);
+	}
+
+	QString current = CosecantMainWindow::s_prefLanguage();
+	int index = ui.comboLanguage->findData(current);
+	if (index != -1)
+	{
+		ui.comboLanguage->setCurrentIndex(index);
+	}
+	else
+	{
+		//: Corresponds to a language set in the prefs file but with no corresponding .qm file installed
+		ui.comboLanguage->addItem(tr("%1 (not installed)").arg(current), current);
+		ui.comboLanguage->setCurrentIndex(ui.comboLanguage->count()-1);
+	}
+}
+
+void Dlg_Settings::applyLanguageSettings()
+{
+	QString sel = ui.comboLanguage->itemData(ui.comboLanguage->currentIndex()).value<QString>();
+	if (sel != CosecantMainWindow::s_prefLanguage())
+	{
+		CosecantMainWindow::s_prefLanguage.set(sel);
+
+		const char* msgtext = QT_TR_NOOP(
+			"Changes to language settings will take effect the next time Cosecant is started.");
+
+		QMessageBox msg;
+		msg.setIcon(QMessageBox::Information);
+		msg.setText(tr(msgtext));
+
+		QTranslator translator;
+		translator.load("cosecant_" + sel);
+		msg.setInformativeText(translator.translate("Dlg_Settings", msgtext));
+
+		msg.exec();
 	}
 }

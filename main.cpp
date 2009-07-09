@@ -8,6 +8,7 @@
 #include "dllmachine.h"
 #include "theme.h"
 #include "htmlentity.h"
+#include "prefs.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,15 +16,17 @@ int main(int argc, char *argv[])
 
 	// i18n
 	{
-		qDebug() << QLocale::system().name();
+		QString language = CosecantMainWindow::s_prefLanguage();
+		if (language == "system_locale") language = QLocale::system().name();
+		qDebug() << "Language:" << language;
 
 		QTranslator* qtTranslator = new QTranslator(&a);
-		qtTranslator->load("qt_" + QLocale::system().name(),
+		qtTranslator->load("qt_" + language,
 			QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 		a.installTranslator(qtTranslator);
 
 		QTranslator* myappTranslator = new QTranslator(&a);
-		myappTranslator->load("cosecant_" + QLocale::system().name());
+		myappTranslator->load("cosecant_" + language);
 		a.installTranslator(myappTranslator);
 	}
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>513</width>
-    <height>228</height>
+    <height>365</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -123,27 +123,46 @@
       <attribute name="title">
        <string>&amp;Graphics / Interface</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-       </property>
-       <item row="0" column="1">
-        <widget class="QCheckBox" name="checkGraphicsViewGL">
-         <property name="whatsThis">
-          <string>Sets whether graphics are drawn using OpenGL hardware acceleration. If you have a reasonably powerful graphics card, activating this should reduce CPU usage.</string>
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="1" column="1">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Graphics views</string>
          </property>
-         <property name="text">
-          <string>OpenGL</string>
-         </property>
+         <layout class="QFormLayout" name="formLayout_2">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkGraphicsViewGL">
+            <property name="whatsThis">
+             <string>Sets whether graphics are drawn using OpenGL hardware acceleration. If you have a reasonably powerful graphics card, activating this should reduce CPU usage.</string>
+            </property>
+            <property name="text">
+             <string>OpenGL</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkGraphicsViewAA">
+            <property name="whatsThis">
+             <string>Sets whether graphics are drawn with smoothed edges. This looks better, at the expense of increased CPU usage.</string>
+            </property>
+            <property name="text">
+             <string>Anti-aliasing</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="checkGraphicsViewAA">
-         <property name="whatsThis">
-          <string>Sets whether graphics are drawn with smoothed edges. This looks better, at the expense of increased CPU usage.</string>
-         </property>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboLanguage"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Anti-aliasing</string>
+          <string>&amp;Language</string>
+         </property>
+         <property name="buddy">
+          <cstring>comboLanguage</cstring>
          </property>
         </widget>
        </item>

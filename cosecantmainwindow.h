@@ -2,6 +2,7 @@
 #define COSECANTMAINWINDOW_H
 
 #include "ui_cosecantmainwindow.h"
+#include "prefs.h"
 
 class CosecantMainWindow : public QMainWindow
 {
@@ -12,6 +13,8 @@ public:
 
 	CosecantMainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~CosecantMainWindow();
+
+	static PrefsVar_String s_prefLanguage;
 
 protected slots:
 	// Auto connected slots

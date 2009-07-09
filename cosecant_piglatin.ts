@@ -6,7 +6,7 @@
     <message>
         <location filename="audioio.cpp" line="192"/>
         <source>No output device set. One possible cause for this is if you have recently changed soundcards, and the card specified in Cosecant&apos;s settings file is no longer present.</source>
-        <translation type="unfinished"></translation>
+        <translation>Onay outputay evicetay etsay.</translation>
     </message>
 </context>
 <context>
@@ -29,12 +29,12 @@
     <message>
         <location filename="cosecantmainwindow.cpp" line="47"/>
         <source>Undo history</source>
-        <translation>Undo history</translation>
+        <translation>Undoay istoryhay</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.cpp" line="56"/>
         <source>Machines</source>
-        <translation>Machines</translation>
+        <translation>Achinesmay</translation>
     </message>
 </context>
 <context>
@@ -42,44 +42,42 @@
     <message>
         <location filename="cosecantmainwindow.ui" line="14"/>
         <source>BTDSys Cosecant</source>
-        <oldsource>CosecantMainWindow</oldsource>
         <translation>BTDSys Cosecant</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="31"/>
         <source>&amp;File</source>
-        <translation>&amp;File</translation>
+        <translation>Ile&amp;fay</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="42"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Edit</translation>
+        <translation>&amp;Editay</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="49"/>
         <source>&amp;Window</source>
-        <oldsource>Window</oldsource>
-        <translation>&amp;Window</translation>
+        <translation>Indow&amp;way</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="54"/>
         <source>&amp;View</source>
-        <translation>&amp;View</translation>
+        <translation>Iew&amp;vay</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="65"/>
         <source>Main toolbar</source>
-        <translation>Main toolbar</translation>
+        <translation>Ainmay Oolbartay</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="95"/>
         <source>&amp;Settings...</source>
-        <translation>&amp;Settings...</translation>
+        <translation>Ettings&amp;say...</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="104"/>
         <source>&amp;New</source>
-        <translation>&amp;New</translation>
+        <translation>Ew&amp;nay</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="107"/>
@@ -89,7 +87,7 @@
     <message>
         <location filename="cosecantmainwindow.ui" line="116"/>
         <source>&amp;Open...</source>
-        <translation>&amp;Open...</translation>
+        <translation>&amp;Openay...</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="119"/>
@@ -99,7 +97,7 @@
     <message>
         <location filename="cosecantmainwindow.ui" line="128"/>
         <source>&amp;Save</source>
-        <translation>&amp;Save</translation>
+        <translation>Ave&amp;say</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="131"/>
@@ -109,7 +107,7 @@
     <message>
         <location filename="cosecantmainwindow.ui" line="140"/>
         <source>Save &amp;As...</source>
-        <translation>Save &amp;As...</translation>
+        <translation>Avesay &amp;asay...</translation>
     </message>
     <message>
         <location filename="cosecantmainwindow.ui" line="143"/>
@@ -119,7 +117,7 @@
     <message>
         <location filename="cosecantmainwindow.ui" line="152"/>
         <source>E&amp;xit</source>
-        <translation>E&amp;xit</translation>
+        <translation>E&amp;xitay</translation>
     </message>
 </context>
 <context>
@@ -127,22 +125,22 @@
     <message>
         <location filename="dlg_machinerename.cpp" line="15"/>
         <source>Master</source>
-        <translation>Master</translation>
+        <translation>Astermay</translation>
     </message>
     <message>
         <location filename="dlg_machinerename.cpp" line="16"/>
         <source>Generator</source>
-        <translation>Generator</translation>
+        <translation>Eneratorgay</translation>
     </message>
     <message>
         <location filename="dlg_machinerename.cpp" line="17"/>
         <source>Effect</source>
-        <translation>Effect</translation>
+        <translation>Effectay</translation>
     </message>
     <message>
         <location filename="dlg_machinerename.cpp" line="18"/>
         <source>Control</source>
-        <translation>Control</translation>
+        <translation>Ontrolcay</translation>
     </message>
 </context>
 <context>
@@ -150,44 +148,43 @@
     <message>
         <location filename="dlg_settings.cpp" line="46"/>
         <source>Error opening audio device</source>
-        <translation>Error opening audio device</translation>
+        <translation>Erroray openingay audioay eviceday</translation>
     </message>
     <message numerus="yes">
         <location filename="dlg_settings.cpp" line="100"/>
         <source>%1 : %2 (%n channel(s))</source>
-        <oldsource>%1 : %2 (%3 channels)</oldsource>
         <extracomment>%1 = API name (eg &quot;ASIO&quot;), %2 = soundcard name, %n = number of channels</extracomment>
         <translation>
-            <numerusform>%1 : %2 (%n channel)</numerusform>
-            <numerusform>%1 : %2 (%n channels)</numerusform>
+            <numerusform>%1 : %2 (%n annelchay)</numerusform>
+            <numerusform>%1 : %2 (%n annelschay)</numerusform>
         </translation>
     </message>
     <message>
         <location filename="dlg_settings.cpp" line="171"/>
         <source>When you have finished with the ASIO control panel, click OK to reopen the audio device.</source>
-        <translation>When you have finished with the ASIO control panel, click OK to reopen the audio device.</translation>
+        <translation>Enwhay ouyay avehay inishedfay ithway ethay ASIOay ontrolcay anelpay, icklay OK otay eopenray ethay audioay eviceday.</translation>
     </message>
     <message>
         <location filename="dlg_settings.cpp" line="179"/>
         <source>Failed to open ASIO control panel</source>
-        <translation>Failed to open ASIO control panel</translation>
+        <translation>Ailedfay otay openay ASIO ontrolcay anelpay</translation>
     </message>
     <message>
         <location filename="dlg_settings.cpp" line="224"/>
         <source>System (current: %1)</source>
         <extracomment>System language</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Ystemsay (urrentcay: %1)</translation>
     </message>
     <message>
         <location filename="dlg_settings.cpp" line="240"/>
         <source>%1 (not installed)</source>
         <extracomment>Corresponds to a language set in the prefs file but with no corresponding .qm file installed</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>%1 (otnay installeday)</translation>
     </message>
     <message>
         <location filename="dlg_settings.cpp" line="252"/>
         <source>Changes to language settings will take effect the next time Cosecant is started.</source>
-        <translation type="unfinished"></translation>
+        <translation>Angeschay otay anguagelay ettingssay illway aketay effectay ethay extnay imetay Cosecant isay artedstay.</translation>
     </message>
 </context>
 <context>
@@ -195,32 +192,32 @@
     <message>
         <location filename="routingeditor.cpp" line="154"/>
         <source>add machine &apos;%1&apos;</source>
-        <translation>add machine &apos;%1&apos;</translation>
+        <translation>adday achinemay &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="387"/>
         <source>delete machine &apos;%1&apos;</source>
-        <translation>delete machine &apos;%1&apos;</translation>
+        <translation>eleteday achinemay &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="435"/>
         <source>rename machine &apos;%1&apos; to &apos;%2&apos; and change appearance</source>
-        <translation>rename machine &apos;%1&apos; to &apos;%2&apos; and change appearance</translation>
+        <translation>enameray achinemay &apos;%1&apos; otay &apos;%2&apos; anday angechay appearanceay</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="437"/>
         <source>rename machine &apos;%1&apos; to &apos;%2&apos;</source>
-        <translation>rename machine &apos;%1&apos; to &apos;%2&apos;</translation>
+        <translation>enameray achinemay &apos;%1&apos; otay &apos;%2&apos;</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="443"/>
         <source>change appearance of machine &apos;%1&apos;</source>
-        <translation>change appearance of machine &apos;%1&apos;</translation>
+        <translation>angechay appearanceay ofay achinemay &apos;%1&apos;</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="604"/>
         <source>connect</source>
-        <translation>connect</translation>
+        <translation>onnectcay</translation>
     </message>
 </context>
 <context>
@@ -228,17 +225,17 @@
     <message>
         <location filename="routingeditor.cpp" line="362"/>
         <source>move machines</source>
-        <translation>move machines</translation>
+        <translation>ovemay achinesmay</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="471"/>
         <source>&amp;Name and appearance</source>
-        <translation>&amp;Name and appearance</translation>
+        <translation>Ame&amp;nay anday appearanceay</translation>
     </message>
     <message>
         <location filename="routingeditor.cpp" line="472"/>
         <source>&amp;Delete</source>
-        <translation>&amp;Delete</translation>
+        <translation>Elete&amp;day</translation>
     </message>
 </context>
 <context>
@@ -246,27 +243,27 @@
     <message>
         <location filename="machine_rename_dlg.ui" line="20"/>
         <source>Rename Machine</source>
-        <translation>Rename Machine</translation>
+        <translation>Enameray Achinemay</translation>
     </message>
     <message>
         <location filename="machine_rename_dlg.ui" line="53"/>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation>Okayay</translation>
     </message>
     <message>
         <location filename="machine_rename_dlg.ui" line="60"/>
         <source>Cancel</source>
-        <translation>Cancel</translation>
+        <translation>Ancelcay</translation>
     </message>
     <message>
         <location filename="machine_rename_dlg.ui" line="72"/>
         <source>&amp;Name</source>
-        <translation>&amp;Name</translation>
+        <translation>Ame&amp;nay</translation>
     </message>
     <message>
         <location filename="machine_rename_dlg.ui" line="85"/>
         <source>&amp;Color</source>
-        <translation>&amp;Colour</translation>
+        <translation>Olor&amp;cay</translation>
     </message>
 </context>
 <context>
@@ -274,12 +271,12 @@
     <message>
         <location filename="parameditor.cpp" line="44"/>
         <source>Parameters - %1</source>
-        <translation>Parameters - %1</translation>
+        <translation>Arameterspay - %1</translation>
     </message>
     <message>
         <location filename="parameditor.cpp" line="50"/>
         <source>change parameter &apos;%1&apos; on &apos;%2&apos;</source>
-        <translation>change parameter &apos;%1&apos; on &apos;%2&apos;</translation>
+        <translation>angechay arameterpay &apos;%1&apos; onay &apos;%2&apos;</translation>
     </message>
 </context>
 <context>
@@ -287,7 +284,7 @@
     <message>
         <location filename="main.cpp" line="46"/>
         <source>Error opening audio device. Choose &apos;Settings&apos; from the &apos;View&apos; menu to change your audio device settings.</source>
-        <translation>Error opening audio device. Choose &apos;Settings&apos; from the &apos;View&apos; menu to change your audio device settings.</translation>
+        <translation>Erroray openingay audioay eviceday. Oosechay &apos;Ettingssay&apos; omfray ethay &apos;Iewvay&apos; enumay otay angechay ouryay audioay eviceday ettingssay.</translation>
     </message>
 </context>
 <context>
@@ -295,42 +292,42 @@
     <message>
         <location filename="settings_dlg.ui" line="14"/>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Ettingssay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="24"/>
         <source>&amp;Audio</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Audioay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="36"/>
         <source>&amp;Input device</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Inputay eviceday</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="49"/>
         <source>&amp;Output device</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Outputay eviceday</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="62"/>
         <source>&amp;Samplerate (Hz)</source>
-        <translation type="unfinished"></translation>
+        <translation>Amplerate&amp;say (Hz)</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="72"/>
         <source>The audio sampling rate, in samples per second (Hertz)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ethay audioay amplingsay ateray, inay amplessay erpay econdsay (Ertzhay)</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="82"/>
         <source>Show your soundcard driver&apos;s control panel. This is only available when you choose an ASIO device in the &quot;Output device&quot; box.</source>
-        <translation type="unfinished"></translation>
+        <translation>Owshay oursay oundcardsay iver&apos;sdray ontrolcay anelpay. Isthay isay onlyay availableay enwhay ouyay oosechay anay ASIO eviceday inay ethay &quot;Outputay eviceday&quot; oxbay.</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="85"/>
         <source>Show ASIO &amp;control panel</source>
-        <translation type="unfinished"></translation>
+        <translation>Owshay ASIO ontrol&amp;cay anelpay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="95"/>
@@ -345,27 +342,27 @@
     <message>
         <location filename="settings_dlg.ui" line="109"/>
         <source>&amp;MIDI</source>
-        <translation type="unfinished"></translation>
+        <translation>IDI&amp;May</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="114"/>
         <source>&amp;Threads</source>
-        <translation type="unfinished"></translation>
+        <translation>Eads&amp;thray</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="119"/>
         <source>&amp;Paths</source>
-        <translation type="unfinished"></translation>
+        <translation>Aths&amp;pay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="124"/>
         <source>&amp;Graphics / Interface</source>
-        <translation type="unfinished"></translation>
+        <translation>Aphics&amp;gray / Interfaceay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="130"/>
         <source>Graphics views</source>
-        <translation type="unfinished"></translation>
+        <translation>Aphicsgray iewsvay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="136"/>
@@ -385,12 +382,12 @@
     <message>
         <location filename="settings_dlg.ui" line="149"/>
         <source>Anti-aliasing</source>
-        <translation type="unfinished"></translation>
+        <translation>Antiay-aliasingay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="162"/>
         <source>&amp;Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Anguage&amp;lay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="197"/>
@@ -400,7 +397,7 @@
     <message>
         <location filename="settings_dlg.ui" line="200"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>Okayay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="210"/>
@@ -410,7 +407,7 @@
     <message>
         <location filename="settings_dlg.ui" line="213"/>
         <source>Apply</source>
-        <translation type="unfinished"></translation>
+        <translation>Applyay</translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="223"/>
@@ -420,7 +417,7 @@
     <message>
         <location filename="settings_dlg.ui" line="226"/>
         <source>Cancel</source>
-        <translation type="unfinished">Cancel</translation>
+        <translation>Ancelcay</translation>
     </message>
 </context>
 <context>
@@ -428,32 +425,32 @@
     <message>
         <location filename="parameditor.cpp" line="393"/>
         <source>seconds</source>
-        <translation type="unfinished"></translation>
+        <translation>econdssay</translation>
     </message>
     <message>
         <location filename="parameditor.cpp" line="394"/>
         <source>ticks</source>
-        <translation type="unfinished"></translation>
+        <translation>ickstay</translation>
     </message>
     <message>
         <location filename="parameditor.cpp" line="395"/>
         <source>samples</source>
-        <translation type="unfinished"></translation>
+        <translation>amplessay</translation>
     </message>
     <message>
         <location filename="parameditor.cpp" line="396"/>
         <source>Hz</source>
-        <translation type="unfinished"></translation>
+        <translation>Hz</translation>
     </message>
     <message>
         <location filename="parameditor.cpp" line="397"/>
         <source>Fs</source>
-        <translation type="unfinished"></translation>
+        <translation>Fs</translation>
     </message>
     <message>
         <location filename="parameditor.cpp" line="398"/>
         <source>note</source>
-        <translation type="unfinished"></translation>
+        <translation>otenay</translation>
     </message>
 </context>
 </TS>
