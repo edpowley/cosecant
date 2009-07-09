@@ -327,7 +327,7 @@ Sequence::Track::Track(SongLoadContext& ctx, xmlpp::Element* parent)
 	}
 }
 
-Sequence::Event::Event(SongLoadContext& ctx, xmlpp::Element* el)
+Sequence::Clip::Event(SongLoadContext& ctx, xmlpp::Element* el)
 {
 	m_pattern = ctx.getObjectOrThrow<Pattern>(getAttribute<Uuid>(el, "pattern"));
 	m_startTime = getAttribute<double>(el, "starttime");

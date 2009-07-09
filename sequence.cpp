@@ -27,19 +27,19 @@ void Seq::ctorCommon()
 
 ////////////////////////////////////////////////////////////////////////////
 
-Event::Event(double starttime, const Ptr<Sequence::Pattern>& pattern)
+Clip::Clip(double starttime, const Ptr<Sequence::Pattern>& pattern)
 : m_startTime(starttime), m_pattern(pattern)
 {
 	m_begin = 0.0;
 	m_end = m_pattern->getLength();
 }
 
-Event::Event(const Event& other)
+Clip::Clip(const Clip& other)
 : m_startTime(other.m_startTime), m_begin(other.m_begin), m_end(other.m_end), m_pattern(other.m_pattern)
 {
 }
 
-Event::Event(double starttime)
+Clip::Clip(double starttime)
 : m_startTime(starttime)
 {
 	m_begin = m_end = 0.0;
@@ -74,10 +74,10 @@ void Track::onChange()
 		Song::get().m_sequence->signalTracksChange();
 }
 
-Ptr<Event> Track::getEventAtTime(double t)
+Ptr<Clip> Track::getClipAtTime(double t)
 {
-	Events::iterator i = m_events.upper_bound(Event::dummy(t)); // First with starttime > t
-	if (i == m_events.begin()) return NULL;
+	Clips::iterator i = m_clips.upper_bound(Clip::dummy(t)); // First with starttime > t
+	if (i == m_clips.begin()) return NULL;
 
 	--i;
 	if ((*i)->spansTime(t))
@@ -86,10 +86,10 @@ Ptr<Event> Track::getEventAtTime(double t)
 		return NULL;
 }
 
-Ptr<Event> Track::getNextEvent(double t)
+Ptr<Clip> Track::getNextClip(double t)
 {
-	Events::iterator i = m_events.upper_bound(Event::dummy(t)); // First with starttime > t
-	if (i != m_events.end())
+	Clips::iterator i = m_clips.upper_bound(Clip::dummy(t)); // First with starttime > t
+	if (i != m_clips.end())
 		return *i;
 	else
 		return NULL;

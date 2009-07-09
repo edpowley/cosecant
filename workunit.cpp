@@ -134,7 +134,7 @@ void WorkMachine::updateSequenceEvents(int firstframe, int lastframe)
 		double endPlayPos = m_queue->m_playPos + m_queue->m_ticksPerFrame * (lastframe - firstframe);
 		BOOST_FOREACH(const Ptr<Sequence::Track>& track, m_seqTracks)
 		{
-			BOOST_FOREACH(const Ptr<Sequence::Event>& sev, track->m_events)
+			BOOST_FOREACH(const Ptr<Sequence::Clip>& sev, track->m_clips)
 			{
 				if (sev->getEndTime() < m_queue->m_playPos) continue;
 				if (sev->m_startTime >= endPlayPos) break;

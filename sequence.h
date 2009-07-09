@@ -45,11 +45,11 @@ namespace Sequence
 		void removed() { signalRemove(); }
 	};
 
-	class Event : public Object
+	class Clip : public Object
 	{
 	public:
-		Event(double starttime, const Ptr<Pattern>& pattern);
-		Event(const Event& other);
+		Clip(double starttime, const Ptr<Pattern>& pattern);
+		Clip(const Clip& other);
 		double m_startTime, m_begin, m_end;
 		double getLength() const { return m_end - m_begin; }
 		double getEndTime() const { return m_startTime + m_end - m_begin; }
@@ -59,16 +59,16 @@ namespace Sequence
 
 		struct StartTimeLessComparer
 		{
-			bool operator()(const Ptr<Event> a, const Ptr<Event> b) const { return a->m_startTime < b->m_startTime; }
+			bool operator()(const Ptr<Clip> a, const Ptr<Clip> b) const { return a->m_startTime < b->m_startTime; }
 		};
 
-		Event(class SongLoadContext& ctx, const QDomElement& el);
+		Clip(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
-		static Ptr<Event> dummy(double time) { return new Event(time); }
+		static Ptr<Clip> dummy(double time) { return new Clip(time); }
 
 	protected:
-		Event(double starttime);
+		Clip(double starttime);
 	};
 
 	class Track : public ObjectWithUuid
@@ -79,14 +79,14 @@ namespace Sequence
 		Track(Machine* mac);
 		Ptr<Machine> m_mac;
 
-		typedef std::set<Ptr<Event>, Event::StartTimeLessComparer> Events;
-		Events m_events;
+		typedef std::set<Ptr<Clip>, Clip::StartTimeLessComparer> Clips;
+		Clips m_clips;
 
 		Track(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
-		Ptr<Event> getEventAtTime(double t);
-		Ptr<Event> getNextEvent(double t);
+		Ptr<Clip> getClipAtTime(double t);
+		Ptr<Clip> getNextClip(double t);
 
 	signals:
 		void signalChange();

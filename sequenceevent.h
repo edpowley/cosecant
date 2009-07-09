@@ -23,27 +23,27 @@ namespace SequenceEvent
 	class Start : public Base
 	{
 	public:
-		Start(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev, double pos)
+		Start(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev, double pos)
 			: m_track(track), m_ev(ev), m_pos(pos) {}
 		
 		virtual void work(const Ptr<Machine>& mac);
 
 	protected:
 		Ptr<Sequence::Track> m_track;
-		Ptr<Sequence::Event> m_ev;
+		Ptr<Sequence::Clip> m_ev;
 		double m_pos;
 	};
 
 	class Stop : public Base
 	{
 	public:
-		Stop(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev)
+		Stop(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev)
 			: m_track(track), m_ev(ev) {}
 
 		virtual void work(const Ptr<Machine>& mac);
 
 	protected:
 		Ptr<Sequence::Track> m_track;
-		Ptr<Sequence::Event> m_ev;
+		Ptr<Sequence::Clip> m_ev;
 	};
 };

@@ -229,7 +229,7 @@ void Sequence::Track::save(xmlpp::Element* el)
 	}
 }
 
-void Sequence::Event::save(xmlpp::Element* el)
+void Sequence::Clip::save(xmlpp::Element* el)
 {
 	setAttribute(el, "pattern", m_pattern->m_objectUuid.str());
 	setAttribute(el, "starttime", m_startTime);

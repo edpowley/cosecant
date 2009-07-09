@@ -12,16 +12,16 @@ namespace SequenceActions
 			setText(description);
 		}
 
-		void addAddEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
-		void addRemoveEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
+		void addAddEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev);
+		void addRemoveEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev);
 		void addReplaceEvent(const Ptr<Sequence::Track>& track,
-							const Ptr<Sequence::Event>& evOld, const Ptr<Sequence::Event>& evNew);
+							const Ptr<Sequence::Clip>& evOld, const Ptr<Sequence::Clip>& evNew);
 
 		virtual void redo();
 		virtual void undo();
 
 	protected:
-		std::multimap< Ptr<Sequence::Track>, Ptr<Sequence::Event> > m_eventsAdded, m_eventsRemoved;
+		std::multimap< Ptr<Sequence::Track>, Ptr<Sequence::Clip> > m_eventsAdded, m_eventsRemoved;
 		std::set< Ptr<Sequence::Track> > m_tracksAffected;
 
 		QString m_description;
@@ -30,13 +30,13 @@ namespace SequenceActions
 	class InsertEvent : public ChangeEvents
 	{
 	public:
-		InsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
+		InsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev);
 	};
 
 	class CreatePatternAndInsertEvent : public InsertEvent
 	{
 	public:
-		CreatePatternAndInsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev);
+		CreatePatternAndInsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev);
 
 		virtual void redo();
 		virtual void undo();

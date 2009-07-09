@@ -283,9 +283,9 @@ public:
 	boost::mutex m_playingPatternsMutex;
 	struct EventPlayRec
 	{
-		Ptr<Sequence::Event> m_event;
+		Ptr<Sequence::Clip> m_event;
 		double m_pos;
-		EventPlayRec(const Ptr<Sequence::Event>& ev, double pos) : m_event(ev), m_pos(pos) {}
+		EventPlayRec(const Ptr<Sequence::Clip>& ev, double pos) : m_event(ev), m_pos(pos) {}
 	};
 	std::vector<EventPlayRec> m_playingEvents;
 

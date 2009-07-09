@@ -8,13 +8,13 @@ using namespace SequenceActions;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-InsertEvent::InsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev)
+InsertEvent::InsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev)
 : ChangeEvents("insert sequence event")
 {
 	addAddEvent(track, ev);
 
 	// If ev's start time is in an event, truncate that event
-	Ptr<Sequence::Event> truncEvent = track->getEventAtTime(ev->m_startTime);
+	Ptr<Sequence::Clip> truncEvent = track->getClipAtTime(ev->m_startTime);
 	if (truncEvent)
 	{
 		addRemoveEvent(track, truncEvent);
@@ -23,21 +23,21 @@ InsertEvent::InsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::
 		// Otherwise...
 		if (truncEvent->m_startTime < ev->m_startTime)
 		{
-			Ptr<Sequence::Event> truncatedEvent = new Sequence::Event(*truncEvent);
+			Ptr<Sequence::Clip> truncatedEvent = new Sequence::Clip(*truncEvent);
 			truncatedEvent->m_end = truncEvent->m_begin + (ev->m_startTime - truncEvent->m_startTime);
 			addAddEvent(track, truncatedEvent);
 		}
 	}
 
 	// If there is an event soon after the one we're inserting, then that limits the length
-	Ptr<Sequence::Event> nextEvent = track->getNextEvent(ev->m_startTime);
+	Ptr<Sequence::Clip> nextEvent = track->getNextClip(ev->m_startTime);
 	if (nextEvent)
 	{
 		ev->m_end = min(ev->m_end, ev->m_begin + (nextEvent->m_startTime - ev->m_startTime));
 	}
 }
 
-CreatePatternAndInsertEvent::CreatePatternAndInsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev)
+CreatePatternAndInsertEvent::CreatePatternAndInsertEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev)
 : InsertEvent(track, ev), m_mac(track->m_mac), m_pattern(ev->m_pattern)
 {
 }
@@ -57,7 +57,7 @@ void CreatePatternAndInsertEvent::undo()
 ClearTrackRange::ClearTrackRange(const Ptr<Sequence::Track>& track, double begin, double end, bool deleteIfStartsHere)
 : ChangeEvents("delete sequence events")
 {
-	BOOST_FOREACH(const Ptr<Sequence::Event>& ev, track->m_events)
+	BOOST_FOREACH(const Ptr<Sequence::Clip>& ev, track->m_clips)
 	{
 		if (ev->m_startTime >= end) break;
 
@@ -72,7 +72,7 @@ ClearTrackRange::ClearTrackRange(const Ptr<Sequence::Track>& track, double begin
 		else if (ev->getEndTime() > begin)
 		{
 			addRemoveEvent(track, ev);
-			Ptr<Sequence::Event> truncatedEvent = new Sequence::Event(*ev);
+			Ptr<Sequence::Clip> truncatedEvent = new Sequence::Clip(*ev);
 			truncatedEvent->m_end = ev->m_begin + (begin - ev->m_startTime);
 			addAddEvent(track, truncatedEvent);
 		}
@@ -88,19 +88,19 @@ ChangePatternLength::ChangePatternLength(const Ptr<Sequence::Pattern>& pattern, 
 	{
 		if (track->m_mac.c_ptr() != m_pattern->m_mac) continue;
 
-		BOOST_FOREACH(const Ptr<Sequence::Event>& ev, track->m_events)
+		BOOST_FOREACH(const Ptr<Sequence::Clip>& ev, track->m_clips)
 		{
 			if (ev->m_pattern != m_pattern) continue;
 
 			// If the end point is currently the end of the pattern, or if the end point is beyond the new length
 			if (ev->m_end == m_pattern->getLength() || ev->m_end > newlength)
 			{
-				Ptr<Sequence::Event> newev = new Sequence::Event(*ev);
+				Ptr<Sequence::Clip> newev = new Sequence::Clip(*ev);
 				newev->m_end = newlength;
 
 				if (newlength > m_pattern->getLength()) // need to check for overlap with next event
 				{
-					Ptr<Sequence::Event> nextev = track->getNextEvent(newev->m_startTime);
+					Ptr<Sequence::Clip> nextev = track->getNextClip(newev->m_startTime);
 					if (nextev && nextev->m_startTime < newev->getEndTime())
 						newev->m_end = newev->m_begin + (nextev->m_startTime - newev->m_startTime);
 				}
@@ -127,22 +127,22 @@ void ChangePatternLength::undo()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-typedef std::pair< Ptr<Sequence::Track>, Ptr<Sequence::Event> > TrackEventPair;
+typedef std::pair< Ptr<Sequence::Track>, Ptr<Sequence::Clip> > TrackEventPair;
 
-void ChangeEvents::addAddEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev)
+void ChangeEvents::addAddEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev)
 {
 	m_eventsAdded.insert(std::make_pair(track, ev));
 	m_tracksAffected.insert(track);
 }
 
-void ChangeEvents::addRemoveEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Event>& ev)
+void ChangeEvents::addRemoveEvent(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev)
 {
 	m_eventsRemoved.insert(std::make_pair(track, ev));
 	m_tracksAffected.insert(track);
 }
 
 void ChangeEvents::addReplaceEvent(const Ptr<Sequence::Track>& track,
-								   const Ptr<Sequence::Event>& evOld, const Ptr<Sequence::Event>& evNew)
+								   const Ptr<Sequence::Clip>& evOld, const Ptr<Sequence::Clip>& evNew)
 {
 	addRemoveEvent(track, evOld);
 	addAddEvent(track, evNew);
@@ -155,12 +155,12 @@ void ChangeEvents::redo()
 
 	BOOST_FOREACH(const TrackEventPair& te, m_eventsRemoved)
 	{
-		te.first->m_events.erase(te.second);
+		te.first->m_clips.erase(te.second);
 	}
 
 	BOOST_FOREACH(const TrackEventPair& te, m_eventsAdded)
 	{
-		te.first->m_events.insert(te.second);
+		te.first->m_clips.insert(te.second);
 	}
 
 	BOOST_FOREACH(const Ptr<Sequence::Track>& track, m_tracksAffected)
@@ -175,12 +175,12 @@ void ChangeEvents::undo()
 
 	BOOST_FOREACH(const TrackEventPair& te, m_eventsAdded)
 	{
-		te.first->m_events.erase(te.second);
+		te.first->m_clips.erase(te.second);
 	}
 
 	BOOST_FOREACH(const TrackEventPair& te, m_eventsRemoved)
 	{
-		te.first->m_events.insert(te.second);
+		te.first->m_clips.insert(te.second);
 	}
 
 	BOOST_FOREACH(const Ptr<Sequence::Track>& track, m_tracksAffected)
