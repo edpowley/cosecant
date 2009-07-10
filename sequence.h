@@ -2,7 +2,6 @@
 
 class PatternEditor;
 class NotebookWindow;
-class SequenceEditor;
 class Machine;
 class SongLoadContext;
 
@@ -106,7 +105,6 @@ namespace Sequence
 	{
 		Q_OBJECT
 
-		friend SequenceEditor;
 		friend Track;
 		friend Pattern;
 
@@ -148,6 +146,5 @@ namespace Sequence
 
 	protected:
 		void ctorCommon();
-		SequenceEditor* m_editor;
 	};
 };

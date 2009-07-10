@@ -15,8 +15,6 @@ Seq::Seq()
 
 void Seq::ctorCommon()
 {
-	m_editor = NULL;
-
 	m_playPos = 0;
 	m_playing = false;
 	m_loopStart = 0;

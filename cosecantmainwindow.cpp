@@ -4,6 +4,7 @@
 
 #include "song.h"
 #include "routingeditor.h"
+#include "sequenceeditor.h"
 #include "machinechooserwidget.h"
 #include "dlg_settings.h"
 
@@ -41,6 +42,9 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 
 	RoutingEditor::Editor* re = new RoutingEditor::Editor(Song::get().m_routing, m_tabWidget);
 	m_tabWidget->addTab(re, "Routing");
+
+	SequenceEditor::Editor* se = new SequenceEditor::Editor(Song::get().m_sequence, m_tabWidget);
+	m_tabWidget->addTab(se, "Sequence");
 
 	m_tabWidget->setDocumentMode(true);
 
