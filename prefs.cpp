@@ -17,6 +17,7 @@ PrefsVar_Base::~PrefsVar_Base()
 void PrefsVar_Base::setDirty()
 {
 	m_prefsfile->writeValue(m_id, this);
+	signalChange();
 }
 
 //////////////////////////////////////////////////////////////////
@@ -53,6 +54,24 @@ void PrefsVar_Int::sqlRetrieve(sqlite3_stmt* stmt, int column)
 int PrefsVar_Int::sqlBind(sqlite3_stmt *stmt, int index)
 {
 	return sqlite3_bind_int(stmt, index, m_value);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+PrefsVar_Bool::PrefsVar_Bool(const QString& id, bool def)
+: PrefsVar_T(id, def)
+{
+	m_prefsfile->readValue(m_id, this);
+}
+
+void PrefsVar_Bool::sqlRetrieve(sqlite3_stmt* stmt, int column)
+{
+	m_value = (sqlite3_column_int(stmt, column) != 0);
+}
+
+int PrefsVar_Bool::sqlBind(sqlite3_stmt *stmt, int index)
+{
+	return sqlite3_bind_int(stmt, index, m_value ? 1 : 0);
 }
 
 //////////////////////////////////////////////////////////////////////

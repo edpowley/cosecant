@@ -59,6 +59,8 @@ Track::Track(Machine* mac)
 
 void Track::ctorCommon()
 {
+	m_height = 100;
+
 	connect(
 		this, SIGNAL(signalChange()),
 		this, SLOT(onChange())

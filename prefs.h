@@ -1,11 +1,17 @@
 #pragma once
 
-class PrefsVar_Base
+class PrefsVar_Base : public QObject
 {
+	Q_OBJECT
+
 	friend class PrefsFile;
+
 public:
 	PrefsVar_Base(const QString& id);
 	virtual ~PrefsVar_Base();
+
+signals:
+	void signalChange();
 
 protected:
 	QString m_id;
@@ -29,7 +35,14 @@ public:
 		: m_value(def), PrefsVar_Base(id), m_default(def) {}
 
 	T operator()() { return m_value; }
-	void set(const T& newval) { m_value = newval; setDirty(); }
+	void set(const T& newval)
+	{
+		if (m_value != newval)
+		{
+			m_value = newval;
+			setDirty();
+		}
+	}
 
 protected:
 	T m_default;
@@ -50,6 +63,16 @@ class PrefsVar_Int : public PrefsVar_T<int>
 {
 public:
 	PrefsVar_Int(const QString& id, int def);
+
+protected:
+	virtual void sqlRetrieve(sqlite3_stmt* stmt, int column);
+	virtual int sqlBind(sqlite3_stmt* stmt, int index);
+};
+
+class PrefsVar_Bool : public PrefsVar_T<bool>
+{
+public:
+	PrefsVar_Bool(const QString& id, bool def);
 
 protected:
 	virtual void sqlRetrieve(sqlite3_stmt* stmt, int column);

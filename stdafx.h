@@ -30,6 +30,7 @@
 #include <QtGui>
 #include <QtXml>
 #include <QtScript>
+#include <QtOpenGL>
 
 // PortAudio
 #include <portaudio.h>

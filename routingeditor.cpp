@@ -17,10 +17,9 @@ PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 50);
 
 Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
-: m_routing(routing), QGraphicsView(parent), m_scene(this)
+: m_routing(routing), MyGraphicsView(parent), m_scene(this)
 {
 	setScene(&m_scene);
-	setRenderHints(QPainter::Antialiasing);
 	setDragMode(RubberBandDrag);
 
 	m_scene.setSceneRect(0,0,1000,1000);

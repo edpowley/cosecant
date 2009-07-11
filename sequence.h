@@ -87,6 +87,8 @@ namespace Sequence
 		Ptr<Clip> getClipAtTime(double t);
 		Ptr<Clip> getNextClip(double t);
 
+		double getHeight() { return m_height; }
+
 	signals:
 		void signalChange();
 
@@ -96,6 +98,8 @@ namespace Sequence
 	protected:
 		Track();
 		void ctorCommon();
+
+		double m_height;
 
 	protected slots:
 		void onChange();
@@ -132,6 +136,8 @@ namespace Sequence
 		double m_ticksPerFrame;
 
 		void showEditor(NotebookWindow* win);
+
+		double getLengthInSeconds() { return 400.0; }
 
 	signals:
 		void signalChange();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "routing.h"
+#include "mygraphicsview.h"
 
 namespace RoutingEditor
 {
@@ -146,7 +147,7 @@ namespace RoutingEditor
 
 	/////////////////////////////////////////////////////////////////////////
 
-	class Editor : public QGraphicsView
+	class Editor : public MyGraphicsView
 	{
 		Q_OBJECT
 

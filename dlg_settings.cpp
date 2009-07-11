@@ -4,6 +4,7 @@
 #include "audioio.h"
 #include "cosecantmainwindow.h"
 #include "cursor_raii.h"
+#include "mygraphicsview.h"
 
 void Dlg_Settings::run(QWidget *parent)
 {
@@ -20,6 +21,9 @@ Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
 
 	populateAudioDeviceCombos();
 	populateLanguageCombo();
+
+	ui.checkGraphicsViewGL->setChecked(MyGraphicsView::s_prefOpenGL());
+	ui.checkGraphicsViewAA->setChecked(MyGraphicsView::s_prefAntiAlias());
 }
 
 Dlg_Settings::~Dlg_Settings()
@@ -50,6 +54,9 @@ bool Dlg_Settings::apply()
 	}
 
 	applyLanguageSettings();
+
+	MyGraphicsView::s_prefOpenGL	.set(ui.checkGraphicsViewGL->isChecked());
+	MyGraphicsView::s_prefAntiAlias	.set(ui.checkGraphicsViewAA->isChecked());
 
 	// No errors, so...
 	return true;

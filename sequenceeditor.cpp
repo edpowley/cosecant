@@ -6,7 +6,7 @@ using namespace SequenceEditor;
 /* TRANSLATOR SequenceEditor::Editor */
 
 Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
-: QSplitter(parent)
+: QSplitter(parent), m_seq(seq), m_pixelsPerSecond(16)
 {
 	QWidget* whead = new QWidget(this);
 	QWidget* wbody = new QWidget(this);
@@ -15,9 +15,9 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 
 	int rulersize = 50;
 
-	m_headView = new QGraphicsView(this);
-	m_rulerView = new QGraphicsView(this);
-	m_bodyView = new QGraphicsView(this);
+	m_headView = new MyGraphicsView(this);
+	m_rulerView = new MyGraphicsView(this);
+	m_bodyView = new MyGraphicsView(this);
 
 	QVBoxLayout* lhead = new QVBoxLayout(whead);
 	lhead->setContentsMargins(0,0,0,0);
@@ -52,4 +52,35 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 	m_rulerView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 	m_headView ->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 	m_bodyView ->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+	createTrackItems();
+}
+
+qreal Editor::getBodyWidth()
+{
+	return m_pixelsPerSecond * m_seq->getLengthInSeconds();
+}
+
+void Editor::createTrackItems()
+{
+	qreal y = 0.0;
+	BOOST_FOREACH(const Ptr<Sequence::Track>& track, m_seq->m_tracks)
+	{
+		TrackItem* item = new TrackItem(this, track);
+		m_bodyScene.addItem(item);
+		item->setPos(0, y);
+		y += item->rect().height();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TrackItem::TrackItem(Editor* editor, const Ptr<Sequence::Track>& track)
+: m_editor(editor), m_track(track), QGraphicsRectItem(0, 0, editor->getBodyWidth(), track->getHeight())
+{
+	setPen(Qt::NoPen);
+	QLinearGradient grad(0, 0, 0, rect().height());
+	grad.setColorAt(0, Qt::white);
+	grad.setColorAt(1, Qt::gray);
+	setBrush(grad);
 }
