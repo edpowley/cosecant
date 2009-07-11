@@ -22,7 +22,6 @@ Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
 	populateAudioDeviceCombos();
 	populateLanguageCombo();
 
-	ui.checkGraphicsViewGL->setChecked(MyGraphicsView::s_prefOpenGL());
 	ui.checkGraphicsViewAA->setChecked(MyGraphicsView::s_prefAntiAlias());
 }
 
@@ -55,8 +54,7 @@ bool Dlg_Settings::apply()
 
 	applyLanguageSettings();
 
-	MyGraphicsView::s_prefOpenGL	.set(ui.checkGraphicsViewGL->isChecked());
-	MyGraphicsView::s_prefAntiAlias	.set(ui.checkGraphicsViewAA->isChecked());
+	MyGraphicsView::s_prefAntiAlias.set(ui.checkGraphicsViewAA->isChecked());
 
 	// No errors, so...
 	return true;

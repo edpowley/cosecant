@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabAudio">
       <attribute name="title">
@@ -141,32 +141,13 @@
         <widget class="QComboBox" name="comboLanguage"/>
        </item>
        <item row="1" column="1">
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Graphics views</string>
+        <widget class="QCheckBox" name="checkGraphicsViewAA">
+         <property name="whatsThis">
+          <string>Sets whether graphics are drawn with smoothed edges. This looks better, at the expense of increased CPU usage.</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_2">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="checkGraphicsViewGL">
-            <property name="whatsThis">
-             <string>Sets whether graphics are drawn using OpenGL hardware acceleration. If you have a reasonably powerful graphics card, activating this should reduce CPU usage.</string>
-            </property>
-            <property name="text">
-             <string>OpenGL</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkGraphicsViewAA">
-            <property name="whatsThis">
-             <string>Sets whether graphics are drawn with smoothed edges. This looks better, at the expense of increased CPU usage.</string>
-            </property>
-            <property name="text">
-             <string>Antialiasing</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <property name="text">
+          <string>Antialiasing</string>
+         </property>
         </widget>
        </item>
       </layout>

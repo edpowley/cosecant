@@ -2,7 +2,6 @@
 #include "common.h"
 #include "mygraphicsview.h"
 
-PrefsVar_Bool MyGraphicsView::s_prefOpenGL("graphics/view/gl", false);
 PrefsVar_Bool MyGraphicsView::s_prefAntiAlias("graphics/view/aa", true);
 
 MyGraphicsView::MyGraphicsView(QWidget* parent)
@@ -19,26 +18,19 @@ MyGraphicsView::MyGraphicsView(QGraphicsScene* scene, QWidget* parent)
 
 void MyGraphicsView::ctorCommon()
 {
-	setupGlAndAa();
+	setup();
 
-	connect(&s_prefOpenGL, SIGNAL(signalChange()),
-		this, SLOT(onPrefsChange()) );
 	connect(&s_prefAntiAlias, SIGNAL(signalChange()),
 		this, SLOT(onPrefsChange()) );
 }
 
 void MyGraphicsView::onPrefsChange()
 {
-	setupGlAndAa();
+	setup();
 }
 
-void MyGraphicsView::setupGlAndAa()
+void MyGraphicsView::setup()
 {
-	if (s_prefOpenGL())
-		setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers)));
-	else
-		setViewport(new QWidget);
-
 	QPainter::RenderHints h = QPainter::TextAntialiasing;
 	if (s_prefAntiAlias())
 		h |= QPainter::Antialiasing;
