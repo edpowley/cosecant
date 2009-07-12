@@ -89,20 +89,11 @@ namespace Sequence
 
 		double getHeight() { return m_height; }
 
-	signals:
-		void signalChange();
-
-	public:
-		void trigger_signalChange() { signalChange(); }
-
 	protected:
 		Track();
 		void ctorCommon();
 
 		double m_height;
-
-	protected slots:
-		void onChange();
 	};
 
 	class Seq : public ObjectWithUuid
@@ -120,12 +111,17 @@ namespace Sequence
 		ERROR_CLASS(TrackNotFound);
 
 		void appendTrack(const Ptr<Track>& track);
-		void insertTrack(size_t index, const Ptr<Track>& track);
-		size_t getTrackIndex(const Ptr<Track>& track);
+		void insertTrack(int index, const Ptr<Track>& track);
+		int getTrackIndex(const Ptr<Track>& track);
 		void removeTrack(const Ptr<Track>& track);
-		void removeTrack(size_t index);
+		void removeTrack(int index);
 
-		std::vector< Ptr<Sequence::Track> > m_tracks;
+		typedef QMap< int, Ptr<Track> > TrackIndexMap;
+		TrackIndexMap getTracksForMachine(const Ptr<Machine>& mac);
+		void insertTracks(const TrackIndexMap& tim);
+		void removeTracks(const TrackIndexMap& tim);
+
+		QList< Ptr<Sequence::Track> > m_tracks;
 
 		Seq(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
@@ -140,15 +136,10 @@ namespace Sequence
 		double getLengthInSeconds() { return 400.0; }
 
 	signals:
-		void signalChange();
-		void signalTracksChange();
-		void signalTrackAdd(size_t idx, const Ptr<Track>& track);
-		void signalTrackRemove(size_t idx, const Ptr<Track>& track);
-		void signalMachinePatternsChange(const Ptr<Machine>& mac);
-
-	public:
-		void trigger_signalMachinePatternsChange(const Ptr<Machine>& mac)
-		{ signalMachinePatternsChange(mac); }
+		// Have to specify Sequence::Track (instead of just Track) here, as Qt isn't smart enough to figure
+		// out they're the same thing
+		void signalInsertTrack(int index, const Ptr<Sequence::Track>& track);
+		void signalRemoveTrack(int index, const Ptr<Sequence::Track>& track);
 
 	protected:
 		void ctorCommon();

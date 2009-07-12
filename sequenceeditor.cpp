@@ -54,6 +54,13 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 	m_bodyView ->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
 	createTrackItems();
+
+	connect(
+		m_seq, SIGNAL(signalInsertTrack(int, const Ptr<Sequence::Track>&)),
+		this, SLOT(onInsertTrack(int, const Ptr<Sequence::Track>&)) );
+	connect(
+		m_seq, SIGNAL(signalRemoveTrack(int, const Ptr<Sequence::Track>&)),
+		this, SLOT(onRemoveTrack(int, const Ptr<Sequence::Track>&)) );
 }
 
 qreal Editor::getBodyWidth()
@@ -64,13 +71,53 @@ qreal Editor::getBodyWidth()
 void Editor::createTrackItems()
 {
 	qreal y = 0.0;
-	BOOST_FOREACH(const Ptr<Sequence::Track>& track, m_seq->m_tracks)
+	for (int i=0; i<m_seq->m_tracks.length(); ++i)
 	{
-		TrackItem* item = new TrackItem(this, track);
+		TrackItem* item = new TrackItem(this, m_seq->m_tracks[i]);
 		m_bodyScene.addItem(item);
 		item->setPos(0, y);
-		y += item->rect().height();
+
+		m_trackItems.push_back(item);
+
+		y += item->height();
 	}
+}
+
+void Editor::onInsertTrack(int index, const Ptr<Sequence::Track>& track)
+{
+	qreal y = 0.0;
+	if (index < m_trackItems.length())
+		y = m_trackItems[index]->y();
+	else if (index > 0)
+		y = m_trackItems[index-1]->y() + m_trackItems[index-1]->height();
+
+	TrackItem* item = new TrackItem(this, track);
+	m_bodyScene.addItem(item);
+	item->setPos(0, y);
+
+	m_trackItems.insert(index, item);
+
+	// Move the subsequent items down
+	qreal h = item->height();
+	for (int i = index+1; i < m_trackItems.length(); ++i)
+	{
+		m_trackItems[i]->moveBy(0, h);
+	}
+}
+
+void Editor::onRemoveTrack(int index, const Ptr<Sequence::Track>& track)
+{
+	TrackItem* item = m_trackItems.takeAt(index); // removes it from the list
+	m_bodyScene.removeItem(item);
+
+	// Move the subsequent items up
+	qreal h = item->height();
+	for (int i = index; i < m_trackItems.length(); ++i)
+	{
+		m_trackItems[i]->moveBy(0, -h);
+	}
+
+	delete item;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

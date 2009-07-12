@@ -154,21 +154,32 @@ public:
 	AddMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
 		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("add machine '%1'").arg(mac->getName()))
 	{
+		if (m_mac->m_info->m_flags & CosecantAPI::MachineFlags::createSequenceTrack)
+		{
+			m_seq = Song::get().m_sequence;
+			m_seqTrack = new Sequence::Track(m_mac);
+			m_seqTrackIndex = m_seq->m_tracks.length();
+		}
 	}
 
 	virtual void redo()
 	{
 		m_routing->addMachine(m_mac);
+		m_seq->insertTrack(m_seqTrackIndex, m_seqTrack);
 	}
 
 	virtual void undo()
 	{
+		m_seq->removeTrack(m_seqTrackIndex);
 		m_routing->removeMachine(m_mac);
 	}
 
 protected:
 	Ptr<Routing> m_routing;
 	Ptr<Machine> m_mac;
+	Ptr<Sequence::Seq> m_seq;
+	Ptr<Sequence::Track> m_seqTrack;
+	int m_seqTrackIndex;
 };
 
 void Scene::dropEvent(QGraphicsSceneDragDropEvent* ev)
@@ -387,6 +398,9 @@ public:
 	DeleteMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
 		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("delete machine '%1'").arg(mac->getName()))
 	{
+		m_seq = Song::get().m_sequence;
+		m_seqTracks = m_seq->getTracksForMachine(m_mac);
+
 		BOOST_FOREACH(Ptr<Pin>& pin, m_mac->m_inpins)
 			BOOST_FOREACH(Ptr<Connection>& conn, pin->m_connections)
 				m_conns.insert(conn);
@@ -398,6 +412,8 @@ public:
 
 	virtual void redo()
 	{
+		m_seq->removeTracks(m_seqTracks);
+
 		Routing::ChangeBatch batch(m_routing);
 
 		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
@@ -414,12 +430,16 @@ public:
 
 		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
 			m_routing->addConnection(conn);
+
+		m_seq->insertTracks(m_seqTracks);
 	}
 
 protected:
 	Ptr<Routing> m_routing;
 	Ptr<Machine> m_mac;
 	std::set< Ptr<Connection> > m_conns;
+	Ptr<Sequence::Seq> m_seq;
+	Sequence::Seq::TrackIndexMap m_seqTracks;
 };
 
 class RenameMachineCommand : public QUndoCommand
@@ -732,8 +752,6 @@ NewConnectionItem::NewConnectionItem(Editor* editor, const Ptr<Pin>& pin)
 {
 	updatePath();
 	updateColor();
-
-	qDebug() << zValue();
 }
 
 Ptr<Pin> NewConnectionItem::getPin1()

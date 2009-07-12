@@ -3,10 +3,7 @@
 #include "sequence.h"
 using namespace Sequence;
 #include "machine.h"
-//#include "notebookwindow.h"
 #include "song.h"
-//#include "sequenceeditor.h"
-//#include "patterneditor.h"
 
 Seq::Seq()
 {
@@ -60,18 +57,6 @@ Track::Track(Machine* mac)
 void Track::ctorCommon()
 {
 	m_height = 100;
-
-	connect(
-		this, SIGNAL(signalChange()),
-		this, SLOT(onChange())
-	);
-}
-
-void Track::onChange()
-{
-	// TODO: change this
-	if (Song::get().m_sequence)
-		Song::get().m_sequence->signalTracksChange();
 }
 
 Ptr<Clip> Track::getClipAtTime(double t)
@@ -100,39 +85,72 @@ Ptr<Clip> Track::getNextClip(double t)
 void Seq::appendTrack(const Ptr<Track>& track)
 {
 	m_tracks.push_back(track);
-	signalTrackAdd(m_tracks.size()-1, track);
-	signalTracksChange();
+	signalInsertTrack(m_tracks.length()-1, track);
 }
 
-void Seq::insertTrack(size_t index, const Ptr<Track>& track)
+void Seq::insertTrack(int index, const Ptr<Track>& track)
 {
-	m_tracks.insert(m_tracks.begin() + index, track);
-	signalTrackAdd(index, track);
-	signalTracksChange();
+	m_tracks.insert(index, track);
+	signalInsertTrack(index, track);
 }
 
-size_t Seq::getTrackIndex(const Ptr<Track>& track)
+int Seq::getTrackIndex(const Ptr<Track>& track)
 {
-	for (size_t i=0; i<m_tracks.size(); i++)
-	{
-		if (m_tracks[i] == track)
-			return i;
-	}
-
-	throw TrackNotFound();
+	int i = m_tracks.indexOf(track);
+	if (i != -1)
+		return i;
+	else
+		throw TrackNotFound();
 }
 
-void Seq::removeTrack(size_t index)
+void Seq::removeTrack(int index)
 {
 	Ptr<Track> track = m_tracks[index];
-	m_tracks.erase(m_tracks.begin() + index);
-	signalTrackRemove(index, track);
-	signalTracksChange();
+	m_tracks.removeAt(index);
+	signalRemoveTrack(index, track);
 }
 
 void Seq::removeTrack(const Ptr<Track>& track)
 {
-	removeTrack(getTrackIndex(track));
+	int index = getTrackIndex(track);
+	removeTrack(index);
+	signalRemoveTrack(index, track);
+}
+
+Seq::TrackIndexMap Seq::getTracksForMachine(const Ptr<Machine>& mac)
+{
+	TrackIndexMap ret;
+	
+	for (int i=0; i<m_tracks.length(); i++)
+	{
+		if (m_tracks[i]->m_mac == mac)
+			ret.insert(i, m_tracks[i]);
+	}
+
+	return ret;
+}
+
+void Seq::removeTracks(const TrackIndexMap& tim)
+{
+	QMapIterator< int, Ptr<Track> > iter(tim); iter.toBack();
+	while (iter.hasPrevious())
+	{
+		iter.previous();
+		ASSERT(iter.value() == m_tracks[iter.key()]);
+		m_tracks.removeAt(iter.key());
+		signalRemoveTrack(iter.key(), iter.value());
+	}
+}
+
+void Seq::insertTracks(const TrackIndexMap& tim)
+{
+	QMapIterator< int, Ptr<Track> > iter(tim);
+	while (iter.hasNext())
+	{
+		iter.next();
+		m_tracks.insert(iter.key(), iter.value());
+		signalInsertTrack(iter.key(), iter.value());
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -178,7 +196,6 @@ void Pattern::setName(const QString& name)
 	{
 		m_name = name;
 		signalRename();
-		emit Song::get().m_sequence->signalChange();
 	}
 }
 
@@ -188,6 +205,5 @@ void Pattern::setColor(const QColor& color)
 	{
 		m_color = color;
 		signalChangeColor();
-		Song::get().m_sequence->signalChange();
 	}
 }

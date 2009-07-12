@@ -243,14 +243,12 @@ void Machine::addPattern(const Ptr<Sequence::Pattern>& pat)
 {
 	m_patterns.push_back(pat);
 	pat->added();
-	Song::get().m_sequence->trigger_signalMachinePatternsChange(this);
 }
 
 void Machine::removePattern(const Ptr<Sequence::Pattern>& pat)
 {
 	vectorEraseFirst(m_patterns, pat);
 	pat->removed();
-	Song::get().m_sequence->trigger_signalMachinePatternsChange(this);
 }
 
 PatternEditor* Machine::createPatternEditor(const Ptr<Sequence::Pattern>& pattern)

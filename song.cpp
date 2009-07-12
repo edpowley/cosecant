@@ -18,9 +18,6 @@ Song::Song()
 		this, SLOT(updateWorkQueue())
 	);
 	m_sequence = new Sequence::Seq();
-	m_sequence->appendTrack(new Sequence::Track(NULL));
-	m_sequence->appendTrack(new Sequence::Track(NULL));
-	m_sequence->appendTrack(new Sequence::Track(NULL));
 }
 
 void Song::clear()

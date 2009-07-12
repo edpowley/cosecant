@@ -30,12 +30,7 @@ protected:
 
 	AudioInOut(Machine* mac, Callbacks* cb) : Mi(mac, cb), m_leftChannel(-1), m_rightChannel(-1)
 	{
-		// TODO:
-/*		connect(
-			&AudioIO::get(), SIGNAL(signalOpen()),
-			this, SLOT(sanitiseChannelParamState())
-		);
-*/	}
+	}
 
 	virtual int getNumChannels() = 0;
 

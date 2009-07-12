@@ -14,6 +14,8 @@ namespace SequenceEditor
 	public:
 		TrackItem(Editor* editor, const Ptr<Sequence::Track>& track);
 
+		qreal height() { return rect().height(); }
+
 	protected:
 		Editor* m_editor;
 		Ptr<Sequence::Track> m_track;
@@ -28,6 +30,10 @@ namespace SequenceEditor
 
 		qreal getBodyWidth();
 
+	protected slots:
+		void onInsertTrack(int index, const Ptr<Sequence::Track>& track);
+		void onRemoveTrack(int index, const Ptr<Sequence::Track>& track);
+
 	protected:
 		Ptr<Sequence::Seq> m_seq;
 		double m_pixelsPerSecond;
@@ -36,5 +42,6 @@ namespace SequenceEditor
 		QGraphicsScene m_headScene, m_bodyScene, m_rulerScene;
 
 		void createTrackItems();
+		QList<TrackItem*> m_trackItems;
 	};
 };
