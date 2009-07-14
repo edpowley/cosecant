@@ -9,7 +9,6 @@
 #include "dlg_settings.h"
 
 CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
-PrefsVar_String CosecantMainWindow::s_prefLanguage("app/language", "system_locale");
 
 CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)

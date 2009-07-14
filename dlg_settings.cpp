@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "common.h"
 #include "dlg_settings.h"
+#include "application.h"
 #include "audioio.h"
 #include "cosecantmainwindow.h"
 #include "cursor_raii.h"
@@ -233,7 +234,7 @@ void Dlg_Settings::populateLanguageCombo()
 		ui.comboLanguage->addItem(lang, lang);
 	}
 
-	QString current = CosecantMainWindow::s_prefLanguage();
+	QString current = Application::s_prefLanguage();
 	int index = ui.comboLanguage->findData(current);
 	if (index != -1)
 	{
@@ -250,9 +251,9 @@ void Dlg_Settings::populateLanguageCombo()
 void Dlg_Settings::applyLanguageSettings()
 {
 	QString sel = ui.comboLanguage->itemData(ui.comboLanguage->currentIndex()).value<QString>();
-	if (sel != CosecantMainWindow::s_prefLanguage())
+	if (sel != Application::s_prefLanguage())
 	{
-		CosecantMainWindow::s_prefLanguage.set(sel);
+		Application::s_prefLanguage.set(sel);
 
 		const char* msgtext = QT_TR_NOOP(
 			"Changes to language settings will take effect the next time Cosecant is started.");

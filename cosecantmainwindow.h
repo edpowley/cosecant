@@ -14,8 +14,6 @@ public:
 	CosecantMainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~CosecantMainWindow();
 
-	static PrefsVar_String s_prefLanguage;
-
 protected slots:
 	// Auto connected slots
 	void on_actionSettings_triggered();

@@ -25,6 +25,7 @@ namespace CosecantAPI
 			hasNoteTrigger = 1 << 0,
 			createSequenceTrack = 1 << 1,
 			hasCustomPatterns = 1 << 2,
+			hasScript = 1 << 3,
 		};
 	};
 
@@ -349,6 +350,8 @@ namespace CosecantAPI
 	public:
 		Mi(HostMachine* mac, Callbacks* cb) : m_mac(mac), m_cb(cb) {}
 		virtual ~Mi() {}
+
+		virtual const char* getScript() { return NULL; }
 
 		virtual void changeParam(ParamTag tag, ParamValue value) = 0;
 		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;

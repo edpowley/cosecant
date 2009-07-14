@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sinetest", "machines\sinete
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "trackertest", "machines\trackertest\trackertest.vcproj", "{D4FB721E-4DCD-402C-92FD-3ED107B71712}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "scriptembed", "scriptembed\scriptembed.vcproj", "{A0262289-17C4-465B-8CA4-969872413192}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -51,6 +53,10 @@ Global
 		{D4FB721E-4DCD-402C-92FD-3ED107B71712}.Debug|Win32.Build.0 = Debug|Win32
 		{D4FB721E-4DCD-402C-92FD-3ED107B71712}.Release|Win32.ActiveCfg = Release|Win32
 		{D4FB721E-4DCD-402C-92FD-3ED107B71712}.Release|Win32.Build.0 = Release|Win32
+		{A0262289-17C4-465B-8CA4-969872413192}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A0262289-17C4-465B-8CA4-969872413192}.Debug|Win32.Build.0 = Debug|Win32
+		{A0262289-17C4-465B-8CA4-969872413192}.Release|Win32.ActiveCfg = Release|Win32
+		{A0262289-17C4-465B-8CA4-969872413192}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
