@@ -5,7 +5,7 @@
 class Theme : public Object
 {
 protected:
-	Theme() {}
+	Theme();
 	static SingletonPtr<Theme> s_singleton;
 
 public:
@@ -14,4 +14,10 @@ public:
 
 	QColor getSignalTypeColor(CosecantAPI::SignalType::st type);
 	QColor getMachineTypeHintColor(CosecantAPI::MachineTypeHint::mt type);
+
+	QColor getColor(const QString& key);
+
+protected:
+	QColor m_missingColor;
+	QHash<QString, QColor> m_colorMap;
 };

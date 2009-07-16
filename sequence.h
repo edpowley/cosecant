@@ -96,6 +96,32 @@ namespace Sequence
 		double m_height;
 	};
 
+	class MasterTrackClip : public Object
+	{
+		Q_OBJECT
+
+	public:
+		MasterTrackClip() : m_bpm(120), m_tpb(4), m_bpb(4), m_gridStep(4), m_lengthInTicks(-1) {}
+		
+		void setBPM(double bpm) { m_bpm = bpm; }
+		void setTPB(int tpb) { m_tpb = tpb; }
+		void setBPB(int bpb) { m_bpb = bpb; } // BPB = beats per bar
+		void setGridStep(int gs) { m_gridStep = gs; }
+
+		double getBPM() { return m_bpm; }
+		int getTPB() { return m_tpb; }
+		int getBPB() { return m_bpb; }
+		int getGridStep() { return m_gridStep; }
+
+		double getTicksPerSecond() { return m_bpm * m_tpb / 60.0; }
+
+	protected:
+		double m_bpm;
+		int m_tpb, m_bpb, m_gridStep;
+		
+		int m_lengthInTicks;
+	};
+
 	class Seq : public ObjectWithUuid
 	{
 		Q_OBJECT
@@ -122,6 +148,7 @@ namespace Sequence
 		void removeTracks(const TrackIndexMap& tim);
 
 		QList< Ptr<Sequence::Track> > m_tracks;
+		QMap<double, Ptr<MasterTrackClip> > m_masterTrack;
 
 		Seq(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);

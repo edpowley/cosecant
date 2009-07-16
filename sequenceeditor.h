@@ -21,14 +21,32 @@ namespace SequenceEditor
 		Ptr<Sequence::Track> m_track;
 	};
 
+	class RulerSectionItem : public QObject, public QGraphicsRectItem
+	{
+		Q_OBJECT
+
+	public:
+		RulerSectionItem(Editor* editor, const Ptr<Sequence::MasterTrackClip>& mtc);
+		virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0);
+
+	protected:
+		Editor* m_editor;
+		Ptr<Sequence::MasterTrackClip> m_mtc;
+
+		QBrush m_brushBar, m_brushGrid, m_brushEven, m_brushOdd;
+	};
+
 	class Editor : public QSplitter
 	{
 		Q_OBJECT
 
 	public:
 		Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent);
+		double m_pixelsPerSecond;
 
 		qreal getBodyWidth();
+
+		static const int c_rulerHeight = 50;
 
 	protected slots:
 		void onInsertTrack(int index, const Ptr<Sequence::Track>& track);
@@ -36,12 +54,14 @@ namespace SequenceEditor
 
 	protected:
 		Ptr<Sequence::Seq> m_seq;
-		double m_pixelsPerSecond;
 
 		MyGraphicsView *m_headView, *m_bodyView, *m_rulerView;
 		QGraphicsScene m_headScene, m_bodyScene, m_rulerScene;
 
 		void createTrackItems();
 		QList<TrackItem*> m_trackItems;
+
+		void createRulerSectionItems();
+		QMap<Ptr<Sequence::MasterTrackClip>, RulerSectionItem*> m_rulerSectionItems;
 	};
 };

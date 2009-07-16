@@ -18,6 +18,12 @@ void Seq::ctorCommon()
 	m_loopEnd = 16;
 	// tick/sample = (tick/minute) / (second/minute) / (sample/second)
 	m_ticksPerFrame = 120.0 / 60.0 / 44100.0;
+
+	Ptr<MasterTrackClip> mtc = new MasterTrackClip;
+	mtc->setBPM(120);
+	mtc->setBPB(7);
+	mtc->setTPB(4);
+	m_masterTrack.insert(0, mtc);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -10,6 +10,15 @@ void Theme::initSingleton()
 	s_singleton.set(new Theme);
 }
 
+Theme::Theme() : m_missingColor(255,0,255)
+{
+	qDebug() << QColor::colorNames();
+	m_colorMap.insert("SequenceEditor/Ruler/Bar",  QColor("light steel blue"));
+	m_colorMap.insert("SequenceEditor/Ruler/Grid", QColor("steel blue"));
+	m_colorMap.insert("SequenceEditor/Ruler/Odd",  QColor("white"));
+	m_colorMap.insert("SequenceEditor/Ruler/Even", QColor("azure"));
+}
+
 QColor Theme::getSignalTypeColor(SignalType::st type)
 {
 	switch (type)
@@ -18,7 +27,7 @@ QColor Theme::getSignalTypeColor(SignalType::st type)
 	case SignalType::stereoAudio:	return QColor("black");
 	case SignalType::paramControl:	return QColor("green");
 	case SignalType::noteTrigger:	return QColor("orange");
-	default:	return QColor("#f0f");
+	default:						return m_missingColor;
 	}
 }
 
@@ -31,6 +40,11 @@ QColor Theme::getMachineTypeHintColor(MachineTypeHint::mt type)
 	case MachineTypeHint::effect:		return QColor("indian red");
 	case MachineTypeHint::control:		return QColor("medium sea green");
 	case MachineTypeHint::none:
-	default:							return QColor("#f0f");
+	default:							return m_missingColor;
 	}
+}
+
+QColor Theme::getColor(const QString& key)
+{
+	return m_colorMap.value(key, m_missingColor);
 }
