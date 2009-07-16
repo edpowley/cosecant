@@ -36,3 +36,14 @@ void MyGraphicsView::setup()
 		h |= QPainter::Antialiasing;
 	setRenderHints(h);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void GraphicsSimpleTextItemWithBG::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+	painter->setPen(Qt::NoPen);
+	painter->setBrush(m_bgBrush);
+	painter->drawRect(boundingRect());
+
+	QGraphicsSimpleTextItem::paint(painter, option, widget);
+}

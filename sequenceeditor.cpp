@@ -152,68 +152,61 @@ RulerSectionItem::RulerSectionItem(Editor* editor, const Ptr<Sequence::MasterTra
 	m_brushBar(Qt::SolidPattern), m_brushGrid(Qt::SolidPattern),
 	m_brushOdd(Qt::SolidPattern), m_brushEven(Qt::SolidPattern)
 {
+	setPen(Qt::NoPen);
 	m_brushBar .setColor(Theme::get().getColor("SequenceEditor/Ruler/Bar"));
 	m_brushGrid.setColor(Theme::get().getColor("SequenceEditor/Ruler/Grid"));
 	m_brushOdd .setColor(Theme::get().getColor("SequenceEditor/Ruler/Odd"));
 	m_brushEven.setColor(Theme::get().getColor("SequenceEditor/Ruler/Even"));
+
+	setupChildren();
 }
 
-void RulerSectionItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+void RulerSectionItem::setupChildren()
 {
-	qDebug() << "paint" << option->exposedRect;
-	double beatsPerPixel = m_mtc->getBPM() / 60.0 / m_editor->m_pixelsPerSecond;
-	int firstbeat = (int)floor(option->exposedRect.left()  * beatsPerPixel);
-	int lastbeat  = (int)ceil (option->exposedRect.right() * beatsPerPixel);
+	double pixelsPerBeat = m_editor->m_pixelsPerSecond / (m_mtc->getBPM() / 60.0);
+	int lastbeat = (int)floor(rect().width() / pixelsPerBeat);
+	qreal h = rect().height();
+	qreal xNextGridLabel = -1;
 
-	double pixelsPerBeat = 1.0 / beatsPerPixel;
-	double h = rect().height();
-	for (int b = firstbeat; b <= lastbeat; b++)
+	for (int b=0; b<=lastbeat; b++)
 	{
-		double x = b * pixelsPerBeat;
+		qreal x = b * pixelsPerBeat;
+
+		QGraphicsRectItem* child = new QGraphicsRectItem(0, 0, pixelsPerBeat, h, this);
+		child->setPos(x, 0);
+		child->setZValue(0);
+		child->setPen(Qt::NoPen);
+
+		bool isGrid = false;
 
 		if (b % m_mtc->getBPB() == 0) // first beat in a bar
 		{
 			int bar = b / m_mtc->getBPB();
-			if (bar % m_mtc->getGridStep() == 0) // first beat in a grid section
-				painter->setBrush(m_brushGrid);
+			isGrid = (bar % m_mtc->getGridStep() == 0);
+			if (isGrid)
+				child->setBrush(m_brushGrid);
 			else
-				painter->setBrush(m_brushBar);
+				child->setBrush(m_brushBar);
 		}
 		else if (b % 2 == 0)
-			painter->setBrush(m_brushEven);
+			child->setBrush(m_brushEven);
 		else
-			painter->setBrush(m_brushOdd);
+			child->setBrush(m_brushOdd);
 
-		painter->setPen(Qt::NoPen);
-		painter->drawRect(QRectF(x, 0, pixelsPerBeat, h));
-	}
+		m_beatRects.push_back(child);
 
-	for (int b = firstbeat; b <= lastbeat; b++)
-	{
-		if (b % m_mtc->getBPB() == 0) // first beat in a bar
+		if (isGrid && x > xNextGridLabel)
 		{
-			int bar = b / m_mtc->getBPB();
-			if (bar % m_mtc->getGridStep() == 0) // first beat in a grid section
-			{
-				double x = b * pixelsPerBeat;
-				painter->setPen(pen());
-				QString txt = QString::number(b);
-				int flags = Qt::AlignLeft | Qt::AlignBottom;
-				QRectF bigrect(x, 0, rect().width(), h);
-				QRectF smallrect = painter->boundingRect(bigrect, flags, txt);
-				
-				painter->setBrush(m_brushGrid);
-				painter->setPen(Qt::NoPen);
-				painter->drawRect(smallrect);
+			GraphicsSimpleTextItemWithBG* label = new GraphicsSimpleTextItemWithBG(this);
+			label->setZValue(10);
+			label->setText(QString(" %1 ").arg(b));
+			label->setPos(x, h - label->boundingRect().height());
+			label->setBrush(Theme::get().getColor("SequenceEditor/Ruler/GridLabel"));
+			label->setBgBrush(m_brushGrid);
 
-				painter->setPen(pen());
-				painter->drawText(bigrect, flags, txt);
-			}
+			m_gridLabels.push_back(label);
+
+			xNextGridLabel = x + label->boundingRect().width();
 		}
 	}
-
-	painter->setPen(pen());
-
-	painter->drawText(rect(), Qt::AlignLeft | Qt::AlignVCenter,
-		QString("%1 BPM %2/%3").arg(m_mtc->getBPM()).arg(m_mtc->getBPB()).arg(m_mtc->getTPB()) );
 }

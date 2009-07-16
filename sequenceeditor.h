@@ -27,13 +27,16 @@ namespace SequenceEditor
 
 	public:
 		RulerSectionItem(Editor* editor, const Ptr<Sequence::MasterTrackClip>& mtc);
-		virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0);
 
 	protected:
 		Editor* m_editor;
 		Ptr<Sequence::MasterTrackClip> m_mtc;
 
 		QBrush m_brushBar, m_brushGrid, m_brushEven, m_brushOdd;
+
+		void setupChildren();
+		QList<QGraphicsRectItem*> m_beatRects;
+		QList<GraphicsSimpleTextItemWithBG*> m_gridLabels;
 	};
 
 	class Editor : public QSplitter

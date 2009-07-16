@@ -21,7 +21,7 @@ void Seq::ctorCommon()
 
 	Ptr<MasterTrackClip> mtc = new MasterTrackClip;
 	mtc->setBPM(120);
-	mtc->setBPB(7);
+	mtc->setBPB(4);
 	mtc->setTPB(4);
 	m_masterTrack.insert(0, mtc);
 }

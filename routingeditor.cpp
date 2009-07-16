@@ -165,12 +165,12 @@ public:
 	virtual void redo()
 	{
 		m_routing->addMachine(m_mac);
-		m_seq->insertTrack(m_seqTrackIndex, m_seqTrack);
+		if (m_seqTrack) m_seq->insertTrack(m_seqTrackIndex, m_seqTrack);
 	}
 
 	virtual void undo()
 	{
-		m_seq->removeTrack(m_seqTrackIndex);
+		if (m_seqTrack) m_seq->removeTrack(m_seqTrackIndex);
 		m_routing->removeMachine(m_mac);
 	}
 

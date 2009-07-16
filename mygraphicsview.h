@@ -19,3 +19,20 @@ protected:
 	void ctorCommon();
 	void setup();
 };
+
+class GraphicsSimpleTextItemWithBG : public QGraphicsSimpleTextItem
+{
+public:
+	GraphicsSimpleTextItemWithBG(QGraphicsItem* parent = 0)
+		: QGraphicsSimpleTextItem(parent) {}
+	GraphicsSimpleTextItemWithBG(const QString& text, QGraphicsItem* parent = 0)
+		: QGraphicsSimpleTextItem(text, parent) {}
+
+	void setBgBrush(const QBrush& brush) { m_bgBrush = brush; }
+	QBrush bgBrush() { return m_bgBrush; }
+
+	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0);
+
+protected:
+	QBrush m_bgBrush;
+};
