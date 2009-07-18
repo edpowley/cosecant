@@ -55,9 +55,19 @@
     </property>
     <addaction name="actionSettings"/>
    </widget>
+   <widget class="QMenu" name="menu_Transport">
+    <property name="title">
+     <string>&amp;Transport</string>
+    </property>
+    <addaction name="actionTransportRewind"/>
+    <addaction name="actionTransportPlay"/>
+    <addaction name="actionTransportRecord"/>
+    <addaction name="actionTransportStop"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_View"/>
+   <addaction name="menu_Transport"/>
    <addaction name="menuWindow"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -78,6 +88,21 @@
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="transportToolBar">
+   <property name="windowTitle">
+    <string>Transport toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionTransportRewind"/>
+   <addaction name="actionTransportPlay"/>
+   <addaction name="actionTransportRecord"/>
+   <addaction name="actionTransportStop"/>
+  </widget>
   <action name="actionUndoredo_placeholder">
    <property name="text">
     <string notr="true">undoredo_placeholder</string>
@@ -150,6 +175,54 @@
    </property>
    <property name="text">
     <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="actionTransportRewind">
+   <property name="icon">
+    <iconset resource="cosecantmainwindow.qrc">
+     <normaloff>:/CosecantMainWindow/images/media-skip-backward.png</normaloff>:/CosecantMainWindow/images/media-skip-backward.png</iconset>
+   </property>
+   <property name="text">
+    <string>Re&amp;wind</string>
+   </property>
+  </action>
+  <action name="actionTransportPlay">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="cosecantmainwindow.qrc">
+     <normaloff>:/CosecantMainWindow/images/media-playback-start.png</normaloff>:/CosecantMainWindow/images/media-playback-start.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Play</string>
+   </property>
+   <property name="shortcut">
+    <string comment="transport/play">F5</string>
+   </property>
+  </action>
+  <action name="actionTransportRecord">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="cosecantmainwindow.qrc">
+     <normaloff>:/CosecantMainWindow/images/media-record.png</normaloff>:/CosecantMainWindow/images/media-record.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Record</string>
+   </property>
+  </action>
+  <action name="actionTransportStop">
+   <property name="icon">
+    <iconset resource="cosecantmainwindow.qrc">
+     <normaloff>:/CosecantMainWindow/images/media-playback-stop.png</normaloff>:/CosecantMainWindow/images/media-playback-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Stop</string>
+   </property>
+   <property name="shortcut">
+    <string comment="transport/stop">F8</string>
    </property>
   </action>
  </widget>

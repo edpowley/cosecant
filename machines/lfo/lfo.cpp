@@ -19,7 +19,7 @@ public:
 			cb->createTimeParam('sped')->setName("Speed")
 			->setRange(2, samples, 10, seconds)->setDefault(1, seconds)
 			->setInternalUnit(samples)
-			->addDisplayUnits(seconds | samples | ticks | hertz)->setDefaultDisplayUnit(seconds)
+			->addDisplayUnits(seconds | samples | beats | hertz)->setDefaultDisplayUnit(seconds)
 		);
 
 		params->addParam(

@@ -20,10 +20,21 @@ void Seq::ctorCommon()
 	m_ticksPerFrame = 120.0 / 60.0 / 44100.0;
 
 	Ptr<MasterTrackClip> mtc = new MasterTrackClip;
-	mtc->setBPM(120);
-	mtc->setBPB(4);
-	mtc->setTPB(4);
 	m_masterTrack.insert(0, mtc);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+MasterTrackClip::MasterTrackClip()
+{
+	m_timeinfo.beatsPerSecond = 120.0 / 60.0;
+	m_timeinfo.beatsPerBar = 4;
+	m_timeinfo.beatsPerWholeNote = 4;
+	m_timeinfo.barsPerSmallGrid = 4;
+	m_timeinfo.smallGridsPerLargeGrid = 4;
+	m_timeinfo.samplesPerSecond = -1;
+
+	m_lengthInTicks = -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////

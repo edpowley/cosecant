@@ -391,7 +391,7 @@ QString TimeUnitCombo::getUnitName(TimeUnit::unit unit)
 	switch (unit)
 	{
 	case TimeUnit::seconds:		return tr("seconds");
-	case TimeUnit::ticks:		return tr("ticks");
+	case TimeUnit::beats:		return tr("beats");
 	case TimeUnit::samples:		return tr("samples");
 	case TimeUnit::hertz:		return tr("Hz");
 	case TimeUnit::fracfreq:	return tr("Fs");

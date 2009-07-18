@@ -15,6 +15,7 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <commdlg.h>
+#undef small	// defined in RpcNdr.h
 
 // STL
 #include <vector>

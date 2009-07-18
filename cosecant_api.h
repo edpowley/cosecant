@@ -74,7 +74,7 @@ namespace CosecantAPI
 		enum unit
 		{
 			seconds  = 1 << 0,
-			ticks    = 1 << 1,
+			beats    = 1 << 1,
 			samples  = 1 << 2,
 			hertz    = 1 << 3,
 			fracfreq = 1 << 4, // 1.0 == sampling frequency
@@ -265,6 +265,14 @@ namespace CosecantAPI
 	{
 		class MiPattern* pattern;
 		double pos;
+	};
+
+	struct TimeInfo
+	{
+		double beatsPerSecond;
+		int beatsPerBar, beatsPerWholeNote;
+		int barsPerSmallGrid, smallGridsPerLargeGrid;
+		int samplesPerSecond;
 	};
 
 	class Callbacks

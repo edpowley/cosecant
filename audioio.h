@@ -43,6 +43,8 @@ public:
 
 	static __int64 s_perfCount;
 
+	const CosecantAPI::TimeInfo& getTimeInfo() { return m_timeinfo; }
+
 signals:
 	void signalOpen();
 
@@ -58,4 +60,6 @@ protected:
 	static PrefsVar_Int s_prefInDeviceApi, s_prefOutDeviceApi;
 	PaDeviceIndex m_inDeviceIndex, m_outDeviceIndex;
 	void setDevicePref(PaDeviceIndex index, PrefsVar_String& pref, PrefsVar_Int& prefApi);
+
+	CosecantAPI::TimeInfo m_timeinfo;
 };

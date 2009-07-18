@@ -18,6 +18,11 @@ protected slots:
 	// Auto connected slots
 	void on_actionSettings_triggered();
 
+	void on_actionTransportRewind_triggered();
+	void on_actionTransportPlay_toggled(bool checked);
+	void on_actionTransportRecord_toggled(bool checked);
+	void on_actionTransportStop_triggered();
+
 private:
 	static CosecantMainWindow* s_singleton;
 

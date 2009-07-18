@@ -32,11 +32,12 @@ namespace SequenceEditor
 		Editor* m_editor;
 		Ptr<Sequence::MasterTrackClip> m_mtc;
 
-		QBrush m_brushBar, m_brushGrid, m_brushEven, m_brushOdd;
+		QColor m_colSmallGrid, m_colSmallGridLabel, m_colLargeGrid, m_colLargeGridLabel, m_colEven, m_colOdd;
+		QFont m_bpmFont;
 
 		void setupChildren();
 		QList<QGraphicsRectItem*> m_beatRects;
-		QList<GraphicsSimpleTextItemWithBG*> m_gridLabels;
+		QMap<int, GraphicsSimpleTextItemWithBG*> m_gridLabels;
 	};
 
 	class Editor : public QSplitter

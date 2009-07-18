@@ -44,6 +44,13 @@ AudioIO::AudioIO()
 
 	m_inDeviceIndex  = findDevice(s_prefInDevice(),  s_prefInDeviceApi(),  input);
 	m_outDeviceIndex = findDevice(s_prefOutDevice(), s_prefOutDeviceApi(), output);
+
+	m_timeinfo.beatsPerSecond = 120.0 / 60.0;
+	m_timeinfo.beatsPerBar = 4;
+	m_timeinfo.beatsPerWholeNote = 4;
+	m_timeinfo.barsPerSmallGrid = 4;
+	m_timeinfo.smallGridsPerLargeGrid = 4;
+	m_timeinfo.samplesPerSecond = 44100;
 }
 
 AudioIO::~AudioIO()

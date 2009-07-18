@@ -55,7 +55,7 @@ bool SimpleSynth::getInfo(MachineInfo* info, InfoCallbacks* cb)
 
 	ParamInfo::Time* param = cb->createTimeParam('enva');
 	param->setName("Attack")->setRange(1, samples, 10, seconds)->setDefault(0.2, seconds)
-		->setInternalUnit(samples)->setDefaultDisplayUnit(seconds)->addDisplayUnits(seconds | samples | ticks);
+		->setInternalUnit(samples)->setDefaultDisplayUnit(seconds)->addDisplayUnits(seconds | samples | beats);
 	info->getParams()->addParam(param);
 
 	param = param->copy()->setTag('envr');

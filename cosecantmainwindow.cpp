@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "common.h"
 #include "cosecantmainwindow.h"
+#include "svnrevision.h"
 
 #include "song.h"
 #include "routingeditor.h"
@@ -17,6 +18,8 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 
 	ASSERT(s_singleton == NULL);
 	s_singleton = this;
+
+	setWindowTitle(tr("BTDSys Cosecant revision %1").arg(COSECANT_SVN_REVISION));
 
 	QAction* undoaction = theUndo().createUndoAction(this);
 	undoaction->setShortcut(tr("Ctrl+Z", "shortcut for edit/undo"));
@@ -69,7 +72,35 @@ CosecantMainWindow::~CosecantMainWindow()
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 void CosecantMainWindow::on_actionSettings_triggered()
 {
 	Dlg_Settings::run(this);
+}
+
+void CosecantMainWindow::on_actionTransportRewind_triggered()
+{
+	qDebug() << "rewind";
+}
+
+void CosecantMainWindow::on_actionTransportPlay_toggled(bool checked)
+{
+	qDebug() << "play" << checked;
+
+	if (!checked) ui.actionTransportRecord->setChecked(false);
+}
+
+void CosecantMainWindow::on_actionTransportStop_triggered()
+{
+	qDebug() << "stop";
+
+	ui.actionTransportPlay->setChecked(false);
+}
+
+void CosecantMainWindow::on_actionTransportRecord_toggled(bool checked)
+{
+	qDebug() << "record" << checked;
+
+	if (checked) ui.actionTransportPlay->setChecked(true);
 }

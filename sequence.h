@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cosecant_api.h"
+
 class PatternEditor;
 class NotebookWindow;
 class Machine;
@@ -101,24 +103,12 @@ namespace Sequence
 		Q_OBJECT
 
 	public:
-		MasterTrackClip() : m_bpm(120), m_tpb(4), m_bpb(4), m_gridStep(4), m_lengthInTicks(-1) {}
+		MasterTrackClip();
 		
-		void setBPM(double bpm) { m_bpm = bpm; }
-		void setTPB(int tpb) { m_tpb = tpb; }
-		void setBPB(int bpb) { m_bpb = bpb; } // BPB = beats per bar
-		void setGridStep(int gs) { m_gridStep = gs; }
-
-		double getBPM() { return m_bpm; }
-		int getTPB() { return m_tpb; }
-		int getBPB() { return m_bpb; }
-		int getGridStep() { return m_gridStep; }
-
-		double getTicksPerSecond() { return m_bpm * m_tpb / 60.0; }
+		CosecantAPI::TimeInfo getTimeInfo() { return m_timeinfo; }
 
 	protected:
-		double m_bpm;
-		int m_tpb, m_bpb, m_gridStep;
-		
+		CosecantAPI::TimeInfo m_timeinfo;		
 		int m_lengthInTicks;
 	};
 

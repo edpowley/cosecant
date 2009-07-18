@@ -12,11 +12,12 @@ void Theme::initSingleton()
 
 Theme::Theme() : m_missingColor(255,0,255)
 {
-	m_colorMap.insert("SequenceEditor/Ruler/Bar",		QColor("light steel blue"));
-	m_colorMap.insert("SequenceEditor/Ruler/Grid",		QColor("steel blue"));
-	m_colorMap.insert("SequenceEditor/Ruler/GridLabel",	QColor("white"));
-	m_colorMap.insert("SequenceEditor/Ruler/Odd",		QColor("white"));
-	m_colorMap.insert("SequenceEditor/Ruler/Even",		QColor("azure"));
+	m_colorMap.insert("SequenceEditor/Ruler/SmallGrid",			"light steel blue");
+	m_colorMap.insert("SequenceEditor/Ruler/LargeGrid",			"steel blue");
+	m_colorMap.insert("SequenceEditor/Ruler/SmallGridLabel",	"white");
+	m_colorMap.insert("SequenceEditor/Ruler/LargeGridLabel",	"white");
+	m_colorMap.insert("SequenceEditor/Ruler/Odd",				"white");
+	m_colorMap.insert("SequenceEditor/Ruler/Even",				"azure");
 }
 
 QColor Theme::getSignalTypeColor(SignalType::st type)
