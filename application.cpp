@@ -102,7 +102,4 @@ void Application::setupScriptEngine()
 			qDebug() << "Failed to import extension" << extension << ":" << v.toString();
 		}
 	}
-
-	QScriptValue v = m_scriptEngine->evaluate("var v = { a: 1, b: 2, c: 3 }; v");
-	qDebug() << v.toString();
 }
