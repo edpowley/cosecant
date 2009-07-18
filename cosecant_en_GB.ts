@@ -4,7 +4,7 @@
 <context>
     <name>AudioIO</name>
     <message>
-        <location filename="audioio.cpp" line="192"/>
+        <location filename="audioio.cpp" line="199"/>
         <source>No output device set. One possible cause for this is if you have recently changed soundcards, and the card specified in Cosecant&apos;s settings file is no longer present.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25,29 +25,34 @@
     </message>
     <message>
         <location filename="cosecantmainwindow.cpp" line="22"/>
+        <source>BTDSys Cosecant revision %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.cpp" line="25"/>
         <source>Ctrl+Z</source>
         <comment>shortcut for edit/undo</comment>
         <translation type="unfinished">Ctrl+Z</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="29"/>
+        <location filename="cosecantmainwindow.cpp" line="32"/>
         <source>Ctrl+Y</source>
         <comment>shortcut for edit/redo</comment>
         <translation type="unfinished">Ctrl+Y</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="29"/>
+        <location filename="cosecantmainwindow.cpp" line="32"/>
         <source>Shift+Ctrl+Z</source>
         <comment>shortcut for edit/redo</comment>
         <translation type="unfinished">Shift+Ctrl+Z</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="47"/>
+        <location filename="cosecantmainwindow.cpp" line="53"/>
         <source>Undo history</source>
         <translation>Undo history</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="56"/>
+        <location filename="cosecantmainwindow.cpp" line="62"/>
         <source>Machines</source>
         <translation>Machines</translation>
     </message>
@@ -82,50 +87,92 @@
         <translation>&amp;View</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="65"/>
+        <location filename="cosecantmainwindow.ui" line="60"/>
+        <source>&amp;Transport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="75"/>
         <source>Main toolbar</source>
         <translation>Main toolbar</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="95"/>
+        <location filename="cosecantmainwindow.ui" line="93"/>
+        <source>Transport toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="120"/>
         <source>&amp;Settings...</source>
         <translation>&amp;Settings...</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="104"/>
+        <location filename="cosecantmainwindow.ui" line="129"/>
         <source>&amp;New</source>
         <translation>&amp;New</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="107"/>
+        <location filename="cosecantmainwindow.ui" line="132"/>
         <source>Ctrl+N</source>
         <comment>file/new</comment>
         <translation type="unfinished">Ctrl+N</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="119"/>
+        <location filename="cosecantmainwindow.ui" line="144"/>
         <source>Ctrl+O</source>
         <comment>file/open</comment>
         <translation type="unfinished">Ctrl+O</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="131"/>
+        <location filename="cosecantmainwindow.ui" line="156"/>
         <source>Ctrl+S</source>
         <comment>file/save</comment>
         <translation type="unfinished">Ctrl+S</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="143"/>
+        <location filename="cosecantmainwindow.ui" line="168"/>
         <source>Ctrl+Shift+S</source>
         <comment>file/save as</comment>
         <translation type="unfinished">Ctrl+Shift+S</translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="186"/>
+        <source>Re&amp;wind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="198"/>
+        <source>&amp;Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="201"/>
+        <source>F5</source>
+        <comment>transport/play</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="213"/>
+        <source>&amp;Record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="222"/>
+        <source>&amp;Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.ui" line="225"/>
+        <source>F8</source>
+        <comment>transport/stop</comment>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Ctrl+N</source>
         <translation type="obsolete">Ctrl+N</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="116"/>
+        <location filename="cosecantmainwindow.ui" line="141"/>
         <source>&amp;Open...</source>
         <translation>&amp;Open...</translation>
     </message>
@@ -134,7 +181,7 @@
         <translation type="obsolete">Ctrl+O</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="128"/>
+        <location filename="cosecantmainwindow.ui" line="153"/>
         <source>&amp;Save</source>
         <translation>&amp;Save</translation>
     </message>
@@ -143,7 +190,7 @@
         <translation type="obsolete">Ctrl+S</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="140"/>
+        <location filename="cosecantmainwindow.ui" line="165"/>
         <source>Save &amp;As...</source>
         <translation>Save &amp;As...</translation>
     </message>
@@ -152,7 +199,7 @@
         <translation type="obsolete">Ctrl+Shift+S</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.ui" line="152"/>
+        <location filename="cosecantmainwindow.ui" line="177"/>
         <source>E&amp;xit</source>
         <translation>E&amp;xit</translation>
     </message>
@@ -183,12 +230,12 @@
 <context>
     <name>Dlg_Settings</name>
     <message>
-        <location filename="dlg_settings.cpp" line="46"/>
+        <location filename="dlg_settings.cpp" line="50"/>
         <source>Error opening audio device</source>
         <translation>Error opening audio device</translation>
     </message>
     <message numerus="yes">
-        <location filename="dlg_settings.cpp" line="100"/>
+        <location filename="dlg_settings.cpp" line="106"/>
         <source>%1 : %2 (%n channel(s))</source>
         <oldsource>%1 : %2 (%3 channels)</oldsource>
         <extracomment>%1 = API name (eg &quot;ASIO&quot;), %2 = soundcard name, %n = number of channels</extracomment>
@@ -198,31 +245,31 @@
         </translation>
     </message>
     <message>
-        <location filename="dlg_settings.cpp" line="171"/>
+        <location filename="dlg_settings.cpp" line="177"/>
         <source>When you have finished with the ASIO control panel, click OK to reopen the audio device.</source>
         <translation>When you have finished with the ASIO control panel, click OK to reopen the audio device.</translation>
     </message>
     <message>
-        <location filename="dlg_settings.cpp" line="179"/>
+        <location filename="dlg_settings.cpp" line="185"/>
         <source>Failed to open ASIO control panel</source>
         <translation>Failed to open ASIO control panel</translation>
     </message>
     <message>
-        <location filename="dlg_settings.cpp" line="224"/>
+        <location filename="dlg_settings.cpp" line="230"/>
         <source>System (current: %1)</source>
         <extracomment>System language</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>System (current: %1)</translation>
     </message>
     <message>
-        <location filename="dlg_settings.cpp" line="240"/>
+        <location filename="dlg_settings.cpp" line="246"/>
         <source>%1 (not installed)</source>
         <extracomment>Corresponds to a language set in the prefs file but with no corresponding .qm file installed</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>%1 (not installed)</translation>
     </message>
     <message>
-        <location filename="dlg_settings.cpp" line="252"/>
+        <location filename="dlg_settings.cpp" line="258"/>
         <source>Changes to language settings will take effect the next time Cosecant is started.</source>
-        <translation type="unfinished"></translation>
+        <translation>Changes to language settings will take effect the next time Cosecant is started.</translation>
     </message>
 </context>
 <context>
@@ -255,17 +302,17 @@
 <context>
     <name>MachineItem</name>
     <message>
-        <location filename="routingeditor.cpp" line="364"/>
+        <location filename="routingeditor.cpp" line="374"/>
         <source>move machines</source>
         <translation>move machines</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="473"/>
+        <location filename="routingeditor.cpp" line="492"/>
         <source>&amp;Name and appearance</source>
         <translation>&amp;Name and appearance</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="474"/>
+        <location filename="routingeditor.cpp" line="493"/>
         <source>&amp;Delete</source>
         <translation>&amp;Delete</translation>
     </message>
@@ -301,20 +348,53 @@
 <context>
     <name>ParamEditor</name>
     <message>
-        <location filename="parameditor.cpp" line="44"/>
+        <location filename="parameditor.cpp" line="46"/>
         <source>Parameters - %1</source>
         <translation>Parameters - %1</translation>
     </message>
     <message>
-        <location filename="parameditor.cpp" line="50"/>
+        <location filename="parameditor.cpp" line="52"/>
         <source>change parameter &apos;%1&apos; on &apos;%2&apos;</source>
         <translation>change parameter &apos;%1&apos; on &apos;%2&apos;</translation>
     </message>
 </context>
 <context>
+    <name>ParamEditorWidget::TimeUnitCombo</name>
+    <message>
+        <location filename="parameditor.cpp" line="395"/>
+        <source>seconds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="parameditor.cpp" line="396"/>
+        <source>beats</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="parameditor.cpp" line="397"/>
+        <source>samples</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="parameditor.cpp" line="398"/>
+        <source>Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="parameditor.cpp" line="399"/>
+        <source>Fs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="parameditor.cpp" line="400"/>
+        <source>note</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QApplication</name>
     <message>
-        <location filename="main.cpp" line="46"/>
+        <location filename="application.cpp" line="65"/>
         <source>Error opening audio device. Choose &apos;Settings&apos; from the &apos;View&apos; menu to change your audio device settings.</source>
         <translation>Error opening audio device. Choose &apos;Settings&apos; from the &apos;View&apos; menu to change your audio device settings.</translation>
     </message>
@@ -328,34 +408,43 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="156"/>
+        <location filename="routingeditor.cpp" line="155"/>
         <source>add machine &apos;%1&apos;</source>
         <translation type="unfinished">add machine &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="389"/>
+        <location filename="routingeditor.cpp" line="399"/>
         <source>delete machine &apos;%1&apos;</source>
         <translation type="unfinished">delete machine &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="437"/>
+        <location filename="routingeditor.cpp" line="456"/>
         <source>rename machine &apos;%1&apos; to &apos;%2&apos; and change appearance</source>
         <translation type="unfinished">rename machine &apos;%1&apos; to &apos;%2&apos; and change appearance</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="439"/>
+        <location filename="routingeditor.cpp" line="458"/>
         <source>rename machine &apos;%1&apos; to &apos;%2&apos;</source>
         <translation type="unfinished">rename machine &apos;%1&apos; to &apos;%2&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="445"/>
+        <location filename="routingeditor.cpp" line="464"/>
         <source>change appearance of machine &apos;%1&apos;</source>
         <translation type="unfinished">change appearance of machine &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="routingeditor.cpp" line="606"/>
+        <location filename="routingeditor.cpp" line="625"/>
         <source>connect</source>
         <translation type="unfinished">connect</translation>
+    </message>
+</context>
+<context>
+    <name>RulerSectionItem</name>
+    <message>
+        <location filename="sequenceeditor.cpp" line="188"/>
+        <source>%1 %2/%3</source>
+        <extracomment>%1 = tempo in beats per minute, %2/%3 = time signature</extracomment>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -431,97 +520,50 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="130"/>
-        <source>Graphics views</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="settings_dlg.ui" line="136"/>
-        <source>Sets whether graphics are drawn using OpenGL hardware acceleration. If you have a reasonably powerful graphics card, activating this should reduce CPU usage.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="settings_dlg.ui" line="139"/>
-        <source>OpenGL</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="settings_dlg.ui" line="146"/>
         <source>Sets whether graphics are drawn with smoothed edges. This looks better, at the expense of increased CPU usage.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings_dlg.ui" line="149"/>
-        <source>Anti-aliasing</source>
+        <source>Antialiasing</source>
+        <oldsource>Anti-aliasing</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="162"/>
+        <location filename="settings_dlg.ui" line="133"/>
         <source>&amp;Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="197"/>
+        <location filename="settings_dlg.ui" line="181"/>
         <source>Apply your settings and close this dialog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="200"/>
+        <location filename="settings_dlg.ui" line="184"/>
         <source>OK</source>
         <translation type="unfinished">OK</translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="210"/>
+        <location filename="settings_dlg.ui" line="194"/>
         <source>Apply your settings without closing this dialog.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="213"/>
+        <location filename="settings_dlg.ui" line="197"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="223"/>
+        <location filename="settings_dlg.ui" line="207"/>
         <source>Close this dialog, discarding any changes.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settings_dlg.ui" line="226"/>
+        <location filename="settings_dlg.ui" line="210"/>
         <source>Cancel</source>
         <translation type="unfinished">Cancel</translation>
-    </message>
-</context>
-<context>
-    <name>TimeUnitCombo</name>
-    <message>
-        <location filename="parameditor.cpp" line="393"/>
-        <source>seconds</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="parameditor.cpp" line="394"/>
-        <source>ticks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="parameditor.cpp" line="395"/>
-        <source>samples</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="parameditor.cpp" line="396"/>
-        <source>Hz</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="parameditor.cpp" line="397"/>
-        <source>Fs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="parameditor.cpp" line="398"/>
-        <source>note</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

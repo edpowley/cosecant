@@ -46,11 +46,12 @@ namespace SequenceEditor
 
 	public:
 		Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent);
-		double m_pixelsPerSecond;
 
 		qreal getBodyWidth();
 
 		static const int c_rulerHeight = 50;
+
+		void setZoom(double pixelsPerSecond);
 
 	protected slots:
 		void onInsertTrack(int index, const Ptr<Sequence::Track>& track);

@@ -7,7 +7,7 @@ using namespace SequenceEditor;
 /* TRANSLATOR SequenceEditor::Editor */
 
 Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
-: QSplitter(parent), m_seq(seq), m_pixelsPerSecond(16)
+: QSplitter(parent), m_seq(seq)
 {
 	QWidget* whead = new QWidget(this);
 	QWidget* wbody = new QWidget(this);
@@ -52,6 +52,8 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 	m_headView ->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 	m_bodyView ->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
+	setZoom(16);
+
 	createTrackItems();
 	createRulerSectionItems();
 
@@ -63,9 +65,16 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 		this, SLOT(onRemoveTrack(int, const Ptr<Sequence::Track>&)) );
 }
 
+void Editor::setZoom(double pixelsPerSecond)
+{
+	QTransform t; t.scale(pixelsPerSecond, 1);
+	m_rulerView->setTransform(t);
+	m_bodyView ->setTransform(t);
+}
+
 qreal Editor::getBodyWidth()
 {
-	return m_pixelsPerSecond * m_seq->getLengthInSeconds();
+	return m_seq->getLengthInSeconds();
 }
 
 void Editor::createTrackItems()
@@ -129,7 +138,7 @@ void Editor::createRulerSectionItems()
 		RulerSectionItem* item = new RulerSectionItem(this, iter.value());
 		m_rulerSectionItems.insert(iter.value(), item);
 		m_rulerScene.addItem(item);
-		item->setPos(0, iter.key() * m_pixelsPerSecond);
+		item->setPos(0, iter.key());
 	}
 }
 
@@ -173,15 +182,16 @@ void RulerSectionItem::setupChildren()
 
 	QGraphicsSimpleTextItem* bpmtext = new QGraphicsSimpleTextItem(this);
 	bpmtext->setZValue(100);
+	bpmtext->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	bpmtext->setFont(m_bpmFont);
-	bpmtext->setText(QString("%1 %2/%3").arg(ti.beatsPerSecond * 60).arg(ti.beatsPerBar).arg(ti.beatsPerWholeNote));
+	//: %1 = tempo in beats per minute, %2/%3 = time signature
+	bpmtext->setText(tr("%1 %2/%3").arg(ti.beatsPerSecond * 60).arg(ti.beatsPerBar).arg(ti.beatsPerWholeNote));
 	QColor color("black"); color.setAlpha(64);
 	bpmtext->setBrush(color);
 
-	double pixelsPerBar = m_editor->m_pixelsPerSecond / ti.beatsPerSecond * ti.beatsPerBar;
+	double pixelsPerBar = ti.beatsPerBar / ti.beatsPerSecond;
 	int lastbar = (int)floor(rect().width() / pixelsPerBar);
 	qreal h = rect().height();
-	qreal xNextGridLabel = -1;
 
 	for (int b=0; b<=lastbar; b++)
 	{
@@ -218,6 +228,7 @@ void RulerSectionItem::setupChildren()
 		{
 			GraphicsSimpleTextItemWithBG* label = new GraphicsSimpleTextItemWithBG(this);
 			label->setZValue(10);
+			label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 			label->setText(QString(" %1 ").arg(b));
 			label->setPos(x, h - label->boundingRect().height());
 			if (grid == large)
@@ -227,11 +238,6 @@ void RulerSectionItem::setupChildren()
 			label->setBgBrush(child->brush());
 
 			m_gridLabels.insert(b, label);
-
-			if (x > xNextGridLabel)
-				xNextGridLabel = x + label->boundingRect().width();
-			else
-				label->hide();
 		}
 	}
 }

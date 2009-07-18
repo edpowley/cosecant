@@ -263,7 +263,7 @@ void Dlg_Settings::applyLanguageSettings()
 		msg.setText(tr(msgtext));
 
 		QTranslator translator;
-		translator.load("cosecant_" + sel);
+		translator.load("cosecant_" + (sel != "system_locale" ? sel : QLocale::system().name()));
 		msg.setInformativeText(translator.translate("Dlg_Settings", msgtext));
 
 		msg.exec();

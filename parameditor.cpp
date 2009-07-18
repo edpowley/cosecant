@@ -8,6 +8,8 @@
 
 using namespace ParamEditorWidget;
 
+/* TRANSLATOR ParamEditorWidget::TimeUnitCombo */
+
 ParamEditor::ParamEditor(const Ptr<Machine>& mac, QDockWidget* parent)
 : QScrollArea(parent), m_mac(mac), m_parent(parent)
 {
