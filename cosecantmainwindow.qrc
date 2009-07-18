@@ -12,5 +12,6 @@
         <file>images/media-playback-stop.png</file>
         <file>images/media-record.png</file>
         <file>images/media-skip-backward.png</file>
+        <file>images/splash.png</file>
     </qresource>
 </RCC>

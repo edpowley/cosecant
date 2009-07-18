@@ -3,7 +3,7 @@
 #include "timeunit_convert.h"
 using namespace CosecantAPI;
 using namespace CosecantAPI::TimeUnit;
-#include "audioio.h"
+#include "seqplay.h"
 
 double fromSamples(unit u, double x, const TimeInfo& ti)
 {
@@ -37,7 +37,7 @@ double ConvertTimeUnits(TimeUnit::unit from, TimeUnit::unit to, double value, co
 {
 	if (from == to) return value;
 
-	if (!timeinfo) timeinfo = &AudioIO::get().getTimeInfo();
+	if (!timeinfo) timeinfo = &SeqPlay::get().getTimeInfo();
 
 	return fromSamples(	to,
 						toSamples(from, value, *timeinfo),
