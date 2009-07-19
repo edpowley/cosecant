@@ -283,7 +283,7 @@ namespace CosecantAPI
 		virtual bool lockMutex(HostMachine*) = 0;
 		virtual void unlockMutex(HostMachine*) = 0;
 
-		virtual double getTicksPerFrame() = 0;
+		virtual const TimeInfo* getTimeInfo() = 0;
 
 		virtual void addParamChange(PinBuffer* buf, int time, ParamValue value) = 0;
 		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;

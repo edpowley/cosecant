@@ -104,28 +104,11 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 	if (!wq) return paContinue;
 
 	// Work
-	boost::upgrade_lock<boost::shared_mutex> playPosLock(wq->m_sequence->m_playPosMutex);
-	bool seqPlaying			= wq->m_sequence->m_playing;
-	wq->m_playing			= seqPlaying;
-	double playPos			= wq->m_sequence->m_playPos;
-	double loopStart		= wq->m_sequence->m_loopStart;
-	double loopEnd			= wq->m_sequence->m_loopEnd;
-	double ticksPerFrame	= wq->m_sequence->m_ticksPerFrame;
-	wq->m_ticksPerFrame		= ticksPerFrame;
-	double framesPerTick	= 1.0 / ticksPerFrame;
-	wq->m_framesPerTick		= framesPerTick;
-
 	for (unsigned long firstframe = 0; firstframe < frames; /* firstframe incremented at end of loop */)
 	{
 		int numFramesForThisIter = min<int>(c_maxBufferSize, frames - firstframe);
-		if (seqPlaying)
-		{
-			int framesUntilLoopEnd = (int)ceil((loopEnd - playPos) * framesPerTick);
-			numFramesForThisIter = min(numFramesForThisIter, framesUntilLoopEnd);
-		}
 
 		wq->reset();
-		wq->m_playPos = playPos;
 
 		while (!wq->finished())
 		{
@@ -144,25 +127,8 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 
 		s.m_outbuf += numFramesForThisIter * s.m_numOutputChannels;
 
-		if (seqPlaying)
-		{
-			playPos += ticksPerFrame * numFramesForThisIter;
-			if (playPos > loopEnd)
-			{
-				wq->m_shouldUpdateSequenceFromScratch = true;
-				playPos = loopStart;
-			}
-			else
-			{
-				wq->m_shouldUpdateSequenceFromScratch = false;
-			}
-		}
-
 		firstframe += numFramesForThisIter;
 	}
-
-	boost::upgrade_to_unique_lock<boost::shared_mutex> playPosLockUpgrade(playPosLock);
-	wq->m_sequence->m_playPos = playPos;
 
 	return paContinue;
 }

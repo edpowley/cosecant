@@ -60,10 +60,6 @@ namespace WorkUnit
 		std::vector< Ptr<Sequence::Track> > m_seqTracks;
 		Ptr<Pin> m_noteTriggerPin;
 
-		typedef std::multimap<int, Ptr<SequenceEvent::Base> > SequenceEventMap;
-		SequenceEventMap m_sequenceEvents;
-		void updateSequenceEvents(int firstframe, int lastframe);
-
 		struct ParamPinBuf
 		{
 			ParamTag tag;

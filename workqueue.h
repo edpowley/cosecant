@@ -30,11 +30,6 @@ public:
 
 	std::vector< Ptr<WorkBuffer::Base> > m_workBuffersForPreProcess;
 
-	Ptr<Sequence::Seq> m_sequence;
-	bool m_playing;
-	double m_playPos, m_ticksPerFrame, m_framesPerTick;
-	bool m_shouldUpdateSequenceFromScratch;
-
 	void addWorkBuffer(const Ptr<WorkBuffer::Base>& wb);
 
 	void dumpToDot(std::ostream& stream);

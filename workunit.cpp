@@ -122,50 +122,6 @@ void WorkMachine::sendParamChanges()
 	m_machine->m_paramChanges.clear();
 }
 
-void WorkMachine::updateSequenceEvents(int firstframe, int lastframe)
-{
-	m_sequenceEvents.clear();
-
-	if (m_queue->m_playing)
-	{
-		if (m_queue->m_shouldUpdateSequenceFromScratch)
-			m_machine->m_playingEvents.clear();
-
-		double endPlayPos = m_queue->m_playPos + m_queue->m_ticksPerFrame * (lastframe - firstframe);
-		BOOST_FOREACH(const Ptr<Sequence::Track>& track, m_seqTracks)
-		{
-			BOOST_FOREACH(const Ptr<Sequence::Clip>& sev, track->m_clips)
-			{
-				if (sev->getEndTime() < m_queue->m_playPos) continue;
-				if (sev->m_startTime >= endPlayPos) break;
-
-				if (m_queue->m_shouldUpdateSequenceFromScratch)
-				{
-					m_machine->m_playingEvents.push_back(
-						Machine::EventPlayRec(sev, sev->m_begin + (m_queue->m_playPos - sev->m_startTime))
-					);
-				}
-
-				double t = sev->m_startTime;
-				if (t >= m_queue->m_playPos && t < endPlayPos)
-				{
-					int it = firstframe + static_cast<int>( (t - m_queue->m_playPos) * m_queue->m_framesPerTick );
-					m_sequenceEvents.insert(std::make_pair(it, new SequenceEvent::Start(track, sev, sev->m_begin)));
-					//breakpoints.insert(it);
-				}
-
-				t = sev->getEndTime();
-				if (t >= m_queue->m_playPos && t < endPlayPos)
-				{
-					int it = firstframe + static_cast<int>( (t - m_queue->m_playPos) * m_queue->m_framesPerTick );
-					m_sequenceEvents.insert(std::make_pair(it, new SequenceEvent::Stop(track, sev)));
-					//breakpoints.insert(it);
-				}
-			}
-		}
-	}
-}
-
 void WorkMachine::work(int firstframe, int lastframe)
 {
 	if (m_machine->m_dead) return;
@@ -206,15 +162,8 @@ void WorkMachine::work(int firstframe, int lastframe)
 			}
 		}
 
-		updateSequenceEvents(firstframe, lastframe);
-		for (SequenceEventMap::const_iterator sei = m_sequenceEvents.begin(); sei != m_sequenceEvents.end(); ++sei)
-		{
-			breakpoints.insert(sei->first);
-		}
-
 		// Do the work
 		int frame = firstframe;
-		double playPos = m_queue->m_playPos;
 		BOOST_FOREACH(int breakpoint, breakpoints)
 		{
 			// Param pins
@@ -256,27 +205,11 @@ void WorkMachine::work(int firstframe, int lastframe)
 				}
 			}
 
-			// Sequence play events
-			{
-				std::pair<SequenceEventMap::iterator, SequenceEventMap::iterator> spei
-					= m_sequenceEvents.equal_range(frame);
-				for (SequenceEventMap::iterator i = spei.first; i != spei.second; ++i)
-				{
-					i->second->work(m_machine);
-				}
-			}
-
 			if (breakpoint != frame)
 			{
 				m_machine->getMi()->work(m_inPinBuffer, m_outPinBuffer, frame, breakpoint);
 			}
 
-			double posIncrement = (breakpoint - frame) * m_queue->m_ticksPerFrame;
-			playPos += posIncrement;
-			BOOST_FOREACH(Machine::EventPlayRec& epr, m_machine->m_playingEvents)
-			{
-				epr.m_pos += posIncrement;
-			}
 			frame = breakpoint;
 		}
 	}

@@ -142,6 +142,11 @@ private:
 	}
 };
 
+// So that Ptr can be used as a key in a QHash
+template<class ObjectType> uint qHash(const Ptr<ObjectType>& key)
+{
+	return qHash(key.c_ptr());
+}
 
 template<class ObjectType> class SingletonPtr
 {

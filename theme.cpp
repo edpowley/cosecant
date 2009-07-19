@@ -18,6 +18,7 @@ Theme::Theme() : m_missingColor(255,0,255)
 	m_colorMap.insert("SequenceEditor/Ruler/LargeGridLabel",	"white");
 	m_colorMap.insert("SequenceEditor/Ruler/Odd",				"white");
 	m_colorMap.insert("SequenceEditor/Ruler/Even",				"azure");
+	m_colorMap.insert("SequenceEditor/PlayLine",				"orange");
 }
 
 QColor Theme::getSignalTypeColor(SignalType::st type)

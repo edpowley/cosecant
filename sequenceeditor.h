@@ -40,6 +40,22 @@ namespace SequenceEditor
 		QMap<int, GraphicsSimpleTextItemWithBG*> m_gridLabels;
 	};
 
+	class PlayLineItem : public QObject, public QGraphicsLineItem
+	{
+		Q_OBJECT
+
+	public:
+		PlayLineItem(Editor* editor, qreal height);
+
+		void setHeight(qreal height);
+
+	protected slots:
+		void setPlayPos(double seconds);
+
+	protected:
+		Editor* m_editor;
+	};
+
 	class Editor : public QSplitter
 	{
 		Q_OBJECT
@@ -53,9 +69,14 @@ namespace SequenceEditor
 
 		void setZoom(double pixelsPerSecond);
 
+	signals:
+		void signalChangePlayPos(double seconds);
+
 	protected slots:
 		void onInsertTrack(int index, const Ptr<Sequence::Track>& track);
 		void onRemoveTrack(int index, const Ptr<Sequence::Track>& track);
+
+		void onPlayPosTimer();
 
 	protected:
 		Ptr<Sequence::Seq> m_seq;
@@ -68,5 +89,7 @@ namespace SequenceEditor
 
 		void createRulerSectionItems();
 		QMap<Ptr<Sequence::MasterTrackClip>, RulerSectionItem*> m_rulerSectionItems;
+
+		QTimer m_playPosTimer;
 	};
 };

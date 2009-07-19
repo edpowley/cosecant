@@ -11,7 +11,7 @@ public:
 	virtual bool lockMutex(HostMachine*);
 	virtual void unlockMutex(HostMachine*);
 
-	virtual double getTicksPerFrame();
+	virtual const TimeInfo* getTimeInfo();
 
 	virtual void addParamChange(PinBuffer* buf, int time, ParamValue value);
 	virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev);

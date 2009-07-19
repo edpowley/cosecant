@@ -2,9 +2,18 @@
 #include "common.h"
 #include "sequenceeditor.h"
 using namespace SequenceEditor;
+#include "seqplay.h"
 #include "theme.h"
 
 /* TRANSLATOR SequenceEditor::Editor */
+
+enum ZValues
+{
+	zRulerBar,
+	zRulerLabel,
+	zRulerBpmText,
+	zPlayLine,
+};
 
 Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 : QSplitter(parent), m_seq(seq)
@@ -54,6 +63,9 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 
 	setZoom(16);
 
+	m_rulerScene.setSceneRect(0, 0, m_seq->getLengthInSeconds(), c_rulerHeight);
+	m_bodyScene .setSceneRect(0, 0, m_seq->getLengthInSeconds(), 1000);
+
 	createTrackItems();
 	createRulerSectionItems();
 
@@ -63,6 +75,19 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 	connect(
 		m_seq, SIGNAL(signalRemoveTrack(int, const Ptr<Sequence::Track>&)),
 		this, SLOT(onRemoveTrack(int, const Ptr<Sequence::Track>&)) );
+
+	PlayLineItem* pli = new PlayLineItem(this, c_rulerHeight);
+	pli->setZValue(zPlayLine);
+	m_rulerScene.addItem(pli);
+
+	PlayLineItem* pli2 = new PlayLineItem(this, 1e6);
+	pli2->setZValue(zPlayLine);
+	m_bodyScene.addItem(pli2);
+
+	m_playPosTimer.setSingleShot(false);
+	connect( &m_playPosTimer, SIGNAL(timeout()),
+		this, SLOT(onPlayPosTimer()) );
+	m_playPosTimer.start(1000 / 25);
 }
 
 void Editor::setZoom(double pixelsPerSecond)
@@ -131,14 +156,24 @@ void Editor::onRemoveTrack(int index, const Ptr<Sequence::Track>& track)
 
 void Editor::createRulerSectionItems()
 {
-	QMapIterator<double, Ptr<Sequence::MasterTrackClip> > iter(m_seq->m_masterTrack);
+	QMapIterator<int, Ptr<Sequence::MasterTrackClip> > iter(m_seq->m_masterTrack);
 	while (iter.hasNext())
 	{
 		iter.next();
 		RulerSectionItem* item = new RulerSectionItem(this, iter.value());
 		m_rulerSectionItems.insert(iter.value(), item);
 		m_rulerScene.addItem(item);
-		item->setPos(0, iter.key());
+		item->setPos(0, m_seq->beatToSecond(iter.key()));
+	}
+}
+
+void Editor::onPlayPosTimer()
+{
+	boost::shared_lock<boost::shared_mutex> lock(SeqPlay::get().m_mutex);
+
+	if (SeqPlay::get().isPlaying())
+	{
+		signalChangePlayPos(m_seq->beatToSecond(SeqPlay::get().getPlayPos()));
 	}
 }
 
@@ -181,7 +216,7 @@ void RulerSectionItem::setupChildren()
 	CosecantAPI::TimeInfo ti = m_mtc->getTimeInfo();
 
 	QGraphicsSimpleTextItem* bpmtext = new QGraphicsSimpleTextItem(this);
-	bpmtext->setZValue(100);
+	bpmtext->setZValue(zRulerBpmText);
 	bpmtext->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	bpmtext->setFont(m_bpmFont);
 	//: %1 = tempo in beats per minute, %2/%3 = time signature
@@ -199,7 +234,7 @@ void RulerSectionItem::setupChildren()
 
 		QGraphicsRectItem* child = new QGraphicsRectItem(0, 0, pixelsPerBar, h, this);
 		child->setPos(x, 0);
-		child->setZValue(0);
+		child->setZValue(zRulerBar);
 		child->setPen(Qt::NoPen);
 
 		enum {none, small, large} grid = none;
@@ -227,7 +262,7 @@ void RulerSectionItem::setupChildren()
 		if (grid != none)
 		{
 			GraphicsSimpleTextItemWithBG* label = new GraphicsSimpleTextItemWithBG(this);
-			label->setZValue(10);
+			label->setZValue(zRulerLabel);
 			label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
 			label->setText(QString(" %1 ").arg(b));
 			label->setPos(x, h - label->boundingRect().height());
@@ -240,4 +275,27 @@ void RulerSectionItem::setupChildren()
 			m_gridLabels.insert(b, label);
 		}
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+PlayLineItem::PlayLineItem(SequenceEditor::Editor* editor, qreal height)
+: m_editor(editor), QGraphicsLineItem(0,0,0,height)
+{
+	QPen pen(Theme::get().getColor("SequenceEditor/PlayLine"), 3);
+	pen.setCosmetic(true);
+	setPen(pen);
+
+	connect(editor, SIGNAL(signalChangePlayPos(double)),
+		this, SLOT(setPlayPos(double)) );
+}
+
+void PlayLineItem::setHeight(qreal height)
+{
+	setLine(0,0,0,height);
+}
+
+void PlayLineItem::setPlayPos(double seconds)
+{
+	setPos(seconds, 0);
 }

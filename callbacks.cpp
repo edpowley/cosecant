@@ -7,6 +7,7 @@ using namespace CosecantAPI;
 #include "eventlist.h"
 #include "song.h"
 #include "dllmachine.h"
+#include "seqplay.h"
 
 int CallbacksImpl::returnString(const QString& s, char* buf, int buf_size)
 {
@@ -42,9 +43,9 @@ void CallbacksImpl::unlockMutex(HostMachine* mac)
 	mac->m_mutex.unlock();
 }
 
-double CallbacksImpl::getTicksPerFrame()
+const TimeInfo* CallbacksImpl::getTimeInfo()
 {
-	return Song::get().m_sequence->m_ticksPerFrame;
+	return &SeqPlay::get().getTimeInfo();
 }
 
 void CallbacksImpl::addParamChange(PinBuffer* buf, int time, ParamValue value)

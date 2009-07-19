@@ -4,6 +4,7 @@
 #include "svnrevision.h"
 
 #include "song.h"
+#include "seqplay.h"
 #include "routingeditor.h"
 #include "sequenceeditor.h"
 #include "machinechooserwidget.h"
@@ -89,6 +90,8 @@ void CosecantMainWindow::on_actionTransportPlay_toggled(bool checked)
 	qDebug() << "play" << checked;
 
 	if (!checked) ui.actionTransportRecord->setChecked(false);
+
+	SeqPlay::get().setPlaying(checked);
 }
 
 void CosecantMainWindow::on_actionTransportStop_triggered()

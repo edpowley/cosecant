@@ -138,19 +138,17 @@ namespace Sequence
 		void removeTracks(const TrackIndexMap& tim);
 
 		QList< Ptr<Sequence::Track> > m_tracks;
-		QMap<double, Ptr<MasterTrackClip> > m_masterTrack;
+		QMap<int, Ptr<MasterTrackClip> > m_masterTrack; // key = start time in beats
 
 		Seq(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
-		boost::shared_mutex m_playPosMutex;
-		double m_playPos, m_loopStart, m_loopEnd;
-		bool m_playing;
-		double m_ticksPerFrame;
+		double m_loopStart, m_loopEnd;
 
 		void showEditor(NotebookWindow* win);
 
 		double getLengthInSeconds() { return 400.0; }
+		double beatToSecond(double b);
 
 	signals:
 		// Have to specify Sequence::Track (instead of just Track) here, as Qt isn't smart enough to figure
@@ -160,5 +158,7 @@ namespace Sequence
 
 	protected:
 		void ctorCommon();
+
+		QHash<Ptr<MasterTrackClip>, double> m_mtcStartTimes; // value = start time in seconds
 	};
 };

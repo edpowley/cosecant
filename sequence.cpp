@@ -12,15 +12,25 @@ Seq::Seq()
 
 void Seq::ctorCommon()
 {
-	m_playPos = 0;
-	m_playing = false;
 	m_loopStart = 0;
 	m_loopEnd = 16;
-	// tick/sample = (tick/minute) / (second/minute) / (sample/second)
-	m_ticksPerFrame = 120.0 / 60.0 / 44100.0;
 
 	Ptr<MasterTrackClip> mtc = new MasterTrackClip;
 	m_masterTrack.insert(0, mtc);
+	m_mtcStartTimes.insert(mtc, 0);
+}
+
+double Seq::beatToSecond(double b)
+{
+	QMap<int, Ptr<MasterTrackClip> >::const_iterator iter = m_masterTrack.upperBound((int)floor(b));
+	// Now iter points to the first item with key > b
+
+	-- iter;
+	// Now iter points to the last item with key <= b
+
+	double posInMtc = b - iter.key();
+	const Ptr<MasterTrackClip>& mtc = iter.value();
+	return m_mtcStartTimes.value(mtc, 0) + posInMtc / mtc->getTimeInfo().beatsPerSecond;
 }
 
 ////////////////////////////////////////////////////////////////////////////

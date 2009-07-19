@@ -495,7 +495,6 @@ struct CtorHelper
 };
 
 WorkQueue::WorkQueue(const Ptr<Routing>& routing)
-: m_sequence(Song::get().m_sequence), m_shouldUpdateSequenceFromScratch(false)
 {
 	if (!routing) return;
 
@@ -543,8 +542,6 @@ void WorkQueue::updateFromSongRouting()
 	// Swap the new for the old
 	{
 		boost::unique_lock<boost::shared_mutex> lock(s_mutex);
-		if (s)
-			newq->m_shouldUpdateSequenceFromScratch = s->m_shouldUpdateSequenceFromScratch;
 		s = newq;
 	}
 }
