@@ -299,15 +299,16 @@ namespace CosecantAPI
 	public:
 		class Timeout : public std::exception {};
 
-		MutexLock(Callbacks* cb, HostMachine* mac) : m_cb(cb), m_mac(mac)
-		{	if (!m_cb->lockMutex(m_mac)) throw Timeout();   }
+		MutexLock(Callbacks* cb, HostMachine* mac) : m_cb(cb), m_mac(mac), m_locked(false)
+		{	if (m_cb->lockMutex(m_mac)) m_locked = true; else throw Timeout();   }
 
 		~MutexLock()
-		{	m_cb->unlockMutex(m_mac);   }
+		{	if (m_locked) m_cb->unlockMutex(m_mac);   }
 
 	protected:
 		Callbacks* m_cb;
 		HostMachine* m_mac;
+		bool m_locked;
 	};
 
 	////////////////////////////////////////////////////////////////////
