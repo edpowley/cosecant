@@ -277,11 +277,10 @@ namespace CosecantAPI
 
 	class Callbacks
 	{
+		friend class MutexLock;
+
 	public:
 		virtual unsigned int getHostVersion() = 0;
-
-		virtual bool lockMutex(HostMachine*) = 0;
-		virtual void unlockMutex(HostMachine*) = 0;
 
 		virtual const TimeInfo* getTimeInfo() = 0;
 
@@ -289,6 +288,10 @@ namespace CosecantAPI
 		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;
 
 		virtual void doUndoable(HostMachine*, MiUndoable*) = 0;
+
+	protected:
+		virtual bool lockMutex(HostMachine*) = 0;
+		virtual void unlockMutex(HostMachine*) = 0;
 	};
 
 	class MutexLock

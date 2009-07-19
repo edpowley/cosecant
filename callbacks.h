@@ -8,9 +8,6 @@ class CallbacksImpl : public Callbacks
 public:
 	virtual unsigned int getHostVersion() { return CosecantAPI::version; }
 
-	virtual bool lockMutex(HostMachine*);
-	virtual void unlockMutex(HostMachine*);
-
 	virtual const TimeInfo* getTimeInfo();
 
 	virtual void addParamChange(PinBuffer* buf, int time, ParamValue value);
@@ -20,6 +17,9 @@ public:
 
 protected:
 	int returnString(const QString& s, char* buf, int buf_size);
+
+	virtual bool lockMutex(HostMachine*);
+	virtual void unlockMutex(HostMachine*);
 };
 
 namespace MachineExports
