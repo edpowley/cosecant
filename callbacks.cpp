@@ -35,7 +35,7 @@ int CallbacksImpl::returnString(const QString& s, char* buf, int buf_size)
 
 bool CallbacksImpl::lockMutex(HostMachine* mac)
 {
-	return mac->m_mutex.timed_lock(boost::posix_time::milliseconds(1000));
+	return mac->m_mutex.tryLock(1000);
 }
 
 void CallbacksImpl::unlockMutex(HostMachine* mac)

@@ -84,7 +84,7 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 						PaStreamCallbackFlags status,
 						void* user)
 {
-	boost::shared_lock<boost::shared_mutex> wqlock(WorkQueue::s_mutex);
+	QReadLocker wqlock(&WorkQueue::s_mutex);
 
 	AudioIO& s = *s_singleton;
 
@@ -114,7 +114,7 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 		{
 			WorkUnit::Base* wu;
 			{
-				boost::unique_lock<boost::shared_mutex> lock(wq->m_mutex);
+				QMutexLocker lock(&wq->m_mutex);
 				wu = wq->popReady();
 			}
 

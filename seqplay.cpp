@@ -5,7 +5,7 @@
 SingletonPtr<SeqPlay> SeqPlay::s_singleton;
 
 SeqPlay::SeqPlay()
-: m_playing(false), m_playPos(0)
+: m_playing(false), m_playPos(0), m_mutex(QReadWriteLock::Recursive)
 {
 	m_timeinfo.beatsPerSecond = 120.0 / 60.0;
 	m_timeinfo.beatsPerBar = 4;

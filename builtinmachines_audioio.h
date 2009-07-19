@@ -66,7 +66,7 @@ public:
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;
 		if (m_rightChannel < 0 || m_rightChannel >= nChans) return;
 
-		boost::unique_lock<boost::mutex> lock(AudioIO::get().m_outmutex);
+		QMutexLocker lock(&AudioIO::get().m_outmutex);
 
 		for (int i=firstframe; i<lastframe; i++)
 		{

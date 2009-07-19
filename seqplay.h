@@ -12,7 +12,7 @@ protected:
 	static SingletonPtr<SeqPlay> s_singleton;
 
 public:
-	boost::shared_mutex m_mutex;
+	QReadWriteLock m_mutex;
 
 	static void initSingleton() { s_singleton.set(new SeqPlay); }
 	static SeqPlay& get() { return *s_singleton; }

@@ -32,7 +32,7 @@ void Base::go(int numframes)
 	work(0, numframes);
 
 	{
-		boost::unique_lock<boost::shared_mutex> lock(m_queue->m_mutex);
+		QMutexLocker lock(&m_queue->m_mutex);
 
 		if (!m_dependents.empty())
 		{
@@ -110,7 +110,7 @@ void WorkMachine::updatePinBuffers()
 
 void WorkMachine::sendParamChanges()
 {
-	boost::unique_lock<boost::mutex> paramChangeLock(m_machine->m_paramChangesMutex);
+	QMutexLocker paramChangeLock(&m_machine->m_paramChangesMutex);
 
 	typedef std::pair<ParamTag, ParamValue> parampair;
 	BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
@@ -130,8 +130,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 	{
 		PerfClockAutoCount clock(&m_machine->m_perfCount);
 
-		TimeoutLock<boost::recursive_timed_mutex> lock(m_machine->m_mutex, 1000);
-		boost::unique_lock<boost::mutex> lockb(m_machine->m_playingPatternsMutex);
+		MutexLockerWithTimeout lock(&m_machine->m_mutex, 1000);
 
 		sendParamChanges();
 

@@ -533,7 +533,7 @@ void WorkQueue::addWorkBuffer(const Ptr<WorkBuffer::Base>& wb)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-boost::shared_mutex WorkQueue::s_mutex;
+QReadWriteLock WorkQueue::s_mutex;
 
 void WorkQueue::updateFromSongRouting()
 {
@@ -541,14 +541,14 @@ void WorkQueue::updateFromSongRouting()
 
 	// Swap the new for the old
 	{
-		boost::unique_lock<boost::shared_mutex> lock(s_mutex);
+		QWriteLocker lock(&s_mutex);
 		s = newq;
 	}
 }
 
 void WorkQueue::setNull()
 {
-	boost::unique_lock<boost::shared_mutex> lock(s_mutex);
+	QWriteLocker lock(&s_mutex);
 	s = NULL;
 }
 

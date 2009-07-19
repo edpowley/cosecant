@@ -14,7 +14,7 @@
 Machine::Machine()
 : m_pos(0,0), m_halfsize(50,25), m_name("Unnamed"), m_parameditor(NULL),
 m_routing(NULL), m_perfCount(0),
-m_dead(false), m_mi(NULL)
+m_dead(false), m_mi(NULL), m_mutex(QMutex::Recursive)
 {
 }
 
@@ -154,7 +154,7 @@ void Parameter::Scalar::change(double newval)
 		setState(newval);
 		valueChanged(newval);
 
-		boost::unique_lock<boost::mutex> lock(m_mac->m_paramChangesMutex);
+		QMutexLocker lock(&m_mac->m_paramChangesMutex);
 		m_mac->m_paramChanges[m_tag] = newval;
 	}
 }

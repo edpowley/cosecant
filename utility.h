@@ -85,27 +85,26 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
-// Just a nicer class for timed mutex locks than boost provides
-// (takes care of all that boost::system_time and boost::posix_time crap, and throws an exception
-// instead of using a boolean)
-
 ERROR_CLASS(MutexLockTimeout);
 
-template<typename T> class TimeoutLock
+class MutexLockerWithTimeout
 {
 public:
-	TimeoutLock(T& mutex, unsigned int milliseconds)
-		: m_mutex(mutex)
+	MutexLockerWithTimeout(QMutex* mutex, int milliseconds)
+		: m_mutex(mutex), m_locked(false)
 	{
-		if (!m_mutex.timed_lock(boost::posix_time::milliseconds(milliseconds)))
-			THROW_ERROR(MutexLockTimeout, "Mutex lock timeout");
+		if (m_mutex->tryLock(milliseconds))
+			m_locked = true;
+		else
+			throw MutexLockTimeout("Mutex lock timeout");
 	}
 
-	~TimeoutLock()
+	~MutexLockerWithTimeout()
 	{
-		m_mutex.unlock();
+		if (m_locked) m_mutex->unlock();
 	}
 		
 protected:
-	T& m_mutex;
+	QMutex* m_mutex;
+	bool m_locked;
 };

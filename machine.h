@@ -228,7 +228,7 @@ public:
 
 	void setPos(const QPointF& newpos);
 
-	boost::recursive_timed_mutex m_mutex;
+	QMutex m_mutex;
 
 	bool m_dead;
 	QString m_deadWhy;
@@ -255,9 +255,8 @@ public:
 	ParamEditor* m_parameditor;
 	void showParamEditor();
 
-	boost::mutex m_paramChangesMutex;
+	QMutex m_paramChangesMutex;
 	std::map<ParamTag, ParamValue> m_paramChanges;
-//	std::map<ParamTag, sigc::signal<void> > m_signalParamChange;
 
 	void addPin(const Ptr<Pin>& pin);
 	void removePin(const Ptr<Pin>& pin);
@@ -279,15 +278,6 @@ public:
 	void removePattern(const Ptr<Sequence::Pattern>& pat);
 
 	virtual class PatternEditor* createPatternEditor(const Ptr<Sequence::Pattern>& pattern);
-
-	boost::mutex m_playingPatternsMutex;
-	struct EventPlayRec
-	{
-		Ptr<Sequence::Clip> m_event;
-		double m_pos;
-		EventPlayRec(const Ptr<Sequence::Clip>& ev, double pos) : m_event(ev), m_pos(pos) {}
-	};
-	std::vector<EventPlayRec> m_playingEvents;
 
 protected:
 	CosecantAPI::Mi* m_mi;

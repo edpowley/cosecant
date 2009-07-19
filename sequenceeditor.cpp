@@ -169,7 +169,7 @@ void Editor::createRulerSectionItems()
 
 void Editor::onPlayPosTimer()
 {
-	boost::shared_lock<boost::shared_mutex> lock(SeqPlay::get().m_mutex);
+	QReadLocker lock(&SeqPlay::get().m_mutex);
 
 	if (SeqPlay::get().isPlaying())
 	{

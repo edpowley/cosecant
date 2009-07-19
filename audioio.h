@@ -38,7 +38,7 @@ public:
 	bool isOutputDeviceAsio(int index);
 
 	float* m_inbuf;
-	boost::mutex m_outmutex;
+	QMutex m_outmutex;
 	float* m_outbuf;
 
 	static __int64 s_perfCount;

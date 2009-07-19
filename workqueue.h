@@ -10,12 +10,12 @@ protected:
 
 public:
 	static WorkQueue* s; // singleton
-	static boost::shared_mutex s_mutex;
+	static QReadWriteLock s_mutex;
 
 	static void updateFromSongRouting();
 	static void setNull();
 
-	boost::shared_mutex m_mutex;
+	QMutex m_mutex;
 
 	// Requires m_mutex
 	WorkUnit::Base* popReady();

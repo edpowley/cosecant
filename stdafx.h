@@ -22,10 +22,12 @@
 #include <map>
 #include <set>
 #include <iomanip> // std::setprecision etc
+#include <sstream>
 
 // Boost
-#include <boost/thread.hpp>
 #include <boost/foreach.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 
 // Qt
 #include <QtGui>

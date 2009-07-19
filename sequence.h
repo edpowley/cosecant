@@ -122,7 +122,7 @@ namespace Sequence
 	public:
 		Seq();
 
-		boost::shared_mutex m_mutex;
+		QReadWriteLock m_mutex;
 
 		ERROR_CLASS(TrackNotFound);
 
