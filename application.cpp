@@ -17,7 +17,14 @@ Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
 {
 	QPixmap splashpic(":/CosecantMainWindow/images/splash.png");
-	QSplashScreen* splash = new QSplashScreen(splashpic, Qt::WindowStaysOnTopHint);
+
+#ifndef _DEBUG
+	Qt::WindowFlags splashflags = Qt::WindowStaysOnTopHint;
+#else
+	Qt::WindowFlags splashflags = 0; // don't stay on top in debug build
+#endif
+
+	QSplashScreen* splash = new QSplashScreen(splashpic, splashflags);
 	splash->setAttribute(Qt::WA_DeleteOnClose);
 	splash->show();
 	processEvents();

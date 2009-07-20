@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "common.h"
 #include "cosecantmainwindow.h"
-#include "svnrevision.h"
+#include "version.h"
 
 #include "song.h"
 #include "seqplay.h"
@@ -20,7 +20,7 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	ASSERT(s_singleton == NULL);
 	s_singleton = this;
 
-	setWindowTitle(tr("BTDSys Cosecant revision %1").arg(COSECANT_SVN_REVISION));
+	setWindowTitle(tr("BTDSys Cosecant %1").arg(getVersionString()));
 
 	QAction* undoaction = theUndo().createUndoAction(this);
 	undoaction->setShortcut(tr("Ctrl+Z", "shortcut for edit/undo"));

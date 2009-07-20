@@ -1,3 +1,4 @@
 #pragma once
 
-#define COSECANT_SVN_REVISION "$WCREV$$WCMODS?m:$"
+static const int versionSvn = $WCREV$;
+static const bool versionSvnModified = $WCMODS?true:false$;
