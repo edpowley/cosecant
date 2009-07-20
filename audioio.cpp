@@ -17,6 +17,11 @@ void AudioIO::initSingleton()
 	s_singleton.set(new AudioIO());
 }
 
+void AudioIO::killSingleton()
+{
+	s_singleton.setNull();
+}
+
 int paDo(PaError retcode)
 {
 	if (retcode < 0)

@@ -10,7 +10,7 @@ public:
 
 	static const int c_polyphony = 16;
 
-	SimpleSynth(HostMachine* mac, Callbacks* cb);
+	SimpleSynth(Callbacks* cb);
 
 	class Note
 	{
@@ -67,8 +67,8 @@ bool SimpleSynth::getInfo(MachineInfo* info, InfoCallbacks* cb)
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-SimpleSynth::SimpleSynth(HostMachine* mac, Callbacks* cb)
-: Mi(mac,cb)
+SimpleSynth::SimpleSynth(Callbacks* cb)
+: Mi(cb)
 {
 	for (int n=0; n<c_polyphony; n++)
 		m_notes[n].init(this);

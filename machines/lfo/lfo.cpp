@@ -30,7 +30,7 @@ public:
 		return true;
 	}
 
-	Lfo(HostMachine* mac, Callbacks* cb) : Mi(mac,cb), m_phase(0), m_centre(0.5), m_amp(0.5),
+	Lfo(Callbacks* cb) : Mi(cb), m_phase(0), m_centre(0.5), m_amp(0.5),
 		m_sendphase(0), m_sendphasemax(32)
 	{
 		setPeriod(1.0);

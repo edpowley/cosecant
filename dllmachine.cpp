@@ -88,6 +88,6 @@ DllMachine::~DllMachine()
 Mi* DllMachine::createMi(Callbacks* cb)
 {
 	MachineExports::createMachine c = (MachineExports::createMachine)m_dll->getFunc("createMachine");
-	m_mi = c(m_id.toAscii(), this, cb);
+	m_mi = c(m_id.toAscii(), cb);
 	return m_mi;
 }

@@ -65,6 +65,14 @@ Application::Application(int& argc, char** argv)
 	m_mainWindow = new CosecantMainWindow;
 	splash->finish(m_mainWindow);
 	m_mainWindow->showMaximized();
+
+	connect( this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()) );
+}
+
+void Application::onAboutToQuit()
+{
+	qDebug() << "About to quit";
+	AudioIO::killSingleton();
 }
 
 void Application::setupI18n()

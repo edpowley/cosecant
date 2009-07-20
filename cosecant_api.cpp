@@ -48,12 +48,12 @@ DLLEXPORT(bool) getInfo(MachineInfo* info, InfoCallbacks* cb, const char* id)
 
 ////////////////////////////////////////////////////////////////////////////
 
-DLLEXPORT(Mi*) createMachine(const char* id, HostMachine* mac, Callbacks* cb)
+DLLEXPORT(Mi*) createMachine(const char* id, Callbacks* cb)
 {
 	std::map<std::string, MiFactory*>::const_iterator
 		iter  = MachineFactories::singleton.m_fac.find(id);
 	if (iter != MachineFactories::singleton.m_fac.end())
-		return iter->second->createMachine(mac,cb);
+		return iter->second->createMachine(cb);
 	else
 		return NULL;
 }

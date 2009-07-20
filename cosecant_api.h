@@ -130,25 +130,6 @@ namespace CosecantAPI
 
 	////////////////////////////////////////////////////////////////////
 
-#ifdef COSECANT_API_HOST
-	typedef ::Machine HostMachine;
-	class MiUndoable;
-#else
-	class HostMachine;
-
-	class MiUndoable
-	{
-	public:
-		virtual bool operator()() = 0;
-		virtual bool undo() = 0;
-		virtual const char* describe() = 0;
-	};
-#endif
-	
-	typedef void* WindowHandle;
-
-	////////////////////////////////////////////////////////////////////
-
 	namespace ParamInfo
 	{
 		class Base
@@ -275,23 +256,28 @@ namespace CosecantAPI
 		int samplesPerSecond;
 	};
 
+#ifdef COSECANT_API_HOST
+	typedef ::Machine HostMachine;
+#else
+	class HostMachine;
+#endif
+
 	class Callbacks
 	{
 		friend class MutexLock;
 
 	public:
 		virtual unsigned int getHostVersion() = 0;
+		virtual HostMachine* getHostMachine() = 0;
 
 		virtual const TimeInfo* getTimeInfo() = 0;
 
 		virtual void addParamChange(PinBuffer* buf, int time, ParamValue value) = 0;
 		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;
 
-		virtual void doUndoable(HostMachine*, MiUndoable*) = 0;
-
 	protected:
-		virtual bool lockMutex(HostMachine*) = 0;
-		virtual void unlockMutex(HostMachine*) = 0;
+		virtual bool lockMutex() = 0;
+		virtual void unlockMutex() = 0;
 	};
 
 	class MutexLock
@@ -299,15 +285,14 @@ namespace CosecantAPI
 	public:
 		class Timeout : public std::exception {};
 
-		MutexLock(Callbacks* cb, HostMachine* mac) : m_cb(cb), m_mac(mac), m_locked(false)
-		{	if (m_cb->lockMutex(m_mac)) m_locked = true; else throw Timeout();   }
+		MutexLock(Callbacks* cb) : m_cb(cb), m_locked(false)
+		{	if (m_cb->lockMutex()) m_locked = true; else throw Timeout();   }
 
 		~MutexLock()
-		{	if (m_locked) m_cb->unlockMutex(m_mac);   }
+		{	if (m_locked) m_cb->unlockMutex();   }
 
 	protected:
 		Callbacks* m_cb;
-		HostMachine* m_mac;
 		bool m_locked;
 	};
 
@@ -333,34 +318,15 @@ namespace CosecantAPI
 //		virtual void load(XmlElement* el) = 0;
 //		virtual void save(XmlElement* el) = 0;
 
-		virtual MiUndoable* createUndoableForLengthChange(int newlength) = 0;
-
 	protected:
 		Mi* m_mi;
 		int m_length;
 	};
 
-	class MiPatternEditor
-	{
-	public:
-		MiPatternEditor(MiPattern* pat, WindowHandle parent)
-			: m_pat(pat), m_mi(pat->m_mi), m_parent(parent) {}
-		virtual ~MiPatternEditor() {}
-
-		virtual void takeFocus() = 0;
-
-		virtual void keyJazz(KeyJazz::Type type, KeyJazz::Note note) {}
-
-	protected:
-		Mi* m_mi;
-		MiPattern* m_pat;
-		WindowHandle m_parent;
-	};
-
 	class Mi
 	{
 	public:
-		Mi(HostMachine* mac, Callbacks* cb) : m_mac(mac), m_cb(cb) {}
+		Mi(Callbacks* cb) : m_cb(cb) {}
 		virtual ~Mi() {}
 
 		virtual const char* getScript() { return NULL; }
@@ -376,9 +342,7 @@ namespace CosecantAPI
 		virtual void playPattern(void* track, MiPattern* pattern, double pos) {}
 
 		virtual MiPattern* createPattern(int length) { return NULL; }
-		virtual MiPatternEditor* createPatternEditor(WindowHandle parent, MiPattern* pattern) { return NULL; }
 
-		HostMachine* m_mac;
 		Callbacks* m_cb;
 	};
 
@@ -388,7 +352,7 @@ namespace CosecantAPI
 	{
 	public:
 		virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb) = 0;
-		virtual Mi* createMachine(HostMachine* mac, Callbacks* cb) = 0;
+		virtual Mi* createMachine(Callbacks* cb) = 0;
 	};
 
 	template<class TMiClass> class MiFactory_T : public MiFactory
@@ -397,8 +361,8 @@ namespace CosecantAPI
 		virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb)
 		{   return TMiClass::getInfo(info, cb);   }
 
-		virtual Mi* createMachine(HostMachine* mac, Callbacks* cb)
-		{   return new TMiClass(mac, cb);   }
+		virtual Mi* createMachine(Callbacks* cb)
+		{   return new TMiClass(cb);   }
 	};
 
 	// Your machine must implement this

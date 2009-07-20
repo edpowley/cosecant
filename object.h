@@ -158,7 +158,7 @@ public:
 
 	~SingletonPtr()
 	{
-		if (m_p) delete m_p;
+		setNull();
 	}
 
 	ERROR_CLASS(SetError);
@@ -169,6 +169,12 @@ public:
 			m_p = p;
 		else
 			THROW_ERROR(SetError, "set() can only be called once");
+	}
+
+	void setNull()
+	{
+		if (m_p) delete m_p;
+		m_p = NULL;
 	}
 
 	ERROR_CLASS(NullPointerError);

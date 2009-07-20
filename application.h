@@ -5,6 +5,8 @@
 
 class Application : public QApplication
 {
+	Q_OBJECT
+
 public:
 	Application(int& argc, char** argv);
 
@@ -14,6 +16,9 @@ public:
 	void detachScriptDebugger() { m_scriptDebugger->detach(); }
 
 	static PrefsVar_String s_prefLanguage;
+
+protected slots:
+	void onAboutToQuit();
 
 protected:
 	QScriptEngine* m_scriptEngine;

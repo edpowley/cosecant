@@ -37,8 +37,8 @@ const LADSPA_Descriptor* LadspaDll::callDescriptorFunc(unsigned long index)
 
 //////////////////////////////////////////////////////////////////////////////////
 
-LadspaMachine::LadspaMachine(HostMachine* mac, Callbacks* cb, const std::wstring& dllname, int index)
-: Mi(mac,cb), m_handle(NULL)
+LadspaMachine::LadspaMachine(Callbacks* cb, const std::wstring& dllname, int index)
+: Mi(cb), m_handle(NULL)
 {
 	m_dll.init(dllname.c_str());
 	// If it throws an exception, let it propagate out

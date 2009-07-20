@@ -33,14 +33,14 @@ int CallbacksImpl::returnString(const QString& s, char* buf, int buf_size)
 
 /////////////////////////////////////////////////////////////////////////
 
-bool CallbacksImpl::lockMutex(HostMachine* mac)
+bool CallbacksImpl::lockMutex()
 {
-	return mac->m_mutex.tryLock(1000);
+	return m_mac->m_mutex.tryLock(1000);
 }
 
-void CallbacksImpl::unlockMutex(HostMachine* mac)
+void CallbacksImpl::unlockMutex()
 {
-	mac->m_mutex.unlock();
+	m_mac->m_mutex.unlock();
 }
 
 const TimeInfo* CallbacksImpl::getTimeInfo()
@@ -64,9 +64,4 @@ void CallbacksImpl::addNoteEvent(PinBuffer* buf, int time, NoteEvent* ev)
 	{
 		nt->m_data.insert(std::make_pair(time, new SequenceEvent::Note(*ev)));
 	}
-}
-
-void CallbacksImpl::doUndoable(HostMachine* mac, MiUndoable* undoable)
-{
-//	theUndo().push( new DllMachine::Command(mac->m_instance, undoable) );
 }

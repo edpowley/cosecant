@@ -28,7 +28,7 @@ protected:
 class LadspaMachine : public Mi
 {
 public:
-	LadspaMachine(HostMachine* mac, Callbacks* cb, const std::wstring& dllname, int index);
+	LadspaMachine(Callbacks* cb, const std::wstring& dllname, int index);
 	~LadspaMachine();
 
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
@@ -55,8 +55,8 @@ public:
 
 	virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 	
-	virtual Mi* createMachine(HostMachine* mac, Callbacks* cb)
-	{	return new LadspaMachine(mac, cb, m_dllname, m_index);   }
+	virtual Mi* createMachine(Callbacks* cb)
+	{	return new LadspaMachine(cb, m_dllname, m_index);   }
 
 protected:
 	std::wstring m_dllname;

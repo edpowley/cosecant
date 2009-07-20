@@ -37,7 +37,7 @@ public:
 		return true;
 	}
 
-	SineTest(HostMachine* mac, Callbacks* cb) : Mi(mac,cb), m_phase(0), m_amp(0.2)
+	SineTest(Callbacks* cb) : Mi(cb), m_phase(0), m_amp(0.2)
 	{
 		setFreq(440.0);
 	}

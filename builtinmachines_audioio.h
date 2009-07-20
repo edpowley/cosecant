@@ -28,7 +28,7 @@ public:
 protected:
 	int m_leftChannel, m_rightChannel;
 
-	AudioInOut(Machine* mac, Callbacks* cb) : Mi(mac, cb), m_leftChannel(-1), m_rightChannel(-1)
+	AudioInOut(Callbacks* cb) : Mi(cb), m_leftChannel(-1), m_rightChannel(-1)
 	{
 	}
 
@@ -46,7 +46,8 @@ protected:
 
 	void populateChannelParam(int nChans, boost::function<QString(int)> getName)
 	{
-		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(m_mac->m_paramMap.get('chan').c_ptr());
+		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(
+			m_cb->getHostMachine()->m_paramMap.get('chan').c_ptr() );
 		param->setItems(getChannelParamItems(nChans, getName));
 	}
 };
@@ -58,7 +59,7 @@ class AudioOut : public AudioInOut
 	Q_OBJECT
 
 public:
-	AudioOut(Machine* mac, Callbacks* cb) : AudioInOut(mac, cb) {}
+	AudioOut(Callbacks* cb) : AudioInOut(cb) {}
 
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
@@ -105,7 +106,7 @@ class AudioIn : public AudioInOut
 	Q_OBJECT
 
 public:
-	AudioIn(Machine* mac, Callbacks* cb) : AudioInOut(mac, cb) {}
+	AudioIn(Callbacks* cb) : AudioInOut(cb) {}
 
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{

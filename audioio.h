@@ -17,6 +17,7 @@ public:
 
 	~AudioIO();
 	static void initSingleton();
+	static void killSingleton();
 	static AudioIO& get() { return *s_singleton; }
 
 	PaDeviceIndex getInDeviceIndex()  { return m_inDeviceIndex; }

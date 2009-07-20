@@ -15,7 +15,7 @@ bool TrackerTest::getInfo(MachineInfo* info, InfoCallbacks* cb)
 	return true;
 }
 
-TrackerTest::TrackerTest(HostMachine* mac, Callbacks* cb) : Mi(mac,cb)
+TrackerTest::TrackerTest(Callbacks* cb) : Mi(cb)
 {
 }
 

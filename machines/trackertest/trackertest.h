@@ -10,7 +10,7 @@ class TrackerTest : public Mi
 public:
 	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
-	TrackerTest(HostMachine* mac, Callbacks* cb);
+	TrackerTest(Callbacks* cb);
 	const char* getScript();
 
 	void changeParam(ParamTag tag, ParamValue value);

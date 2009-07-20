@@ -8,7 +8,7 @@ class BuiltinMachine : public Machine
 public:
 	virtual Mi* createMi(Callbacks* cb)
 	{
-		m_mi = new MiClass(this, cb);
+		m_mi = new MiClass(cb);
 		return m_mi;
 	}
 };

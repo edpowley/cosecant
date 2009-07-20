@@ -5,7 +5,7 @@ class Gain : public Mi
 public:
 	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
-	Gain(HostMachine* mac, Callbacks* cb);
+	Gain(Callbacks* cb);
 
 	virtual void changeParam(ParamTag tag, ParamValue value);
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
@@ -22,7 +22,7 @@ class MonoMonoToStereo : public Mi
 public:
 	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
-	MonoMonoToStereo(HostMachine* mac, Callbacks* cb) : Mi(mac,cb) {}
+	MonoMonoToStereo(Callbacks* cb) : Mi(cb) {}
 
 	virtual void changeParam(ParamTag tag, ParamValue value) {}
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
@@ -33,7 +33,7 @@ class StereoToMonoMono : public Mi
 public:
 	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
 
-	StereoToMonoMono(HostMachine* mac, Callbacks* cb) : Mi(mac,cb) {}
+	StereoToMonoMono(Callbacks* cb) : Mi(cb) {}
 
 	virtual void changeParam(ParamTag tag, ParamValue value) {}
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);

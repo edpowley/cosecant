@@ -14,7 +14,7 @@ bool Gain::getInfo(MachineInfo* info, InfoCallbacks* cb)
 	return true;
 }
 
-Gain::Gain(HostMachine* mac, Callbacks* cb) : Mi(mac,cb), m_gain(1.0f), m_pan(1.0f)
+Gain::Gain(Callbacks* cb) : Mi(cb), m_gain(1.0f), m_pan(1.0f)
 {
 }
 

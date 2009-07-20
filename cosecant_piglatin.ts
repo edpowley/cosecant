@@ -2,9 +2,47 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="en_GB">
 <context>
+    <name>Application</name>
+    <message>
+        <location filename="application.cpp" line="46"/>
+        <source>Opening audio device</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.cpp" line="49"/>
+        <source>Scanning builtin machines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.cpp" line="52"/>
+        <source>Scanning machines</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.cpp" line="55"/>
+        <source>Creating song</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.cpp" line="58"/>
+        <source>Initialising theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.cpp" line="61"/>
+        <source>Initialising script engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.cpp" line="64"/>
+        <source>Getting ready to rok</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AudioIO</name>
     <message>
-        <location filename="audioio.cpp" line="199"/>
+        <location filename="audioio.cpp" line="158"/>
         <source>No output device set. One possible cause for this is if you have recently changed soundcards, and the card specified in Cosecant&apos;s settings file is no longer present.</source>
         <translation>Onay outputay evicetay etsay.</translation>
     </message>
@@ -24,35 +62,39 @@
         <translation type="obsolete">Shift+Ctrl+Z</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="22"/>
         <source>BTDSys Cosecant revision %1</source>
-        <translation>BTDSys Cosecant evisionray %1</translation>
+        <translation type="obsolete">BTDSys Cosecant evisionray %1</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="25"/>
+        <location filename="cosecantmainwindow.cpp" line="23"/>
+        <source>BTDSys Cosecant %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="cosecantmainwindow.cpp" line="26"/>
         <source>Ctrl+Z</source>
         <comment>shortcut for edit/undo</comment>
         <translation>Ctrl+Z</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="32"/>
+        <location filename="cosecantmainwindow.cpp" line="33"/>
         <source>Ctrl+Y</source>
         <comment>shortcut for edit/redo</comment>
         <translation>Ctrl+Y</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="32"/>
+        <location filename="cosecantmainwindow.cpp" line="33"/>
         <source>Shift+Ctrl+Z</source>
         <comment>shortcut for edit/redo</comment>
         <translation>Shift+Ctrl+Z</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="53"/>
+        <location filename="cosecantmainwindow.cpp" line="54"/>
         <source>Undo history</source>
         <translation>Undoay istoryhay</translation>
     </message>
     <message>
-        <location filename="cosecantmainwindow.cpp" line="62"/>
+        <location filename="cosecantmainwindow.cpp" line="63"/>
         <source>Machines</source>
         <translation>Achinesmay</translation>
     </message>
@@ -391,7 +433,7 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="application.cpp" line="65"/>
+        <location filename="application.cpp" line="99"/>
         <source>Error opening audio device. Choose &apos;Settings&apos; from the &apos;View&apos; menu to change your audio device settings.</source>
         <translation>Erroray openingay audioay eviceday. Oosechay &apos;Ettingssay&apos; omfray ethay &apos;Iewvay&apos; enumay otay angechay ouryay audioay eviceday ettingssay.</translation>
     </message>
@@ -434,11 +476,16 @@
         <source>connect</source>
         <translation>onnectcay</translation>
     </message>
+    <message>
+        <location filename="builtinmachines.cpp" line="20"/>
+        <source>This is a placeholder for a machine which you do not have installed.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>RulerSectionItem</name>
     <message>
-        <location filename="sequenceeditor.cpp" line="188"/>
+        <location filename="sequenceeditor.cpp" line="223"/>
         <source>%1 %2/%3</source>
         <extracomment>%1 = tempo in beats per minute, %2/%3 = time signature</extracomment>
         <translation>%1 %2/%3</translation>

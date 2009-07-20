@@ -13,10 +13,12 @@ namespace Builtin
 	class Dummy : public Mi
 	{
 	public:
-		Dummy(HostMachine* mac, Callbacks* cb) : Mi(mac, cb)
+		Dummy(Callbacks* cb) : Mi(cb)
 		{
-			m_mac->m_dead = true;
-			m_mac->m_deadWhy = "This is a placeholder for a machine which you do not have installed.";
+			m_cb->getHostMachine()->m_dead = true;
+			m_cb->getHostMachine()->m_deadWhy 
+				= QCoreApplication::translate("RoutingEditor::Editor",
+				"This is a placeholder for a machine which you do not have installed." );
 		}
 
 		virtual void changeParam(ParamTag tag, ParamValue value) {}
