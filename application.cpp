@@ -10,6 +10,7 @@
 #include "htmlentity.h"
 #include "prefs.h"
 #include "seqplay.h"
+#include "version.h"
 
 PrefsVar_String Application::s_prefLanguage("app/language", "system_locale");
 
@@ -17,6 +18,13 @@ Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
 {
 	QPixmap splashpic(":/CosecantMainWindow/images/splash.png");
+	{
+		QPainter painter(&splashpic);
+		QFont font = painter.font();
+		font.setPixelSize(20);
+		painter.setFont(font);
+		painter.drawText(splashpic.rect().adjusted(-10,-10,-10,-10), Qt::AlignRight | Qt::AlignBottom, getVersionString());
+	}
 
 #ifndef _DEBUG
 	Qt::WindowFlags splashflags = Qt::WindowStaysOnTopHint;
