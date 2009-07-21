@@ -88,7 +88,7 @@ void Track::ctorCommon()
 
 Ptr<Clip> Track::getClipAtTime(double t)
 {
-	Clips::iterator i = m_clips.upper_bound(Clip::dummy(t)); // First with starttime > t
+	Clips::iterator i = m_clips.upperBound(t); // First with starttime > t
 	if (i == m_clips.begin()) return NULL;
 
 	--i;
@@ -100,7 +100,7 @@ Ptr<Clip> Track::getClipAtTime(double t)
 
 Ptr<Clip> Track::getNextClip(double t)
 {
-	Clips::iterator i = m_clips.upper_bound(Clip::dummy(t)); // First with starttime > t
+	Clips::iterator i = m_clips.upperBound(t); // First with starttime > t
 	if (i != m_clips.end())
 		return *i;
 	else

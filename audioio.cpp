@@ -116,7 +116,8 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 
 		{
 			QWriteLocker lock(&SeqPlay::get().m_mutex);
-			SeqPlay::get().work(0, numFramesForThisIter);
+			SeqPlay::get().preWork();
+			SeqPlay::get().work(0, numFramesForThisIter, false);
 		}
 
 		wq->reset();

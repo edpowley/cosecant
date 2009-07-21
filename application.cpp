@@ -41,11 +41,6 @@ Application::Application(int& argc, char** argv)
 
 	initHtmlEntityMap();
 
-	SeqPlay::initSingleton();
-
-	splash->showMessage(tr("Opening audio device"));
-	setupAudio();
-
 	splash->showMessage(tr("Scanning builtin machines"));
 	initBuiltinMachineFactories();
 
@@ -54,12 +49,16 @@ Application::Application(int& argc, char** argv)
 
 	splash->showMessage(tr("Creating song"));
 	Song::initSingleton();
+	SeqPlay::initSingleton(Song::get().m_sequence);
 
 	splash->showMessage(tr("Initialising theme"));
 	Theme::initSingleton();
 
 	splash->showMessage(tr("Initialising script engine"));
 	setupScriptEngine();
+
+	splash->showMessage(tr("Opening audio device"));
+	setupAudio();
 
 	splash->showMessage(tr("Getting ready to rok"));
 	m_mainWindow = new CosecantMainWindow;

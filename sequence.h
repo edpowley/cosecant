@@ -58,11 +58,6 @@ namespace Sequence
 
 		Ptr<Pattern> m_pattern;
 
-		struct StartTimeLessComparer
-		{
-			bool operator()(const Ptr<Clip> a, const Ptr<Clip> b) const { return a->m_startTime < b->m_startTime; }
-		};
-
 		Clip(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
@@ -80,7 +75,7 @@ namespace Sequence
 		Track(Machine* mac);
 		Ptr<Machine> m_mac;
 
-		typedef std::set<Ptr<Clip>, Clip::StartTimeLessComparer> Clips;
+		typedef QMap<double, Ptr<Clip> > Clips;
 		Clips m_clips;
 
 		Track(class SongLoadContext& ctx, const QDomElement& el);
