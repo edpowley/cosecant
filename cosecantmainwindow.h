@@ -17,6 +17,7 @@ public:
 protected slots:
 	// Auto connected slots
 	void on_actionSettings_triggered();
+	void on_actionAbout_triggered();
 
 	void on_actionTransportRewind_triggered();
 	void on_actionTransportPlay_toggled(bool checked);

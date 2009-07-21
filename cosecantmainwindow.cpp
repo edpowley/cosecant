@@ -9,6 +9,7 @@
 #include "sequenceeditor.h"
 #include "machinechooserwidget.h"
 #include "dlg_settings.h"
+#include "dlg_about.h"
 
 CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
 
@@ -78,6 +79,12 @@ CosecantMainWindow::~CosecantMainWindow()
 void CosecantMainWindow::on_actionSettings_triggered()
 {
 	Dlg_Settings::run(this);
+}
+
+void CosecantMainWindow::on_actionAbout_triggered()
+{
+	Dlg_About dlg;
+	dlg.exec();
 }
 
 void CosecantMainWindow::on_actionTransportRewind_triggered()
