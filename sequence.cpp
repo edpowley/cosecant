@@ -13,7 +13,7 @@ Seq::Seq()
 void Seq::ctorCommon()
 {
 	m_loopStart = 0;
-	m_loopEnd = 16;
+	m_loopEnd = 32;
 
 	Ptr<MasterTrackClip> mtc = new MasterTrackClip;
 	m_masterTrack.insert(0, mtc);

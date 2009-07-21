@@ -242,12 +242,6 @@ namespace CosecantAPI
 		LoadError(const std::string& msg) : std::exception(msg.c_str()) {}
 	};
 
-	struct PlayingPattern
-	{
-		class MiPattern* pattern;
-		double pos;
-	};
-
 	struct TimeInfo
 	{
 		double beatsPerSecond;
@@ -306,21 +300,15 @@ namespace CosecantAPI
 		const Note noteInvalid = -256;
 	};
 
-	class Mi;
-
 	class MiPattern
 	{
-		friend class MiPatternEditor;
 	public:
-		MiPattern(Mi* mi, int length) : m_mi(mi), m_length(length) {}
-		virtual ~MiPattern() {}
+		MiPattern() : m_length(4) {}
 
-//		virtual void load(XmlElement* el) = 0;
-//		virtual void save(XmlElement* el) = 0;
+		double getLength() { return m_length; }
 
 	protected:
-		Mi* m_mi;
-		int m_length;
+		double m_length;
 	};
 
 	class Mi
@@ -341,7 +329,7 @@ namespace CosecantAPI
 		// If track == NULL and pattern == NULL, stop all patterns
 		virtual void playPattern(void* track, MiPattern* pattern, double pos) {}
 
-		virtual MiPattern* createPattern(int length) { return NULL; }
+		virtual MiPattern* createPattern() { return NULL; }
 
 		Callbacks* m_cb;
 	};

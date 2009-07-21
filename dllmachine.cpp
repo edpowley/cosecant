@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "common.h"
 #include "dllmachine.h"
+using namespace DllMachine;
 
 #include "callbacks.h"
 
-InfoImpl::MachineInfo* DllMachineFactory::getMachInfo()
+InfoImpl::MachineInfo* Factory::getMachInfo()
 {
 	try
 	{
@@ -27,14 +28,14 @@ InfoImpl::MachineInfo* DllMachineFactory::getMachInfo()
 	}
 }
 
-Ptr<Machine> DllMachineFactory::createMachineImpl()
+Ptr<Machine> Factory::createMachineImpl()
 {
-	return new DllMachine(m_dllpath, m_id);
+	return new Mac(m_dllpath, m_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void DllMachineFactory::scan(const QString& path)
+void Factory::scan(const QString& path)
 {
 	QDir dir(path);
 	foreach(QString fname, dir.entryList(QStringList("*.dll"), QDir::Files))
@@ -56,7 +57,7 @@ void DllMachineFactory::scan(const QString& path)
 					static void callback(void* vinst, const char* id)
 					{
 						Callback* inst = (Callback*)vinst;
-						Ptr<DllMachineFactory> fac = new DllMachineFactory(inst->m_fname, id);
+						Ptr<Factory> fac = new Factory(inst->m_fname, id);
 						MachineFactory::add(id, fac);
 					}
 				};
@@ -74,18 +75,18 @@ void DllMachineFactory::scan(const QString& path)
 
 //////////////////////////////////////////////////////////////////////
 
-DllMachine::DllMachine(const QString& dllpath, const QString& id)
+Mac::Mac(const QString& dllpath, const QString& id)
 : m_id(id)
 {
 	m_dll = new Dll(dllpath);
 }
 
-DllMachine::~DllMachine()
+Mac::~Mac()
 {
 	if (m_mi) delete m_mi;
 }
 
-Mi* DllMachine::createMi(Callbacks* cb)
+Mi* Mac::createMi(Callbacks* cb)
 {
 	MachineExports::createMachine c = (MachineExports::createMachine)m_dll->getFunc("createMachine");
 	m_mi = c(m_id.toAscii(), cb);

@@ -10,6 +10,7 @@ using namespace SequenceEditor;
 enum ZValues
 {
 	zRulerBar,
+	zLoopMarker,
 	zRulerLabel,
 	zRulerBpmText,
 	zPlayLine,
@@ -76,13 +77,23 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 		m_seq, SIGNAL(signalRemoveTrack(int, const Ptr<Sequence::Track>&)),
 		this, SLOT(onRemoveTrack(int, const Ptr<Sequence::Track>&)) );
 
-	PlayLineItem* pli = new PlayLineItem(this, c_rulerHeight);
-	pli->setZValue(zPlayLine);
-	m_rulerScene.addItem(pli);
+	m_rulerPlayLine = new PlayLineItem(this, c_rulerHeight);
+	m_rulerPlayLine->setZValue(zPlayLine);
+	m_rulerScene.addItem(m_rulerPlayLine);
 
-	PlayLineItem* pli2 = new PlayLineItem(this, 1e6);
-	pli2->setZValue(zPlayLine);
-	m_bodyScene.addItem(pli2);
+	m_bodyPlayLine = new PlayLineItem(this, 1e6);
+	m_bodyPlayLine->setZValue(zPlayLine);
+	m_bodyScene.addItem(m_bodyPlayLine);
+
+	m_loopStartItem = new LoopMarkerItem(this, Editor::c_rulerHeight, LoopMarkerItem::loopStart);
+	m_loopStartItem->setPos(m_seq->beatToSecond(m_seq->m_loopStart), 0);
+	m_loopStartItem->setZValue(zLoopMarker);
+	m_rulerScene.addItem(m_loopStartItem);
+
+	m_loopEndItem = new LoopMarkerItem(this, Editor::c_rulerHeight, LoopMarkerItem::loopEnd);
+	m_loopEndItem->setPos(m_seq->beatToSecond(m_seq->m_loopEnd), 0);
+	m_loopEndItem->setZValue(zLoopMarker);
+	m_rulerScene.addItem(m_loopEndItem);
 
 	m_playPosTimer.setSingleShot(false);
 	connect( &m_playPosTimer, SIGNAL(timeout()),
@@ -161,6 +172,7 @@ void Editor::createRulerSectionItems()
 	{
 		iter.next();
 		RulerSectionItem* item = new RulerSectionItem(this, iter.value());
+		item->setZValue(zRulerBar);
 		m_rulerSectionItems.insert(iter.value(), item);
 		m_rulerScene.addItem(item);
 		item->setPos(0, m_seq->beatToSecond(iter.key()));
@@ -298,4 +310,24 @@ void PlayLineItem::setHeight(qreal height)
 void PlayLineItem::setPlayPos(double seconds)
 {
 	setPos(seconds, 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+LoopMarkerItem::LoopMarkerItem(Editor* editor, qreal height, Type type)
+: m_editor(editor)
+{
+	setPen(Qt::NoPen);
+	setBrush(Qt::black);
+
+	setFlag(ItemIgnoresTransformations);
+	if (type == loopEnd) scale(-1, 1);
+
+	QPainterPath path;
+	path.addRect(0, 0, 3, height);
+	path.addRect(5, 0, 1, height);
+	path.addEllipse(8, height * 1.0/3.0, 3, 3);
+	path.addEllipse(8, height * 2.0/3.0, 3, 3);
+
+	setPath(path);
 }

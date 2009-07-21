@@ -256,8 +256,11 @@ void MachineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* optio
 	else
 		painter->setPen(pen());
 
-	setBrush(m_mac->getColor());
-	painter->setBrush(brush());
+	// Leaving the following line as a warning. Don't do setBrush inside paint. It triggers a repaint,
+	// and recursion ensues. Idiot.
+	//setBrush(m_mac->getColor());
+
+	painter->setBrush(m_mac->getColor());
 	painter->drawRect(rect());
 
 	QRectF r = rect();

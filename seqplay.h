@@ -12,7 +12,7 @@ protected:
 	static SingletonPtr<SeqPlay> s_singleton;
 
 public:
-	QReadWriteLock m_mutex;
+	QReadWriteLock_Recursive m_mutex;
 
 	static void initSingleton() { s_singleton.set(new SeqPlay); }
 	static SeqPlay& get() { return *s_singleton; }
@@ -23,6 +23,8 @@ public:
 	double getPlayPos() { return m_playPos; }
 
 	void setPlaying(bool playing);
+
+	void work(int firstframe, int lastframe);
 
 protected:
 	CosecantAPI::TimeInfo m_timeinfo;

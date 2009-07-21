@@ -3,32 +3,37 @@
 #include "machine.h"
 #include "dll.h"
 
-class DllMachineFactory : public MachineFactory
+namespace DllMachine
 {
-public:
-	DllMachineFactory(const QString& dllpath, const QString& id)
-		: m_dllpath(dllpath), m_id(id) {}
 
-	virtual InfoImpl::MachineInfo* getMachInfo();
+	class Factory : public MachineFactory
+	{
+	public:
+		Factory(const QString& dllpath, const QString& id)
+			: m_dllpath(dllpath), m_id(id) {}
 
-	static void scan(const QString& path);
+		virtual InfoImpl::MachineInfo* getMachInfo();
 
-protected:
-	QString m_id;
-	QString m_dllpath;
+		static void scan(const QString& path);
 
-	virtual Ptr<Machine> createMachineImpl();
-};
+	protected:
+		QString m_id;
+		QString m_dllpath;
 
-class DllMachine : public Machine
-{
-public:
-	DllMachine(const QString& dllpath, const QString& id);
-	virtual ~DllMachine();
+		virtual Ptr<Machine> createMachineImpl();
+	};
 
-	virtual Mi* createMi(Callbacks* cb);
+	class Mac : public Machine
+	{
+	public:
+		Mac(const QString& dllpath, const QString& id);
+		virtual ~Mac();
 
-protected:
-	Ptr<Dll> m_dll;
-	QString m_id;
+		virtual Mi* createMi(Callbacks* cb);
+
+	protected:
+		Ptr<Dll> m_dll;
+		QString m_id;
+	};
+
 };

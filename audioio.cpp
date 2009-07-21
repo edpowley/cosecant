@@ -3,6 +3,7 @@
 #include "audioio.h"
 #include "workqueue.h"
 #include "perfclock.h"
+#include "seqplay.h"
 
 PrefsVar_String	AudioIO::s_prefInDevice ("audio/devices/i/name", "");
 PrefsVar_String	AudioIO::s_prefOutDevice("audio/devices/o/name", "");
@@ -112,6 +113,11 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 	for (unsigned long firstframe = 0; firstframe < frames; /* firstframe incremented at end of loop */)
 	{
 		int numFramesForThisIter = min<int>(c_maxBufferSize, frames - firstframe);
+
+		{
+			QWriteLocker lock(&SeqPlay::get().m_mutex);
+			SeqPlay::get().work(0, numFramesForThisIter);
+		}
 
 		wq->reset();
 

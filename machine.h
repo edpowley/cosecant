@@ -228,7 +228,7 @@ public:
 
 	void setPos(const QPointF& newpos);
 
-	QMutex m_mutex;
+	QMutex_Recursive m_mutex;
 
 	bool m_dead;
 	QString m_deadWhy;

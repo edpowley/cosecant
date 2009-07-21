@@ -122,7 +122,8 @@ namespace Sequence
 	public:
 		Seq();
 
-		QReadWriteLock m_mutex;
+		// It is VERY IMPORTANT that m_mutex is recursive, because SeqPlay::work WILL lock it recursively
+		QReadWriteLock_Recursive m_mutex;
 
 		ERROR_CLASS(TrackNotFound);
 
@@ -140,7 +141,7 @@ namespace Sequence
 		QList< Ptr<Sequence::Track> > m_tracks;
 		QMap<int, Ptr<MasterTrackClip> > m_masterTrack; // key = start time in beats
 
-		Seq(class SongLoadContext& ctx, const QDomElement& el);
+//		Seq(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
 		double m_loopStart, m_loopEnd;

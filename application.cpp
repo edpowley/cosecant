@@ -50,7 +50,7 @@ Application::Application(int& argc, char** argv)
 	initBuiltinMachineFactories();
 
 	splash->showMessage(tr("Scanning machines"));
-	DllMachineFactory::scan(QCoreApplication::applicationDirPath() + "/gear");
+	DllMachine::Factory::scan(QCoreApplication::applicationDirPath() + "/gear");
 
 	splash->showMessage(tr("Creating song"));
 	Song::initSingleton();

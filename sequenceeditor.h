@@ -56,6 +56,19 @@ namespace SequenceEditor
 		Editor* m_editor;
 	};
 
+	class LoopMarkerItem : public QObject, public QGraphicsPathItem
+	{
+		Q_OBJECT
+
+	public:
+		enum Type {loopStart, loopEnd};
+
+		LoopMarkerItem(Editor* editor, qreal height, Type type);
+
+	protected:
+		Editor* m_editor;
+	};
+
 	class Editor : public QSplitter
 	{
 		Q_OBJECT
@@ -91,5 +104,8 @@ namespace SequenceEditor
 		QMap<Ptr<Sequence::MasterTrackClip>, RulerSectionItem*> m_rulerSectionItems;
 
 		QTimer m_playPosTimer;
+
+		PlayLineItem *m_rulerPlayLine, *m_bodyPlayLine;
+		LoopMarkerItem *m_loopStartItem, *m_loopEndItem;
 	};
 };

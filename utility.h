@@ -85,6 +85,18 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
+class QMutex_Recursive : public QMutex
+{
+public:
+	QMutex_Recursive() : QMutex(Recursive) {}
+};
+
+class QReadWriteLock_Recursive : public QReadWriteLock
+{
+public:
+	QReadWriteLock_Recursive() : QReadWriteLock(Recursive) {}
+};
+
 ERROR_CLASS(MutexLockTimeout);
 
 class MutexLockerWithTimeout
