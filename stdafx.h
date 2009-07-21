@@ -28,6 +28,7 @@
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/random.hpp>
 
 // Qt
 #include <QtGui>
