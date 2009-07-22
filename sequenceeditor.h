@@ -2,10 +2,15 @@
 
 #include "sequence.h"
 #include "mygraphicsview.h"
+#include "mwtab.h"
 
 namespace SequenceEditor
 {
 	class Editor;
+
+	////////////////////////////////////////////////////////////////////////////
+
+	class ClipItem;
 
 	class TrackItem : public QObject, public QGraphicsRectItem
 	{
@@ -16,10 +21,43 @@ namespace SequenceEditor
 
 		qreal height() { return rect().height(); }
 
+	public slots:
+		void onAddClip(const Ptr<Sequence::Clip>& clip);
+		void onRemoveClip(const Ptr<Sequence::Clip>& clip);
+
 	protected:
 		Editor* m_editor;
 		Ptr<Sequence::Track> m_track;
+
+		QHash<Ptr<Sequence::Clip>, ClipItem*> m_clipItems;
+
+		double getNearestSnapPoint(double x);
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
+
+		enum { none, drawNewClip } m_mouseMode;
+
+		QGraphicsRectItem* m_newClipItem;
 	};
+
+	////////////////////////////////////////////////////////////////////////////
+
+	class ClipItem : public QObject, public QGraphicsRectItem
+	{
+		Q_OBJECT
+
+	public:
+		ClipItem(Editor* editor, TrackItem* track, const Ptr<Sequence::Clip>& clip);
+
+	protected:
+		Editor* m_editor;
+		TrackItem* m_track;
+		Ptr<Sequence::Clip> m_clip;
+	};
+
+	////////////////////////////////////////////////////////////////////////////
 
 	class RulerSectionItem : public QObject, public QGraphicsRectItem
 	{
@@ -27,6 +65,8 @@ namespace SequenceEditor
 
 	public:
 		RulerSectionItem(Editor* editor, const Ptr<Sequence::MasterTrackClip>& mtc);
+
+		double getNearestSnapPoint(double x);
 
 	protected:
 		Editor* m_editor;
@@ -39,6 +79,8 @@ namespace SequenceEditor
 		QList<QGraphicsRectItem*> m_beatRects;
 		QMap<int, GraphicsSimpleTextItemWithBG*> m_gridLabels;
 	};
+
+	////////////////////////////////////////////////////////////////////////////
 
 	class PlayLineItem : public QObject, public QGraphicsLineItem
 	{
@@ -69,18 +111,31 @@ namespace SequenceEditor
 		Editor* m_editor;
 	};
 
-	class Editor : public QSplitter
+	////////////////////////////////////////////////////////////////////////////
+
+	class Editor : public QSplitter, public MWTab
 	{
 		Q_OBJECT
 
 	public:
 		Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent);
 
+		const Ptr<Sequence::Seq>& getSeq() { return m_seq; }
+
 		qreal getBodyWidth();
 
 		static const int c_rulerHeight = 50;
 
 		void setZoom(double pixelsPerSecond);
+
+		QWidget* getMWTabWidget() { return this; }
+		QString getTitle() { return tr("Sequence"); }
+		QToolBar* getToolBar() { return m_toolbar; }
+
+		enum Tool { none, move, createPattern };
+		Tool getTool();
+
+		double getNearestSnapPoint(double x);
 
 	signals:
 		void signalChangePlayPos(double seconds);
@@ -93,6 +148,10 @@ namespace SequenceEditor
 
 	protected:
 		Ptr<Sequence::Seq> m_seq;
+
+		void setupToolBar();
+		QToolBar* m_toolbar;
+		QAction *m_actionToolMove, *m_actionToolCreatePattern;
 
 		MyGraphicsView *m_headView, *m_bodyView, *m_rulerView;
 		QGraphicsScene m_headScene, m_bodyScene, m_rulerScene;

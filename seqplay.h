@@ -36,15 +36,20 @@ typedef QMap<int, SeqPlayEvent> SeqPlayEventMap;
 
 class SeqTrackPlay : public Object
 {
-public:
-	SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, SeqPlayEventMap& events)
-		: m_sp(sp), m_track(track), m_events(events), m_workFromScratch(true)
-	{}
+	Q_OBJECT
 
-	void preWork() { m_events.clear(); }
+public:
+	SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, SeqPlayEventMap& events);
+
+	void preWork(int firstframe = 0);
 	void work(int firstframe, int lastframe, bool fromScratch);
 
 	SeqPlayEventMap& m_events;
+	QList<SeqPlayEvent> m_pendingEvents;
+
+protected slots:
+	void onAddClip(const Ptr<Sequence::Clip>& clip);
+	void onRemoveClip(const Ptr<Sequence::Clip>& clip);
 
 protected:
 	SeqPlay* m_sp;

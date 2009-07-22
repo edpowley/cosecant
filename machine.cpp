@@ -4,8 +4,6 @@
 #include "routing.h"
 #include "sequence.h"
 #include "song.h"
-#include "spattern.h"
-//#include "spatterneditor.h"
 #include "timeunit_convert.h"
 #include "parameditor.h"
 #include "cosecantmainwindow.h"
@@ -229,14 +227,9 @@ void Parameter::Enum::setItems(const QStringList& items)
 
 Ptr<Sequence::Pattern> Machine::createPattern(double length)
 {
-	Ptr<Sequence::Pattern> pat = newPattern(length);
+	Ptr<Sequence::Pattern> pat = new Sequence::Pattern(this, length);
 	pat->m_name = QString("%1").arg(m_patterns.size(), 2, 10, QLatin1Char('0'));
 	return pat;
-}
-
-Ptr<Sequence::Pattern> Machine::newPattern(double length)
-{
-	return new Spattern(this, length);
 }
 
 void Machine::addPattern(const Ptr<Sequence::Pattern>& pat)

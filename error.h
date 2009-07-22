@@ -4,10 +4,11 @@ class Error : public std::exception
 {
 protected:
 	QString m_msg;
+	QByteArray m_msgUtf8;
 public:
 	Error() {}
-	Error(const QString& msg) : m_msg(msg) {}
-	virtual const char* what() const { return m_msg.toUtf8(); }
+	Error(const QString& msg) : m_msg(msg) { m_msgUtf8 = m_msg.toUtf8(); }
+	virtual const char* what() const { return m_msgUtf8; }
 	QString msg() const { return m_msg; }
 };
 

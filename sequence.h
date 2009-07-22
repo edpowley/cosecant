@@ -14,7 +14,8 @@ namespace Sequence
 		Q_OBJECT
 
 	public:
-		Pattern(Machine* mac);
+		Pattern(Machine* mac, double length);
+		virtual ~Pattern();
 
 		QString m_name;
 		void setName(const QString& name);
@@ -22,7 +23,7 @@ namespace Sequence
 		QColor m_color;
 		void setColor(const QColor& color);
 
-		virtual double getLength() = 0;
+		double getLength() { return m_miPattern->getLength(); }
 
 		void showEditor(NotebookWindow* win);
 		void onEditorClose(PatternEditor* editor);
@@ -30,7 +31,7 @@ namespace Sequence
 //		virtual void load(SongLoadContext& ctx, const QDomElement& el) = 0;
 //		virtual void save(const QDomElement& el) = 0;
 
-		virtual QUndoCommand* createUndoableForLengthChange(double newlength) = 0;
+//		virtual QUndoCommand* createUndoableForLengthChange(double newlength) = 0;
 
 		Machine* m_mac;
 		PatternEditor* m_editor;
@@ -44,6 +45,9 @@ namespace Sequence
 	public:
 		void added() { signalAdd(); }
 		void removed() { signalRemove(); }
+
+	protected:
+		CosecantAPI::MiPattern* m_miPattern;
 	};
 
 	class Clip : public Object
@@ -61,8 +65,6 @@ namespace Sequence
 		Clip(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
-		static Ptr<Clip> dummy(double time) { return new Clip(time); }
-
 	protected:
 		Clip(double starttime);
 	};
@@ -76,21 +78,27 @@ namespace Sequence
 		Ptr<Machine> m_mac;
 
 		typedef QMap<double, Ptr<Clip> > Clips;
-		Clips m_clips;
+		void addClip(const Ptr<Clip>& clip);
+		void removeClip(const Ptr<Clip>& clip);
+
+		const Clips& getClips() { return m_clips; }
 
 		Track(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
-		Ptr<Clip> getClipAtTime(double t);
-		Ptr<Clip> getNextClip(double t);
-
 		double getHeight() { return m_height; }
+
+	signals:
+		void signalAddClip(const Ptr<Sequence::Clip>& clip);
+		void signalRemoveClip(const Ptr<Sequence::Clip>& clip);
 
 	protected:
 		Track();
 		void ctorCommon();
 
 		double m_height;
+
+		Clips m_clips;
 	};
 
 	class MasterTrackClip : public Object
@@ -102,9 +110,12 @@ namespace Sequence
 		
 		CosecantAPI::TimeInfo getTimeInfo() { return m_timeinfo; }
 
+		int getFirstBeat() { return m_firstBeat; }
+		void setFirstBeat(int fb) { m_firstBeat = fb; }
+
 	protected:
 		CosecantAPI::TimeInfo m_timeinfo;		
-		int m_lengthInTicks;
+		int m_firstBeat, m_lengthInBeats;
 	};
 
 	class Seq : public ObjectWithUuid
@@ -145,6 +156,7 @@ namespace Sequence
 
 		double getLengthInSeconds() { return 400.0; }
 		double beatToSecond(double b);
+		double secondToBeat(double s);
 
 	signals:
 		// Have to specify Sequence::Track (instead of just Track) here, as Qt isn't smart enough to figure
@@ -156,5 +168,6 @@ namespace Sequence
 		void ctorCommon();
 
 		QHash<Ptr<MasterTrackClip>, double> m_mtcStartTimes; // value = start time in seconds
+		QMap<double, Ptr<MasterTrackClip> > m_mtcStartTimes2;  // key = start time in seconds
 	};
 };

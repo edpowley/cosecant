@@ -16,8 +16,10 @@ void Seq::ctorCommon()
 	m_loopEnd = 32;
 
 	Ptr<MasterTrackClip> mtc = new MasterTrackClip;
+	mtc->setFirstBeat(0);
 	m_masterTrack.insert(0, mtc);
 	m_mtcStartTimes.insert(mtc, 0);
+	m_mtcStartTimes2.insert(0, mtc);
 }
 
 double Seq::beatToSecond(double b)
@@ -25,12 +27,25 @@ double Seq::beatToSecond(double b)
 	QMap<int, Ptr<MasterTrackClip> >::const_iterator iter = m_masterTrack.upperBound((int)floor(b));
 	// Now iter points to the first item with key > b
 
-	-- iter;
+	if (iter != m_masterTrack.begin()) -- iter;
 	// Now iter points to the last item with key <= b
 
 	double posInMtc = b - iter.key();
 	const Ptr<MasterTrackClip>& mtc = iter.value();
 	return m_mtcStartTimes.value(mtc, 0) + posInMtc / mtc->getTimeInfo().beatsPerSecond;
+}
+
+double Seq::secondToBeat(double s)
+{
+	QMap<double, Ptr<MasterTrackClip> >::const_iterator iter = m_mtcStartTimes2.upperBound(s);
+	// Now iter points to the first item with key > s
+
+	if (iter != m_mtcStartTimes2.begin()) -- iter;
+	// Now iter points to the last item with key <= s
+
+	double posInMtc = s - iter.key();
+	const Ptr<MasterTrackClip>& mtc = iter.value();
+	return mtc->getFirstBeat() + posInMtc * mtc->getTimeInfo().beatsPerSecond;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -44,7 +59,7 @@ MasterTrackClip::MasterTrackClip()
 	m_timeinfo.smallGridsPerLargeGrid = 4;
 	m_timeinfo.samplesPerSecond = -1;
 
-	m_lengthInTicks = -1;
+	m_lengthInBeats = -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -86,25 +101,18 @@ void Track::ctorCommon()
 	m_height = 100;
 }
 
-Ptr<Clip> Track::getClipAtTime(double t)
+void Track::addClip(const Ptr<Clip>& clip)
 {
-	Clips::iterator i = m_clips.upperBound(t); // First with starttime > t
-	if (i == m_clips.begin()) return NULL;
-
-	--i;
-	if ((*i)->spansTime(t))
-		return *i;
-	else
-		return NULL;
+	m_clips.insert(clip->m_startTime, clip);
+	signalAddClip(clip);
 }
 
-Ptr<Clip> Track::getNextClip(double t)
+void Track::removeClip(const Ptr<Clip>& clip)
 {
-	Clips::iterator i = m_clips.upperBound(t); // First with starttime > t
-	if (i != m_clips.end())
-		return *i;
-	else
-		return NULL;
+	Clips::iterator iter = m_clips.find(clip->m_startTime);
+	ASSERT(iter.value() == clip);
+	m_clips.erase(iter);
+	signalRemoveClip(clip);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -195,9 +203,15 @@ void Seq::showEditor(NotebookWindow* win)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Pattern::Pattern(Machine* mac)
+Pattern::Pattern(Machine* mac, double length)
 : m_mac(mac), m_editor(NULL), m_name("Unnamed"), m_color("#80FF80")
 {
+	m_miPattern = m_mac->getMi()->createPattern(length);
+}
+
+Pattern::~Pattern()
+{
+	if (m_miPattern) delete m_miPattern;
 }
 
 void Pattern::showEditor(NotebookWindow* win)

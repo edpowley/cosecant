@@ -303,7 +303,7 @@ namespace CosecantAPI
 	class MiPattern
 	{
 	public:
-		MiPattern() : m_length(4) {}
+		MiPattern(double length) : m_length(length) {}
 
 		double getLength() { return m_length; }
 
@@ -329,7 +329,7 @@ namespace CosecantAPI
 		// If track == NULL and pattern == NULL, stop all patterns
 		virtual void playPattern(void* track, MiPattern* pattern, double pos) {}
 
-		virtual MiPattern* createPattern() { return NULL; }
+		virtual MiPattern* createPattern(double length) { return NULL; }
 
 		Callbacks* m_cb;
 	};

@@ -2,8 +2,10 @@
 #include "common.h"
 #include "sequenceeditor.h"
 using namespace SequenceEditor;
+#include "song.h"
 #include "seqplay.h"
 #include "theme.h"
+#include "machine.h"
 
 /* TRANSLATOR SequenceEditor::Editor */
 
@@ -19,6 +21,8 @@ enum ZValues
 Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 : QSplitter(parent), m_seq(seq)
 {
+	setupToolBar();
+
 	QWidget* whead = new QWidget(this);
 	QWidget* wbody = new QWidget(this);
 	addWidget(whead); addWidget(wbody);
@@ -99,6 +103,35 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 	connect( &m_playPosTimer, SIGNAL(timeout()),
 		this, SLOT(onPlayPosTimer()) );
 	m_playPosTimer.start(1000 / 25);
+}
+
+void Editor::setupToolBar()
+{
+	m_toolbar = new QToolBar(tr("Sequence editor toolbar"));
+	QActionGroup* toolGroup = new QActionGroup(this);
+
+	m_actionToolMove
+		= new QAction(QIcon(":/CosecantMainWindow/images/seqed-move.png"), tr("Move"), this);
+	m_actionToolMove->setCheckable(true);
+	m_toolbar->addAction(m_actionToolMove);
+	toolGroup->addAction(m_actionToolMove);
+	m_actionToolMove->setChecked(true);
+
+	m_actionToolCreatePattern
+		= new QAction(QIcon(":/CosecantMainWindow/images/seqed-create.png"), tr("Create pattern"), this);
+	m_actionToolCreatePattern->setCheckable(true);
+	m_toolbar->addAction(m_actionToolCreatePattern);
+	toolGroup->addAction(m_actionToolCreatePattern);
+}
+
+Editor::Tool Editor::getTool()
+{
+	if (m_actionToolMove->isChecked())
+		return move;
+	else if (m_actionToolCreatePattern->isChecked())
+		return createPattern;
+	else
+		return none;
 }
 
 void Editor::setZoom(double pixelsPerSecond)
@@ -189,16 +222,160 @@ void Editor::onPlayPosTimer()
 	}
 }
 
+double Editor::getNearestSnapPoint(double x)
+{
+	RulerSectionItem* rsi = NULL;
+	foreach(QGraphicsItem* i, m_rulerScene.items(QPointF(x, 0)))
+	{
+		rsi = dynamic_cast<RulerSectionItem*>(i);
+		if (rsi != NULL) break;
+	}
+
+	if (!rsi) return 0;
+
+	return rsi->pos().x() + rsi->getNearestSnapPoint(x - rsi->pos().x());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 TrackItem::TrackItem(Editor* editor, const Ptr<Sequence::Track>& track)
-: m_editor(editor), m_track(track), QGraphicsRectItem(0, 0, editor->getBodyWidth(), track->getHeight())
+:	m_editor(editor), m_track(track), QGraphicsRectItem(0, 0, editor->getBodyWidth(), track->getHeight()),
+	m_mouseMode(none), m_newClipItem(NULL)
 {
 	setPen(Qt::NoPen);
 	QLinearGradient grad(0, 0, 0, rect().height());
 	grad.setColorAt(0, Qt::white);
 	grad.setColorAt(1, Qt::gray);
 	setBrush(grad);
+
+	connect( track, SIGNAL(signalAddClip(const Ptr<Sequence::Clip>&)),
+		this, SLOT(onAddClip(const Ptr<Sequence::Clip>&)) );
+	connect( track, SIGNAL(signalRemoveClip(const Ptr<Sequence::Clip>&)),
+		this, SLOT(onRemoveClip(const Ptr<Sequence::Clip>&)) );
+}
+
+void TrackItem::onAddClip(const Ptr<Sequence::Clip>& clip)
+{
+	ClipItem* i = new ClipItem(m_editor, this, clip);
+	m_clipItems.insert(clip, i);
+}
+
+void TrackItem::onRemoveClip(const Ptr<Sequence::Clip>& clip)
+{
+	ClipItem* i = m_clipItems.take(clip);
+	if (i) delete i;
+}
+
+double TrackItem::getNearestSnapPoint(double x)
+{
+	return m_editor->getNearestSnapPoint(x);
+}
+
+void TrackItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
+{
+	if (ev->button() == Qt::LeftButton && m_editor->getTool() == Editor::createPattern)
+	{
+		m_mouseMode = drawNewClip;
+		double x = getNearestSnapPoint(ev->pos().x());
+		m_newClipItem = new QGraphicsRectItem(x, 0, 0, rect().height(), this);
+		QPen pen(Qt::black, 2, Qt::DashLine);
+		pen.setCosmetic(true);
+		m_newClipItem->setPen(pen);
+	}
+}
+
+void TrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+	switch (m_mouseMode)
+	{
+	case drawNewClip:
+		{
+			double x = getNearestSnapPoint(ev->pos().x());
+			QRectF r = m_newClipItem->rect();
+			x = max(x, r.left());
+			r.setRight(x);
+			m_newClipItem->setRect(r);
+		}
+		break;
+	}
+}
+
+class AddClipCommand : public QUndoCommand
+{
+public:
+	AddClipCommand(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& clip, bool createPattern)
+		: m_track(track), m_clip(clip), m_createPattern(createPattern)
+	{
+		if (m_createPattern)
+			setText(Editor::tr("insert new pattern"));
+		else
+			setText(Editor::tr("insert pattern"));
+	}
+
+	virtual void redo()
+	{
+		if (m_createPattern) m_track->m_mac->addPattern(m_clip->m_pattern);
+		m_track->addClip(m_clip);
+	}
+
+	virtual void undo()
+	{
+		m_track->removeClip(m_clip);
+		if (m_createPattern) m_track->m_mac->removePattern(m_clip->m_pattern);
+	}
+
+protected:
+	Ptr<Sequence::Track> m_track;
+	Ptr<Sequence::Clip> m_clip;
+	bool m_createPattern;
+};
+
+void TrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+{
+	switch (m_mouseMode)
+	{
+	case drawNewClip:
+		if (ev->button() == Qt::LeftButton)
+		{
+			double startTime = m_newClipItem->rect().left();
+			double endTime   = startTime + m_newClipItem->rect().width();
+			double startBeat = m_editor->getSeq()->secondToBeat(startTime);
+			double endBeat   = m_editor->getSeq()->secondToBeat(endTime);
+
+			if (endBeat > startBeat)
+			{
+				Ptr<Sequence::Pattern> patt = m_track->m_mac->createPattern(endBeat - startBeat);
+				Ptr<Sequence::Clip> clip = new Sequence::Clip(startBeat, patt);
+				
+				theUndo().push(new AddClipCommand(m_track, clip, true));
+			}
+
+			delete m_newClipItem;
+			m_newClipItem = NULL;
+			m_mouseMode = none;
+		}
+		break;
+	};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+ClipItem::ClipItem(Editor* editor, TrackItem* track, const Ptr<Sequence::Clip>& clip)
+: QGraphicsRectItem(track), m_editor(editor), m_track(track), m_clip(clip)
+{
+	QRectF r;
+	r.setWidth( m_editor->getSeq()->beatToSecond(m_clip->getLength()) );
+	r.setTop(0);
+	r.setHeight(track->rect().height());
+	setRect(r);
+
+	setPos( m_editor->getSeq()->beatToSecond(m_clip->m_startTime), 0 );
+
+	setBrush(m_clip->m_pattern->m_color);
+	QPen pen(Qt::black, 1);
+	pen.setCosmetic(true);
+	pen.setJoinStyle(Qt::MiterJoin);
+	setPen(pen);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -289,6 +466,12 @@ void RulerSectionItem::setupChildren()
 	}
 }
 
+double RulerSectionItem::getNearestSnapPoint(double x)
+{
+	double secondsPerSnap = m_mtc->getTimeInfo().beatsPerBar / m_mtc->getTimeInfo().beatsPerSecond;
+	return floor(x / secondsPerSnap + 0.5) * secondsPerSnap;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 
 PlayLineItem::PlayLineItem(SequenceEditor::Editor* editor, qreal height)
@@ -297,6 +480,7 @@ PlayLineItem::PlayLineItem(SequenceEditor::Editor* editor, qreal height)
 	QPen pen(Theme::get().getColor("SequenceEditor/PlayLine"), 3);
 	pen.setCosmetic(true);
 	setPen(pen);
+	setOpacity(0.6);
 
 	connect(editor, SIGNAL(signalChangePlayPos(double)),
 		this, SLOT(setPlayPos(double)) );

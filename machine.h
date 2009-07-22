@@ -286,8 +286,6 @@ protected:
 	void initPins(Pin::Direction direction, const std::vector<InfoImpl::PinInfo*>& pininfos);
 	void initParams(InfoImpl::ParamInfo::Group* group);
 
-	virtual Ptr<Sequence::Pattern> newPattern(double length);
-
 	QString m_name;
 	CosecantAPI::MachineTypeHint::mt m_colorhint;
 };

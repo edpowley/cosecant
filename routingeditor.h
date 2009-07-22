@@ -2,6 +2,7 @@
 
 #include "routing.h"
 #include "mygraphicsview.h"
+#include "mwtab.h"
 
 namespace RoutingEditor
 {
@@ -147,7 +148,7 @@ namespace RoutingEditor
 
 	/////////////////////////////////////////////////////////////////////////
 
-	class Editor : public MyGraphicsView
+	class Editor : public MyGraphicsView, public MWTab
 	{
 		Q_OBJECT
 
@@ -156,6 +157,9 @@ namespace RoutingEditor
 		friend Scene;
 
 	public:
+		QWidget* getMWTabWidget() { return this; }
+		QString getTitle() { return tr("Routing"); }
+
 		Editor(const Ptr<Routing>& routing, QWidget* parent);
 		Scene m_scene;
 		Ptr<Routing> getRouting() { return m_routing; }

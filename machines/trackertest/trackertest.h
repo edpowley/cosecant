@@ -10,7 +10,7 @@ class TrackerTest;
 class Pattern : public MiPattern
 {
 public:
-	Pattern(TrackerTest* mi) : m_mi(mi) {}
+	Pattern(TrackerTest* mi, double length) : m_mi(mi), MiPattern(length) {}
 
 protected:
 	TrackerTest* m_mi;
@@ -27,5 +27,5 @@ public:
 	void changeParam(ParamTag tag, ParamValue value);
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
-	MiPattern* createPattern() { return new Pattern(this); }
+	MiPattern* createPattern(double length) { return new Pattern(this, length); }
 };

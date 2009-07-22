@@ -13,5 +13,7 @@
         <file>images/media-record.png</file>
         <file>images/media-skip-backward.png</file>
         <file>images/splash.png</file>
+        <file>images/seqed-create.png</file>
+        <file>images/seqed-move.png</file>
     </qresource>
 </RCC>

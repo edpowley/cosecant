@@ -6,6 +6,30 @@
 
 SingletonPtr<SeqPlay> SeqPlay::s_singleton;
 
+QDebug& operator<<(QDebug& dbg, const SeqPlayEvent& spe)
+{
+	dbg.nospace() << "SeqPlayEvent(";
+	switch (spe.m_type)
+	{
+	case SeqPlayEvent::patternStart:
+		dbg << "start pattern " << spe.m_patternStart.pattern
+			<< " on " << spe.m_patternStart.track
+			<< " at " << spe.m_patternStart.pos;
+		break;
+	
+	case SeqPlayEvent::patternStop:
+		dbg << "stop pattern on " << spe.m_patternStop.track;
+		break;
+
+	default:
+		dbg << "unknown type " << spe.m_type;
+		break;
+	}
+	dbg << ")";
+
+	return dbg.space();
+}
+
 SeqPlay::SeqPlay(const Ptr<Sequence::Seq>& seq)
 : m_seq(seq), m_playing(false), m_playPos(0)
 {
@@ -83,7 +107,70 @@ void SeqPlay::work(int firstframe, int lastframe, bool fromScratch)
 		stp->work(firstframe, lastframe, fromScratch);
 	}
 
+#if _DEBUG
+	foreach(const SeqPlayEventMap& spem, m_events)
+	{
+		if (!spem.empty())
+		{
+			qDebug() << m_events;
+			break;
+		}
+	}
+#endif
+
 	m_playPos = nextpos;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+SeqTrackPlay::SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, SeqPlayEventMap& events)
+: m_sp(sp), m_track(track), m_events(events), m_workFromScratch(true)
+{
+	connect( m_track, SIGNAL(signalAddClip(const Ptr<Sequence::Clip>&)),
+		this, SLOT(onAddClip(const Ptr<Sequence::Clip>&)) );
+	connect( m_track, SIGNAL(signalRemoveClip(const Ptr<Sequence::Clip>&)),
+		this, SLOT(onRemoveClip(const Ptr<Sequence::Clip>&)) );
+}
+
+void SeqTrackPlay::onAddClip(const Ptr<Sequence::Clip>& clip)
+{
+	QWriteLocker(&m_sp->m_mutex);
+
+	if (m_sp->m_playPos >= clip->m_startTime && m_sp->m_playPos < clip->getEndTime())
+	{
+		m_workFromScratch = true;
+	}
+	else
+	{
+		QReadLocker(&m_sp->m_seq->m_mutex);
+		m_iter = m_track->getClips().lowerBound(m_sp->m_playPos);
+	}
+}
+
+void SeqTrackPlay::onRemoveClip(const Ptr<Sequence::Clip>& clip)
+{
+	QWriteLocker(&m_sp->m_mutex);
+
+	if (m_playingClip == clip)
+	{
+		SeqPlayEvent spe(SeqPlayEvent::patternStop);
+		spe.m_patternStop.track = m_track;
+		m_pendingEvents.append(spe);
+		m_playingClip = NULL;
+	}
+
+	QReadLocker(&m_sp->m_seq->m_mutex);
+	m_iter = m_track->getClips().lowerBound(m_sp->m_playPos);
+}
+
+void SeqTrackPlay::preWork(int firstframe)
+{
+	m_events.clear();
+	foreach(const SeqPlayEvent& spe, m_pendingEvents)
+	{
+		m_events.insert(firstframe, spe);
+	}
+	m_pendingEvents.clear();
 }
 
 void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
@@ -93,7 +180,8 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 
 	if (fromScratch || m_workFromScratch)
 	{
-		m_iter = m_track->m_clips.lowerBound(playpos);
+		m_iter = m_track->getClips().lowerBound(playpos);
+		if (m_iter != m_track->getClips().begin()) -- m_iter;
 		if (m_playingClip)
 		{
 			SeqPlayEvent spe(SeqPlayEvent::patternStop);
@@ -118,17 +206,32 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 			playpos += (f - firstframe) * m_sp->m_beatsPerSample;
 			firstframe = f;
 		}
-		else if (m_iter != m_track->m_clips.end() && m_iter.key() < nextpos)
+		else if (m_iter != m_track->getClips().end() && m_iter.key() < nextpos)
 		{
-			int f = firstframe + (int)floor( (m_iter.key() - playpos) / m_sp->m_beatsPerSample );
+			int f;
+			if (m_iter.key() < playpos) // started before the current play pos
+			{
+				if (m_iter.value()->getEndTime() <= playpos) // ended before the current play pos, so skip it
+				{
+					++ m_iter;
+					continue;
+				}
+				else // ends after the current play pos, so start it playing asap
+					f = firstframe;
+			}
+			else // starts after the current play pos, so start it playing after a while
+				f = firstframe + (int)floor( (m_iter.key() - playpos) / m_sp->m_beatsPerSample );
+
 			m_playingClip = m_iter.value();
+
+			playpos += (f - firstframe) * m_sp->m_beatsPerSample;
+
 			SeqPlayEvent spe(SeqPlayEvent::patternStart);
 			spe.m_patternStart.track = m_track;
 			spe.m_patternStart.pattern = m_playingClip->m_pattern;
 			spe.m_patternStart.pos = m_playingClip->m_begin + (playpos - m_iter.key());
 			m_events.insert(f, spe);
 
-			playpos += (f - firstframe) * m_sp->m_beatsPerSample;
 			firstframe = f;
 			++ m_iter;
 		}

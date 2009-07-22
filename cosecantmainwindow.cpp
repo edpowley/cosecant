@@ -14,7 +14,7 @@
 CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
 
 CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
-	: QMainWindow(parent, flags)
+	: QMainWindow(parent, flags), m_currentTab(NULL)
 {
 	ui.setupUi(this);
 
@@ -44,13 +44,15 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	m_tabWidget->setMovable(true);
 	m_tabWidget->setTabsClosable(true);
 
-	RoutingEditor::Editor* re = new RoutingEditor::Editor(Song::get().m_routing, m_tabWidget);
-	m_tabWidget->addTab(re, "Routing");
-
-	SequenceEditor::Editor* se = new SequenceEditor::Editor(Song::get().m_sequence, m_tabWidget);
-	m_tabWidget->addTab(se, "Sequence");
+	addTab(new RoutingEditor::Editor(Song::get().m_routing, m_tabWidget));
+	addTab(new SequenceEditor::Editor(Song::get().m_sequence, m_tabWidget));
 
 	m_tabWidget->setDocumentMode(true);
+
+	connect( m_tabWidget, SIGNAL(currentChanged(int)),
+		this, SLOT(onTabChanged(int)) );
+
+	m_tabWidget->setCurrentIndex(0);
 
 	QDockWidget* undodock = new QDockWidget(tr("Undo history"), this);
 	undodock->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -72,6 +74,38 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 CosecantMainWindow::~CosecantMainWindow()
 {
 
+}
+
+void CosecantMainWindow::addTab(MWTab* tab)
+{
+	QWidget* widget = tab->getMWTabWidget();
+	m_tabWidget->addTab(widget, tab->getTitle());
+	m_widgetTabs.insert(widget, tab);
+	
+	QToolBar* toolbar = tab->getToolBar();
+	if (toolbar)
+	{
+		addToolBar(toolbar);
+		toolbar->hide();
+	}
+}
+
+void CosecantMainWindow::onTabChanged(int index)
+{
+	if (m_currentTab)
+	{
+		QToolBar* toolbar = m_currentTab->getToolBar();
+		if (toolbar) toolbar->hide();
+		m_currentTab = NULL;
+	}
+
+	MWTab* tab = m_widgetTabs.value( m_tabWidget->widget(index), NULL );
+	if (!tab) return;
+	
+	QToolBar* toolbar = tab->getToolBar();
+	if (toolbar) toolbar->show();
+
+	m_currentTab = tab;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
