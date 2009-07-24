@@ -6,6 +6,8 @@ using namespace SequenceEditor;
 #include "seqplay.h"
 #include "theme.h"
 #include "machine.h"
+#include "application.h"
+#include "patterneditor.h"
 
 /* TRANSLATOR SequenceEditor::Editor */
 
@@ -275,6 +277,7 @@ void TrackItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 {
 	if (ev->button() == Qt::LeftButton && m_editor->getTool() == Editor::createPattern)
 	{
+		ev->accept();
 		m_mouseMode = drawNewClip;
 		double x = getNearestSnapPoint(ev->pos().x());
 		m_newClipItem = new QGraphicsRectItem(x, 0, 0, rect().height(), this);
@@ -290,6 +293,7 @@ void TrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
 	{
 	case drawNewClip:
 		{
+			ev->accept();
 			double x = getNearestSnapPoint(ev->pos().x());
 			QRectF r = m_newClipItem->rect();
 			x = max(x, r.left());
@@ -337,6 +341,7 @@ void TrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 	case drawNewClip:
 		if (ev->button() == Qt::LeftButton)
 		{
+			ev->accept();
 			double startTime = m_newClipItem->rect().left();
 			double endTime   = startTime + m_newClipItem->rect().width();
 			double startBeat = m_editor->getSeq()->secondToBeat(startTime);
@@ -376,6 +381,14 @@ ClipItem::ClipItem(Editor* editor, TrackItem* track, const Ptr<Sequence::Clip>& 
 	pen.setCosmetic(true);
 	pen.setJoinStyle(Qt::MiterJoin);
 	setPen(pen);
+}
+
+void ClipItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
+{
+	if (ev->button() == Qt::LeftButton)
+	{
+		m_clip->m_pattern->showEditor();
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -19,7 +19,6 @@ Ptr<MachineFactory> MachineFactory::get(const QString &id)
 	if (i != s_factories.end())
 		return i->second;
 	else
-		//throw Error(Error::codeIdDoesntExist, __FUNCTION__ "No machine factory for this id");
 		THROW_ERROR(BadIdError, "No machine factory for this id");
 }
 

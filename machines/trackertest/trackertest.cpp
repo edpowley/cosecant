@@ -19,9 +19,21 @@ TrackerTest::TrackerTest(Callbacks* cb) : Mi(cb)
 {
 }
 
+void TrackerTest::init()
+{
+	m_cb->debugPrint("Hello world");
+	m_cb->addScriptFunction("scriptTest", static_cast<Script::MemberFunctionPtr>(&TrackerTest::scriptTest));
+}
+
 #include "script.inc"
 
 const char* TrackerTest::getScript() { return g_script; }
+
+Script::ValuePtr TrackerTest::scriptTest(Script::Arguments* args)
+{
+	m_cb->debugPrint("You're in scriptTest!");
+	return m_cb->scriptValueNull();
+}
 
 void TrackerTest::changeParam(ParamTag tag, ParamValue value)
 {

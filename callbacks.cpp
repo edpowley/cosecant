@@ -15,16 +15,7 @@ int CallbacksImpl::returnString(const QString& s, char* buf, int buf_size)
 
 	if (buf_size > 0)
 	{
-		// Yes VC++, I know, strncpy is unsafe and strncpy_s is *sooo* much safer
-#		ifdef _MSC_VER
-#			pragma warning(push)
-#			pragma warning(disable:4996)
-#		endif
 		strncpy(buf, bytes, buf_size-1);
-#		ifdef _MSC_VER
-#			pragma warning(pop)
-#		endif
-
 		buf[buf_size-1] = '\0';
 	}
 
@@ -48,6 +39,11 @@ const TimeInfo* CallbacksImpl::getTimeInfo()
 	return &SeqPlay::get().getTimeInfo();
 }
 
+void CallbacksImpl::addScriptFunction(const char* name, Script::MemberFunctionPtr func)
+{
+	m_mac->addScriptFunction(name, func);
+}
+
 void CallbacksImpl::addParamChange(PinBuffer* buf, int time, ParamValue value)
 {
 	WorkBuffer::ParamControl* pc = dynamic_cast<WorkBuffer::ParamControl*>(buf->workbuffer);
@@ -65,3 +61,16 @@ void CallbacksImpl::addNoteEvent(PinBuffer* buf, int time, NoteEvent* ev)
 		nt->m_data.insert(std::make_pair(time, new SequenceEvent::Note(*ev)));
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////
+
+template<typename T> static ScriptValueImpl* createScriptValue(const T& v)
+{
+	return new ScriptValueImpl(QScriptValue(v));
+}
+
+Script::ValuePtr CallbacksImpl::scriptValueNull()			{ return createScriptValue(QScriptValue::NullValue); }
+Script::ValuePtr CallbacksImpl::scriptValue(bool v)			{ return createScriptValue(v); }
+Script::ValuePtr CallbacksImpl::scriptValue(int v)			{ return createScriptValue(v); }
+Script::ValuePtr CallbacksImpl::scriptValue(double v)		{ return createScriptValue(v); }
+Script::ValuePtr CallbacksImpl::scriptValue(const char* v)	{ return createScriptValue(v); }

@@ -4,6 +4,8 @@
 using namespace Sequence;
 #include "machine.h"
 #include "song.h"
+#include "patterneditor.h"
+#include "application.h"
 
 Seq::Seq()
 {
@@ -214,21 +216,26 @@ Pattern::~Pattern()
 	if (m_miPattern) delete m_miPattern;
 }
 
-void Pattern::showEditor(NotebookWindow* win)
+void Pattern::showEditor()
 {
-/*	if (!m_editor)
+	if (!m_editor)
 	{
-		m_editor = Gtk::manage(m_mac->createPatternEditor(this));
-		win->addPage(m_editor);
+		try
+		{
+			m_editor = new PatternEditor(this);
+			Application::get().getMainWindow()->addTab(m_editor);
+		}
+		catch (const Error& err)
+		{
+			QMessageBox msg;
+			msg.setIcon(QMessageBox::Warning);
+			msg.setText(tr("Failed to open pattern editor. Please report this bug to the machine developer."));
+			msg.setInformativeText(err.msg());
+			msg.exec();
+		}
 	}
-	NotebookWindow::presentPage(m_editor);
-*/
-}
 
-void Pattern::onEditorClose(PatternEditor* editor)
-{
-	if (m_editor == editor)
-		m_editor = NULL;
+	m_editor->showTab();
 }
 
 void Pattern::setName(const QString& name)

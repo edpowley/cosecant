@@ -2,8 +2,7 @@
 
 #include <map>
 #include <string>
-#include <sstream>
-#include <iomanip>
+#include <vector>
 
 #ifdef COSECANT_API_HOST
 	namespace WorkBuffer { class Base; };
@@ -236,6 +235,72 @@ namespace CosecantAPI
 
 	////////////////////////////////////////////////////////////////////
 
+	class Mi;
+
+	namespace Script
+	{
+		class Value
+		{
+			friend class ValuePtr;
+
+		public:
+			virtual bool isValid() = 0;
+			virtual bool isNull() = 0;
+
+			virtual bool isBool() = 0;
+			virtual bool toBool() = 0;
+
+			virtual bool isNumber() = 0;
+			virtual int toInt32() = 0;
+			virtual double toInteger() = 0;
+			virtual double toNumber() = 0;
+
+			virtual bool isString() = 0;
+			virtual int toString(char* buf, int bufsize) = 0;
+			
+			std::string toString()
+			{
+				int bufsize = toString(NULL, 0);
+				std::vector<char> buf(bufsize, 0);
+				toString(&buf.front(), bufsize);
+				return std::string(&buf.front());
+			}
+
+		protected:
+			virtual void incRef() = 0;
+			virtual void decRef() = 0;
+		};
+
+		class ValuePtr
+		{
+		protected:
+			Value* m_p;
+			void set(Value* p) { if (p) p->incRef(); if (m_p) m_p->decRef(); m_p = p; }
+
+		public:
+			ValuePtr(const ValuePtr& other) : m_p(NULL) { set(other.m_p); }
+			~ValuePtr() { set(NULL); }
+
+#			ifdef COSECANT_API_HOST
+				ValuePtr(Value* p) : m_p(NULL) { set(p); }
+				Value* c_ptr() { return m_p; }
+#			endif
+
+			Value* operator->() { return m_p; }
+		};	
+
+		class Arguments
+		{
+		public:
+			virtual int count() = 0;
+			virtual ValuePtr operator[](int i) = 0;
+		};
+
+		typedef ValuePtr (Mi::*MemberFunctionPtr)(Arguments*);
+	};
+
+	////////////////////////////////////////////////////////////////////
+
 	class LoadError : public std::exception
 	{
 	public:
@@ -264,10 +329,20 @@ namespace CosecantAPI
 		virtual unsigned int getHostVersion() = 0;
 		virtual HostMachine* getHostMachine() = 0;
 
+		virtual void debugPrint(const char* msg) = 0;
+
 		virtual const TimeInfo* getTimeInfo() = 0;
+
+		virtual void addScriptFunction(const char* name, Script::MemberFunctionPtr func) = 0;
 
 		virtual void addParamChange(PinBuffer* buf, int time, ParamValue value) = 0;
 		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;
+
+		virtual Script::ValuePtr scriptValueNull() = 0;
+		virtual Script::ValuePtr scriptValue(bool v) = 0;
+		virtual Script::ValuePtr scriptValue(int v) = 0;
+		virtual Script::ValuePtr scriptValue(double v) = 0;
+		virtual Script::ValuePtr scriptValue(const char* v) = 0;
 
 	protected:
 		virtual bool lockMutex() = 0;
@@ -316,6 +391,8 @@ namespace CosecantAPI
 	public:
 		Mi(Callbacks* cb) : m_cb(cb) {}
 		virtual ~Mi() {}
+
+		virtual void init() {}
 
 		virtual const char* getScript() { return NULL; }
 

@@ -277,7 +277,10 @@ public:
 	void addPattern(const Ptr<Sequence::Pattern>& pat);
 	void removePattern(const Ptr<Sequence::Pattern>& pat);
 
-	virtual class PatternEditor* createPatternEditor(const Ptr<Sequence::Pattern>& pattern);
+	QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
+
+	void addScriptFunction(const QString& name, Script::MemberFunctionPtr func);
+	QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng);
 
 protected:
 	CosecantAPI::Mi* m_mi;
@@ -288,6 +291,10 @@ protected:
 
 	QString m_name;
 	CosecantAPI::MachineTypeHint::mt m_colorhint;
+
+	QScriptValue m_scriptObject, m_scriptFunctionObject;
+
+	QHash<QString, Script::MemberFunctionPtr> m_scriptFunctions;
 };
 
 //////////////////////////////////////////////////////////////////////////

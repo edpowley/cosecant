@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
 	try
 	{
-		Application a(argc, argv);
+		Application& a = Application::initSingleton(argc, argv);
 		
 		return a.exec();
 	}

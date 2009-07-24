@@ -8,16 +8,23 @@
 #include "parameditor.h"
 #include "cosecantmainwindow.h"
 #include "theme.h"
+#include "application.h"
+#include "callbacks.h"
 
 Machine::Machine()
 : m_pos(0,0), m_halfsize(50,25), m_name("Unnamed"), m_parameditor(NULL),
 m_routing(NULL), m_perfCount(0),
-m_dead(false), m_mi(NULL)
+m_dead(false), m_mi(NULL), m_scriptObject(QScriptValue::NullValue)
 {
 }
 
 Machine::~Machine()
 {
+}
+
+static QScriptValue MachineScriptFunctionCaller(QScriptContext* ctx, QScriptEngine* eng, void* mac)
+{
+	return static_cast<Machine*>(mac)->callScriptFunction(ctx, eng);
 }
 
 void Machine::init(InfoImpl::MachineInfo* info)
@@ -39,6 +46,56 @@ void Machine::init(InfoImpl::MachineInfo* info)
 		pin->m_name = "Note trigger";
 		m_inpins.push_back(pin);
 		m_noteTriggerPin = pin;
+	}
+
+	if (info->m_flags & MachineFlags::hasScript)
+	{
+		QScriptEngine* se = Application::get().getScriptEngine();
+
+		QScriptValue ctor = se->evaluate(
+			m_mi->getScript(),
+			QString("<Mi(0x%1)->getScript()>").arg(reinterpret_cast<quintptr>(m_mi), 0, 16) );
+		m_scriptObject = ctor.construct();
+
+		if (!m_scriptObject.isObject())
+			m_scriptObject = QScriptValue::NullValue;
+
+		se->clearExceptions();
+
+		if (m_scriptObject.isObject())
+		{
+			m_scriptFunctionObject = se->newObject();
+			m_scriptObject.setProperty("cscFunctions", m_scriptFunctionObject);
+			QScriptValue caller = se->newFunction(MachineScriptFunctionCaller, static_cast<void*>(this));
+			m_scriptFunctionObject.setProperty("cscCall", caller);
+		}
+	}
+
+	qDebug() << "m_scriptObject =" << m_scriptObject.toString();
+
+	m_mi->init();
+}
+
+void Machine::addScriptFunction(const QString& name, Script::MemberFunctionPtr func)
+{
+	m_scriptFunctions.insert(name, func);
+}
+
+QScriptValue Machine::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng)
+{
+	QString funcname = ctx->argument(0).toString();
+	Script::MemberFunctionPtr fptr = m_scriptFunctions.value(funcname, NULL);
+	if (fptr)
+	{
+		ScriptArgumentsImpl args(ctx);
+		Script::ValuePtr vp = (m_mi->*fptr)(&args);
+		ScriptValueImpl* vi = dynamic_cast<ScriptValueImpl*>(vp.c_ptr());
+		ASSERT(vi != NULL);
+		return vi->getQValue();
+	}
+	else
+	{
+		return ctx->throwError(QString("No function named '%1'").arg(funcname));
 	}
 }
 
@@ -244,10 +301,26 @@ void Machine::removePattern(const Ptr<Sequence::Pattern>& pat)
 	pat->removed();
 }
 
-PatternEditor* Machine::createPatternEditor(const Ptr<Sequence::Pattern>& pattern)
+QWidget* Machine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern)
 {
-//	return new SpatternEditor(dynamic_cast<Spattern*>(pattern.c_ptr()));
-	return NULL;
+	if (m_scriptObject.isObject())
+	{
+		QScriptValue peCtor = m_scriptObject.property("cscPatternEditor");
+		if (!peCtor.isValid()) throw Error("Script object has no cscPatternEditor property");
+
+		QScriptValue pev = peCtor.construct();
+		if (pev.engine()->hasUncaughtException())
+		{
+			throw Error(QString("Uncaught exception in cscPatternEditor:\n%1").arg(pev.toString()));
+		}
+
+		QWidget* pew = qscriptvalue_cast<QWidget*>(pev);
+		if (!pew) throw Error("cscPatternEditor is not a constructor for a QWidget-derived class");
+
+		return pew;
+	}
+
+	throw Error("This machine has no script object");
 }
 
 //////////////////////////////////////////////////////////////////////////

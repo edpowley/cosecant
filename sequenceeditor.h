@@ -55,6 +55,9 @@ namespace SequenceEditor
 		Editor* m_editor;
 		TrackItem* m_track;
 		Ptr<Sequence::Clip> m_clip;
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev) { ev->accept(); }
+		virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev);
 	};
 
 	////////////////////////////////////////////////////////////////////////////

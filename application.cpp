@@ -14,6 +14,14 @@
 
 PrefsVar_String Application::s_prefLanguage("app/language", "system_locale");
 
+SingletonPtr<Application> Application::s_singleton;
+
+Application& Application::initSingleton(int& argc, char** argv)
+{
+	s_singleton.set(new Application(argc, argv));
+	return get();
+}
+
 Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
 {
@@ -56,6 +64,8 @@ Application::Application(int& argc, char** argv)
 
 	splash->showMessage(tr("Initialising script engine"));
 	setupScriptEngine();
+	connect( m_scriptDebugger, SIGNAL(evaluationSuspended()), this, SLOT(onScriptSuspended()) );
+	connect( m_scriptDebugger, SIGNAL(evaluationResumed()),   this, SLOT(onScriptResumed()) );
 
 	splash->showMessage(tr("Opening audio device"));
 	setupAudio();
@@ -72,6 +82,10 @@ void Application::onAboutToQuit()
 {
 	qDebug() << "About to quit";
 	AudioIO::killSingleton();
+
+	detachScriptDebugger();
+	delete m_scriptDebugger; m_scriptDebugger = NULL;
+	delete m_scriptEngine; m_scriptEngine = NULL;
 }
 
 void Application::setupI18n()
@@ -124,4 +138,18 @@ void Application::setupScriptEngine()
 			qDebug() << "Failed to import extension" << extension << ":" << v.toString();
 		}
 	}
+
+	attachScriptDebugger();
+
+	qDebug() << m_scriptEngine->evaluate("'hello'").toInteger();
+}
+
+void Application::onScriptSuspended()
+{
+	m_mainWindow->setEnabled(false);
+}
+
+void Application::onScriptResumed()
+{
+	m_mainWindow->setEnabled(true);
 }

@@ -7,4 +7,6 @@ public:
 	virtual QString getTitle() = 0;
 
 	virtual QToolBar* getToolBar() { return NULL; }
+
+	void showTab() {}
 };

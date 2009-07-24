@@ -1,7 +1,22 @@
-function()
+function PatternEditor(pattern)
 {
-	this.createPatternEditor = function()
-	{
-		return new QLabel("IOU one pattern editor");
-	}
+	QLabel.call(this, "IOU one pattern editor");
+	
+	this.pattern = pattern;
 }
+
+PatternEditor.prototype = new QLabel();
+
+////////////////////////////////////////////////////////////////////////
+
+// The main class
+function TrackerTest()
+{
+}
+
+TrackerTest.prototype.cscPatternEditor = PatternEditor;
+
+////////////////////////////////////////////////////////////////////////
+
+// Don't forget this! The script (or its last statement) should evaluate to your constructor
+TrackerTest

@@ -11,6 +11,8 @@ namespace Sequence
 {
 	class Pattern : public ObjectWithUuid
 	{
+		friend class PatternEditor;
+
 		Q_OBJECT
 
 	public:
@@ -25,16 +27,9 @@ namespace Sequence
 
 		double getLength() { return m_miPattern->getLength(); }
 
-		void showEditor(NotebookWindow* win);
-		void onEditorClose(PatternEditor* editor);
-
-//		virtual void load(SongLoadContext& ctx, const QDomElement& el) = 0;
-//		virtual void save(const QDomElement& el) = 0;
-
-//		virtual QUndoCommand* createUndoableForLengthChange(double newlength) = 0;
+		void showEditor();
 
 		Machine* m_mac;
-		PatternEditor* m_editor;
 
 	signals:
 		void signalAdd();
@@ -48,6 +43,7 @@ namespace Sequence
 
 	protected:
 		CosecantAPI::MiPattern* m_miPattern;
+		PatternEditor* m_editor;
 	};
 
 	class Clip : public Object
