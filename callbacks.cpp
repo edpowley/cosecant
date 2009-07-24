@@ -39,9 +39,9 @@ const TimeInfo* CallbacksImpl::getTimeInfo()
 	return &SeqPlay::get().getTimeInfo();
 }
 
-void CallbacksImpl::addScriptFunction(const char* name, Script::MemberFunctionPtr func)
+void CallbacksImpl::addScriptFunction(const char* name, int id)
 {
-	m_mac->addScriptFunction(name, func);
+	m_mac->addScriptFunction(name, id);
 }
 
 void CallbacksImpl::addParamChange(PinBuffer* buf, int time, ParamValue value)

@@ -279,8 +279,7 @@ public:
 
 	QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
 
-	void addScriptFunction(const QString& name, Script::MemberFunctionPtr func);
-	QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng);
+	void addScriptFunction(const QString& name, int id);
 
 protected:
 	CosecantAPI::Mi* m_mi;
@@ -293,8 +292,6 @@ protected:
 	CosecantAPI::MachineTypeHint::mt m_colorhint;
 
 	QScriptValue m_scriptObject, m_scriptFunctionObject;
-
-	QHash<QString, Script::MemberFunctionPtr> m_scriptFunctions;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -21,17 +21,18 @@ TrackerTest::TrackerTest(Callbacks* cb) : Mi(cb)
 
 void TrackerTest::init()
 {
-	m_cb->debugPrint("Hello world");
-	m_cb->addScriptFunction("scriptTest", static_cast<Script::MemberFunctionPtr>(&TrackerTest::scriptTest));
+	m_cb->addScriptFunction("scriptTest", 27);
 }
 
 #include "script.inc"
 
 const char* TrackerTest::getScript() { return g_script; }
 
-Script::ValuePtr TrackerTest::scriptTest(Script::Arguments* args)
+Script::ValuePtr TrackerTest::callScriptFunction(int id, Script::Arguments* arg)
 {
-	m_cb->debugPrint("You're in scriptTest!");
+	char txt[1024];
+	sprintf(txt,"You're in callScriptFunction! id=%i, arg count = %i", id, arg->count());
+	m_cb->debugPrint(txt);
 	return m_cb->scriptValueNull();
 }
 

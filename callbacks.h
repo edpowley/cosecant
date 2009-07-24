@@ -17,7 +17,7 @@ public:
 
 	virtual const TimeInfo* getTimeInfo();
 
-	virtual void addScriptFunction(const char* name, Script::MemberFunctionPtr func);
+	virtual void addScriptFunction(const char* name, int id);
 
 	virtual void addParamChange(PinBuffer* buf, int time, ParamValue value);
 	virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev);

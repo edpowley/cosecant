@@ -22,9 +22,16 @@ Machine::~Machine()
 {
 }
 
-static QScriptValue MachineScriptFunctionCaller(QScriptContext* ctx, QScriptEngine* eng, void* mac)
+static QScriptValue MachineScriptFunctionCaller(QScriptContext* ctx, QScriptEngine* eng)
 {
-	return static_cast<Machine*>(mac)->callScriptFunction(ctx, eng);
+	Machine* mac = dynamic_cast<Machine*>(ctx->thisObject().property("cscMachine").toQObject());
+	ASSERT(mac != NULL);
+
+	ScriptArgumentsImpl args(ctx);
+	Script::ValuePtr vp = mac->getMi()->callScriptFunction(ctx->argument(0).toInt32(), &args);
+	ScriptValueImpl* vi = dynamic_cast<ScriptValueImpl*>(vp.c_ptr());
+	ASSERT(vi != NULL);
+	return vi->getQValue();
 }
 
 void Machine::init(InfoImpl::MachineInfo* info)
@@ -66,8 +73,9 @@ void Machine::init(InfoImpl::MachineInfo* info)
 		{
 			m_scriptFunctionObject = se->newObject();
 			m_scriptObject.setProperty("cscFunctions", m_scriptFunctionObject);
-			QScriptValue caller = se->newFunction(MachineScriptFunctionCaller, static_cast<void*>(this));
+			QScriptValue caller = se->newFunction(MachineScriptFunctionCaller);
 			m_scriptFunctionObject.setProperty("cscCall", caller);
+			m_scriptFunctionObject.setProperty("cscMachine", se->newQObject(this));
 		}
 	}
 
@@ -76,26 +84,21 @@ void Machine::init(InfoImpl::MachineInfo* info)
 	m_mi->init();
 }
 
-void Machine::addScriptFunction(const QString& name, Script::MemberFunctionPtr func)
+void Machine::addScriptFunction(const QString& name, int id)
 {
-	m_scriptFunctions.insert(name, func);
-}
+	if (m_scriptFunctionObject.isObject())
+	{
+		QScriptEngine* se = Application::get().getScriptEngine();
+		QScriptValue func = se->evaluate(
+			QString(
+				"function()"
+				"{"
+				"	argarray = [%1].concat(Array.prototype.slice.call(arguments, 0));"
+				"	return this.cscCall.apply(this, argarray);"
+				"}"
+			).arg(id) );
 
-QScriptValue Machine::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng)
-{
-	QString funcname = ctx->argument(0).toString();
-	Script::MemberFunctionPtr fptr = m_scriptFunctions.value(funcname, NULL);
-	if (fptr)
-	{
-		ScriptArgumentsImpl args(ctx);
-		Script::ValuePtr vp = (m_mi->*fptr)(&args);
-		ScriptValueImpl* vi = dynamic_cast<ScriptValueImpl*>(vp.c_ptr());
-		ASSERT(vi != NULL);
-		return vi->getQValue();
-	}
-	else
-	{
-		return ctx->throwError(QString("No function named '%1'").arg(funcname));
+		m_scriptFunctionObject.setProperty(name, func);
 	}
 }
 

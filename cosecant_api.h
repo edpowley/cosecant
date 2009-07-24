@@ -295,8 +295,6 @@ namespace CosecantAPI
 			virtual int count() = 0;
 			virtual ValuePtr operator[](int i) = 0;
 		};
-
-		typedef ValuePtr (Mi::*MemberFunctionPtr)(Arguments*);
 	};
 
 	////////////////////////////////////////////////////////////////////
@@ -333,7 +331,7 @@ namespace CosecantAPI
 
 		virtual const TimeInfo* getTimeInfo() = 0;
 
-		virtual void addScriptFunction(const char* name, Script::MemberFunctionPtr func) = 0;
+		virtual void addScriptFunction(const char* name, int id) = 0;
 
 		virtual void addParamChange(PinBuffer* buf, int time, ParamValue value) = 0;
 		virtual void addNoteEvent  (PinBuffer* buf, int time, NoteEvent* ev) = 0;
@@ -395,6 +393,8 @@ namespace CosecantAPI
 		virtual void init() {}
 
 		virtual const char* getScript() { return NULL; }
+		virtual Script::ValuePtr callScriptFunction(int id, Script::Arguments* arg)
+		{ return m_cb->scriptValueNull(); }
 
 		virtual void changeParam(ParamTag tag, ParamValue value) = 0;
 		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;

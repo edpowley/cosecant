@@ -25,10 +25,10 @@ public:
 	void init();
 	const char* getScript();
 
+	Script::ValuePtr callScriptFunction(int id, Script::Arguments* arg);
+
 	void changeParam(ParamTag tag, ParamValue value);
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
-	MiPattern* createPattern(double length) { return new Pattern(this, length); }
-
-	Script::ValuePtr scriptTest(Script::Arguments* args);
+	MiPattern* createPattern(double length) { return new Pattern(this, length); };
 };
