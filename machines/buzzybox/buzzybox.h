@@ -1,14 +1,22 @@
 #pragma once
 
-class Gain : public Mi
+class BuzzyMi : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
+	BuzzyMi(HostMachine* hm) : Mi(hm) {}
+};
 
-	Gain(Callbacks* cb);
+///////////////////////////////////////////////////////////////////////////
 
-	virtual void changeParam(ParamTag tag, ParamValue value);
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+class Gain : public BuzzyMi
+{
+public:
+	Gain(HostMachine* hm) : BuzzyMi(hm), m_gain(1), m_pan(1) {}
+
+	MachineInfo* getInfo();
+
+	void changeParam(ParamTag tag, double value);
+	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
 protected:
 	float m_gain;
@@ -17,25 +25,25 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
-class MonoMonoToStereo : public Mi
+class MonoMonoToStereo : public BuzzyMi
 {
 public:
-	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
+	MonoMonoToStereo(HostMachine* hm) : BuzzyMi(hm) {}
 
-	MonoMonoToStereo(Callbacks* cb) : Mi(cb) {}
+	MachineInfo* getInfo();
 
-	virtual void changeParam(ParamTag tag, ParamValue value) {}
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void changeParam(ParamTag tag, double value) {}
+	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 };
 
-class StereoToMonoMono : public Mi
+class StereoToMonoMono : public BuzzyMi
 {
 public:
-	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
+	StereoToMonoMono(HostMachine* hm) : BuzzyMi(hm) {}
 
-	StereoToMonoMono(Callbacks* cb) : Mi(cb) {}
+	MachineInfo* getInfo();
 
-	virtual void changeParam(ParamTag tag, ParamValue value) {}
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void changeParam(ParamTag tag, double value) {}
+	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 };
 

@@ -5,32 +5,40 @@ using namespace DllMachine;
 
 #include "callbacks.h"
 
-InfoImpl::MachineInfo* Factory::getMachInfo()
+MacDll::MacDll(const QString& path) : Dll(path)
 {
-	try
+	MachineExports::csc_setHostFunctions setHostFunctions
+		= (MachineExports::csc_setHostFunctions)getFunc("csc_setHostFunctions");
+	
+	if (setHostFunctions)
+		setHostFunctions(g_host);
+
+	MachineExports::csc_getPluginFunctions getPluginFunctions
+		= (MachineExports::csc_getPluginFunctions)getFunc("csc_getPluginFunctions");
+	
+	if (getPluginFunctions)
+		m_funcs = getPluginFunctions();
+	else
+		throw DllMachineError("csc_getPluginFunctions does not exist");
+
+	if (!m_funcs) throw DllMachineError("csc_getPluginFunctions returned NULL");
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+Factory::Factory(const QString& dllpath, const QString& id, const QString& desc, void* user, unsigned int userSize)
+: m_dllpath(dllpath), m_id(id), m_desc(desc)
+{
+	if (user && userSize > 0)
 	{
-		Dll dll(m_dllpath);
-
-		MachineExports::getInfo f = (MachineExports::getInfo)dll.getFunc("getInfo");
-
-		InfoImpl::MachineInfo* info = new InfoImpl::MachineInfo;
-		InfoImpl::InfoCallbacks callbacks;
-		f(info, &callbacks, m_id.toAscii());
-
-		// TODO: error checking: if getFunc returns NULL or f returns false
-
-		return info;
-	}
-	catch (const Dll::InitError& err)
-	{
-		printf("DllMachineFactory::getMachInfo error:\n%s\n", err.what());
-		return NULL;
+		m_userData.resize(userSize);
+		memcpy(&m_userData.front(), user, userSize);
 	}
 }
 
 Ptr<Machine> Factory::createMachineImpl()
 {
-	return new Mac(m_dllpath, m_id);
+	return new Mac(m_dllpath, m_userData);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -43,30 +51,19 @@ void Factory::scan(const QString& path)
 		QString fpath = path + "/" + fname;
 		try
 		{
-			Dll dll(fpath);
+			Ptr<MacDll> dll = new MacDll(fpath);
 
-			MachineExports::getMachineIds f
-				= (MachineExports::getMachineIds)dll.getFunc("getMachineIds");
-			if (f)
+			if (dll->m_funcs->MiFactory_enumerate)
 			{
-				struct Callback
-				{
-					const QString& m_fname;
-					Callback(const QString& fname) : m_fname(fname) {}
-
-					static void callback(void* vinst, const char* id)
-					{
-						Callback* inst = (Callback*)vinst;
-						Ptr<Factory> fac = new Factory(inst->m_fname, id);
-						MachineFactory::add(id, fac);
-					}
-				};
-
-				Callback cb(fpath);
-				f(Callback::callback, (void*)&cb);
+				MiFactoryList mfl(fpath);
+				dll->m_funcs->MiFactory_enumerate(&mfl);
 			}
 		}
 		catch (const Dll::InitError& err)
+		{
+			qDebug() << "Failed to load dll " << fpath << ": " << err.msg();
+		}
+		catch (const DllMachineError& err)
 		{
 			qDebug() << "Failed to load dll " << fpath << ": " << err.msg();
 		}
@@ -75,20 +72,93 @@ void Factory::scan(const QString& path)
 
 //////////////////////////////////////////////////////////////////////
 
-Mac::Mac(const QString& dllpath, const QString& id)
-: m_id(id)
+Mac::Mac(const QString& dllpath, const std::vector<char>& user)
+: m_mi(NULL)
 {
-	m_dll = new Dll(dllpath);
+	m_dll = new MacDll(dllpath);
+
+	if (m_dll->m_funcs->Mi_create)
+	{
+		if (user.empty())
+			m_mi = m_dll->m_funcs->Mi_create(NULL, 0, this);
+		else
+			m_mi = m_dll->m_funcs->Mi_create(&user.front(), user.size(), this);
+	}
 }
 
 Mac::~Mac()
 {
-	if (m_mi) delete m_mi;
+	if (m_dll->m_funcs->Mi_destroy)
+		m_dll->m_funcs->Mi_destroy(m_mi);
 }
 
-Mi* Mac::createMi(Callbacks* cb)
+void Mac::initInfo()
 {
-	MachineExports::createMachine c = (MachineExports::createMachine)m_dll->getFunc("createMachine");
-	m_mi = c(m_id.toAscii(), cb);
-	return m_mi;
+	ASSERT(m_dll->m_funcs->Mi_getInfo);
+	m_info = m_dll->m_funcs->Mi_getInfo(m_mi);
+}
+
+void Mac::initImpl()
+{
+	if (m_dll->m_funcs->Mi_init)
+		m_dll->m_funcs->Mi_init(m_mi);
+}
+
+void Mac::changeParam(ParamTag tag, double value)
+{
+	if (m_dll->m_funcs->Mi_changeParam)
+		m_dll->m_funcs->Mi_changeParam(m_mi, tag, value);
+}
+
+void Mac::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+{
+	if (m_dll->m_funcs->Mi_work)
+		m_dll->m_funcs->Mi_work(m_mi, inpins, outpins, firstframe, lastframe);
+}
+
+QScriptValue Mac::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id)
+{
+	if (m_dll->m_funcs->Mi_callScriptFunction)
+	{
+		QList<QScriptValue> args;
+		for (int a=0; a<ctx->argumentCount(); ++a)
+			args << ctx->argument(a);
+
+		QVector<const ScriptValue*> argptrs;
+		foreach(const QScriptValue& v, args)
+		{
+			argptrs << &v;
+		}
+		argptrs << NULL;
+
+		Variant ret = m_dll->m_funcs->Mi_callScriptFunction(m_mi, id, argptrs.data(), ctx->argumentCount());
+		return variantToScriptValue(ret);
+	}
+	
+	return QScriptValue::NullValue;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Ptr<Sequence::Pattern> Mac::createPatternImpl(double length)
+{
+	MiPattern* mip = NULL;
+	if (m_dll->m_funcs->MiPattern_create)
+		mip = m_dll->m_funcs->MiPattern_create(m_mi, length);
+	
+	if (mip)
+		return new Pattern(this, mip, length);
+	else
+		return NULL;
+}
+
+Pattern::Pattern(const Ptr<Mac>& mac, MiPattern* mip, double length)
+: Sequence::Pattern(mac, length), m_dll(mac->getDll()), m_mi(mac->getMi()), m_mip(mip)
+{
+}
+
+Pattern::~Pattern()
+{
+	if (m_dll->m_funcs->MiPattern_destroy)
+		m_dll->m_funcs->MiPattern_destroy(m_mip);
 }

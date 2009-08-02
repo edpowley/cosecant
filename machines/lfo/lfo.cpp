@@ -41,7 +41,7 @@ public:
 		m_phasestep = 2.0 * M_PI / period;
 	}
 
-	void changeParam(ParamTag tag, ParamValue value)
+	void changeParam(ParamTag tag, double value)
 	{
 		switch (tag)
 		{

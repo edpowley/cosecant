@@ -10,40 +10,4 @@ namespace SequenceEvent
 	public:
 		virtual void work(const Ptr<Machine>& mac) = 0;
 	};
-
-	class Note : public Base
-	{
-	public:
-		Note(CosecantAPI::NoteEvent data) : m_data(data) {}
-		CosecantAPI::NoteEvent m_data;
-
-		virtual void work(const Ptr<Machine>& mac);
-	};
-
-	class Start : public Base
-	{
-	public:
-		Start(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev, double pos)
-			: m_track(track), m_ev(ev), m_pos(pos) {}
-		
-		virtual void work(const Ptr<Machine>& mac);
-
-	protected:
-		Ptr<Sequence::Track> m_track;
-		Ptr<Sequence::Clip> m_ev;
-		double m_pos;
-	};
-
-	class Stop : public Base
-	{
-	public:
-		Stop(const Ptr<Sequence::Track>& track, const Ptr<Sequence::Clip>& ev)
-			: m_track(track), m_ev(ev) {}
-
-		virtual void work(const Ptr<Machine>& mac);
-
-	protected:
-		Ptr<Sequence::Track> m_track;
-		Ptr<Sequence::Clip> m_ev;
-	};
 };

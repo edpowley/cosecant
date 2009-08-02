@@ -1,31 +1,50 @@
 #include "stdafx.h"
 #include "buzzybox.h"
 
-bool Gain::getInfo(MachineInfo* info, InfoCallbacks* cb)
+MachineInfo* Gain::getInfo()
 {
-	info->setName("Gain")->setTypeHint(MachineTypeHint::effect)
-		->addInPin (cb->createPin()->setName("Input") ->setType(SignalType::stereoAudio))
-		->addOutPin(cb->createPin()->setName("Output")->setType(SignalType::stereoAudio));
+	static MachineInfo info;
+	static bool initialised = false;
+	if (!initialised)
+	{
+		info.defaultName = "Gain";
+		info.typeHint = MachineTypeHint::effect;
 
-	info->getParams()
-		->addParam(cb->createRealParam('gain')->setName("Gain")->setRange(0,2)->setDefault(1))
-		->addParam(cb->createRealParam('pan ')->setName("Pan") ->setRange(0,2)->setDefault(1));
+		static PinInfo inpin = { "Input", SignalType::stereoAudio };
+		static const PinInfo* inpins[] = { &inpin, NULL };
+		info.inPins = inpins;
 
-	return true;
+		static PinInfo outpin = { "Output", SignalType::stereoAudio };
+		static const PinInfo* outpins[] = { &outpin, NULL };
+		info.outPins = outpins;
+
+		static RealParamInfo paraGain;
+		paraGain.p.tag = COSECANT_TAG('gain');
+		paraGain.p.name = "Gain";
+		paraGain.min = 0; paraGain.max = 2; paraGain.def = 1;
+		
+		static RealParamInfo paraPan;
+		paraPan.p.tag = COSECANT_TAG('pan ');
+		paraPan.p.name = "Pan";
+		paraPan.min = 0; paraPan.max = 2; paraPan.def = 1;
+
+		static const ParamInfo* params[] = { &paraGain.p, &paraPan.p, NULL };
+		info.params.params = params;
+		
+		initialised = true;
+	}
+
+	return &info;
 }
 
-Gain::Gain(Callbacks* cb) : Mi(cb), m_gain(1.0f), m_pan(1.0f)
-{
-}
-
-void Gain::changeParam(ParamTag tag, ParamValue value)
+void Gain::changeParam(ParamTag tag, double value)
 {
 	switch (tag)
 	{
-	case 'gain':
+	case COSECANT_TAG('gain'):
 		m_gain = static_cast<float>(value);
 		break;
-	case 'pan ':
+	case COSECANT_TAG('pan '):
 		m_pan = static_cast<float>(value);
 		break;
 	}

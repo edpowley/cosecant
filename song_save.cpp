@@ -138,7 +138,7 @@ void Machine::save(xmlpp::Element* el)
 	el->set_attribute("halfheight", QString::format(m_halfsize.y));
 
 	// Parameter states
-	typedef std::pair<ParamTag, ParamValue> paramtv;
+	typedef std::pair<ParamTag, double> paramtv;
 	BOOST_FOREACH(const paramtv& tv, m_paramStates)
 	{
 		xmlpp::Element* child = el->add_child("param");

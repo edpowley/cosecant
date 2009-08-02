@@ -25,7 +25,7 @@ Dlg_MachineRename::Dlg_MachineRename(const Ptr<Machine>& mac, QWidget *parent, Q
 	ui.editName->selectAll();
 }
 
-void Dlg_MachineRename::addColorComboItem(MachineTypeHint::mt type, const QString& text)
+void Dlg_MachineRename::addColorComboItem(MachineTypeHint::e type, const QString& text)
 {
 	ui.comboColor->addItem(
 		createColorIcon( Theme::get().getMachineTypeHintColor(type) ),
@@ -34,12 +34,12 @@ void Dlg_MachineRename::addColorComboItem(MachineTypeHint::mt type, const QStrin
 	);
 }
 
-MachineTypeHint::mt Dlg_MachineRename::getColorType()
+MachineTypeHint::e Dlg_MachineRename::getColorType()
 {
 	int index = ui.comboColor->currentIndex();
 	if (index != -1)
 	{
-		return static_cast<MachineTypeHint::mt>(ui.comboColor->itemData(index).value<unsigned int>());
+		return static_cast<MachineTypeHint::e>(ui.comboColor->itemData(index).value<unsigned int>());
 	}
 	
 	return MachineTypeHint::none;

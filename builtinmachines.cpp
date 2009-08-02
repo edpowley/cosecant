@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "common.h"
 #include "builtinmachines.h"
-#include "machinfo.h"
 #include "sequence.h"
 //#include "notebookwindow.h"
 #include "delayline.h"
@@ -10,25 +9,28 @@
 
 namespace Builtin
 {
-	class Dummy : public Mi
+	class Dummy : public Machine
 	{
 	public:
-		Dummy(Callbacks* cb) : Mi(cb)
+		Dummy()
 		{
-			m_cb->getHostMachine()->m_dead = true;
-			m_cb->getHostMachine()->m_deadWhy 
-				= QCoreApplication::translate("RoutingEditor::Editor",
+			m_dead = true;
+			m_deadWhy = QCoreApplication::translate("RoutingEditor::Editor",
 				"This is a placeholder for a machine which you do not have installed." );
 		}
 
-		virtual void changeParam(ParamTag tag, ParamValue value) {}
+		virtual void changeParam(ParamTag tag, double value) {}
 		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) {}
 
-		static bool getInfo(InfoImpl::MachineInfo* info, InfoImpl::InfoCallbacks* cb)
+	protected:
+		virtual void initInfo()
 		{
-			info->setName("Dummy")->setTypeHint(MachineTypeHint::none);
-			return true;
+			static MachineInfo info;
+			info.defaultName = "Dummy";
+			m_info = &info;
 		}
+	
+		virtual void initImpl() {}
 	};
 
 }; // end namespace Builtin

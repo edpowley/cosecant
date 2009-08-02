@@ -25,7 +25,7 @@ namespace Sequence
 		QColor m_color;
 		void setColor(const QColor& color);
 
-		double getLength() { return m_miPattern->getLength(); }
+		double getLength() { return m_length; }
 
 		void showEditor();
 
@@ -44,6 +44,7 @@ namespace Sequence
 	protected:
 		CosecantAPI::MiPattern* m_miPattern;
 		PatternEditor* m_editor;
+		double m_length;
 	};
 
 	class Clip : public Object

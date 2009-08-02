@@ -21,7 +21,7 @@ Theme::Theme() : m_missingColor(255,0,255)
 	m_colorMap.insert("SequenceEditor/PlayLine",				"orange");
 }
 
-QColor Theme::getSignalTypeColor(SignalType::st type)
+QColor Theme::getSignalTypeColor(SignalType::e type)
 {
 	switch (type)
 	{
@@ -33,7 +33,7 @@ QColor Theme::getSignalTypeColor(SignalType::st type)
 	}
 }
 
-QColor Theme::getMachineTypeHintColor(MachineTypeHint::mt type)
+QColor Theme::getMachineTypeHintColor(MachineTypeHint::e type)
 {
 	switch (type)
 	{

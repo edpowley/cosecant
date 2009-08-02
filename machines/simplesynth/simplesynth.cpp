@@ -35,7 +35,7 @@ public:
 	virtual void* noteOn(double note, double velocity);
 	virtual void noteOff(void* note);
 
-	virtual void changeParam(ParamTag tag, ParamValue value);
+	virtual void changeParam(ParamTag tag, double value);
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
 protected:
@@ -150,7 +150,7 @@ void SimpleSynth::Note::noteOff()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void SimpleSynth::changeParam(ParamTag tag, ParamValue value)
+void SimpleSynth::changeParam(ParamTag tag, double value)
 {
 	switch (tag)
 	{

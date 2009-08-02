@@ -128,11 +128,11 @@ namespace ParamEditorWidget
 		TimeSlider(const Ptr<Parameter::Time>& param);
 
 	public slots:
-		void setUnit(TimeUnit::unit unit);
+		void setUnit(TimeUnit::e unit);
 
 	protected:
 		Ptr<Parameter::Time> m_param;
-		TimeUnit::unit m_unit;
+		TimeUnit::e m_unit;
 		double m_min, m_max;
 
 		virtual int valueToInt(double value);
@@ -149,11 +149,11 @@ namespace ParamEditorWidget
 		TimeEdit(const Ptr<Parameter::Time>& param);
 
 	public slots:
-		void setUnit(TimeUnit::unit unit);
+		void setUnit(TimeUnit::e unit);
 
 	protected:
 		Ptr<Parameter::Time> m_param;
-		TimeUnit::unit m_unit;
+		TimeUnit::e m_unit;
 
 		virtual void setTextFromValue(double value);
 		virtual double getValueFromText();
@@ -169,15 +169,15 @@ namespace ParamEditorWidget
 		TimeUnitCombo(const Ptr<Parameter::Time>& param);
 
 	signals:
-		void signalUnitChanged(TimeUnit::unit unit);
+		void signalUnitChanged(TimeUnit::e unit);
 
 	protected:
 		Ptr<Parameter::Time> m_param;
 
-		QString getUnitName(TimeUnit::unit unit);
-		QString getUnitName(unsigned int unit) { return getUnitName( static_cast<TimeUnit::unit>(unit) ); }
+		QString getUnitName(TimeUnit::e unit);
+		QString getUnitName(unsigned int unit) { return getUnitName( static_cast<TimeUnit::e>(unit) ); }
 
-		int findUnit(TimeUnit::unit unit);
+		int findUnit(TimeUnit::e unit);
 
 	protected slots:
 		void onCurrentIndexChanged(int index);

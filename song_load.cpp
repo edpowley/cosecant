@@ -190,14 +190,14 @@ void DummyMachine::load(SongLoadContext& ctx, xmlpp::Element* el)
 	{
 		xmlpp::Element* pinEl = dynamic_cast<xmlpp::Element*>(pinNode);
 		Ptr<Pin> pin = new Pin(this, Pin::in,
-			static_cast<SignalType::st>(getAttribute<int>(pinEl, "type")));
+			static_cast<SignalType::e>(getAttribute<int>(pinEl, "type")));
 		m_inpins.push_back(pin);
 	}
 	BOOST_FOREACH(xmlpp::Node* pinNode, el->get_children("outpin"))
 	{
 		xmlpp::Element* pinEl = dynamic_cast<xmlpp::Element*>(pinNode);
 		Ptr<Pin> pin = new Pin(this, Pin::out,
-			static_cast<SignalType::st>(getAttribute<int>(pinEl, "type")));
+			static_cast<SignalType::e>(getAttribute<int>(pinEl, "type")));
 		m_outpins.push_back(pin);
 	}
 

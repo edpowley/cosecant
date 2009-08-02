@@ -6,56 +6,25 @@
 class SineTest : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, InfoCallbacks* cb)
+	SineTest(HostMachine* hm) : Mi(hm), m_phase(0), m_amp(0.2)
 	{
-		info->setName("Sin")->setTypeHint(MachineTypeHint::generator)
-			->addOutPin(cb->createPin()->setName("Output")->setType(SignalType::stereoAudio));
-
-		ParamInfo::Group* params = info->getParams();
-
-		using namespace TimeUnit;
-
-		params->addParam(cb->createTimeParam('freq')->setName("Frequency")
-			->setRange(20, hertz, 2000, hertz)->setDefault(440, hertz)
-			->setInternalUnit(hertz)->addDisplayUnits(hertz | notenum)->setDefaultDisplayUnit(hertz));
-		params->addParam(cb->createRealParam('volu')->setName("Volume")->setRange(0,1)->setDefault(0.5));
-		
-		ParamInfo::Group* subgroup = cb->createParamGroup()->setName("Test");
-		params->addParam(subgroup);
-		subgroup->addParam(cb->createEnumParam('tst1')->setName("Enum test")
-			->addItem("Hello")->addItem("World")->addItems('|', "How|are|you")->setDefault(1));
-		subgroup->addParam(cb->createRealParam('tst2')->setName("Log test")->setRange(1,10000)->setDefault(5000)
-			->addFlags(ParamFlags::logarithmic));
-		subgroup->addParam(cb->createIntParam('tst3')->setName("Int test")->setRange(0,20)->setDefault(10));
-
-		ParamInfo::Group* subsubgroup = cb->createParamGroup()->setName("Subsub");
-		subgroup->addParam(subsubgroup);
-		subsubgroup->addParam(cb->createEnumParam('tst4')->setName("Hello world")
-			->addItem("Hello")->addItem("World")->addItems('|', "How|are|you")->setDefault(1));
-
-		params->addParam(cb->createRealParam('tst9')->setName("Foo")->setRange(0,1)->setDefault(0.5));
-		return true;
-	}
-
-	SineTest(Callbacks* cb) : Mi(cb), m_phase(0), m_amp(0.2)
-	{
-		setFreq(440.0);
+		setFreq(440.0 / 44100.0);
 	}
 
 	void setFreq(double freq)
 	{
-		m_phasestep = 2.0 * M_PI * freq / 44100.0;
+		m_phasestep = 2.0 * M_PI * freq;
 	}
 
-	void changeParam(ParamTag tag, ParamValue value)
+	void changeParam(ParamTag tag, double value)
 	{
 		switch (tag)
 		{
-		case 'freq':
+		case COSECANT_TAG('freq'):
 			setFreq(value);
 			break;
 
-		case 'volu':
+		case COSECANT_TAG('volu'):
 			m_amp = value;
 			break;
 		}
@@ -72,11 +41,53 @@ public:
 		}
 	}
 
+	MachineInfo* getInfo()
+	{
+		static MachineInfo info;
+
+		static bool initialised = false;
+		if (!initialised)
+		{
+			info.defaultName = "sin";
+			info.typeHint = MachineTypeHint::generator;
+
+			using namespace TimeUnit;
+			static TimeParamInfo paraFreq;
+			paraFreq.p.tag = COSECANT_TAG('freq');
+			paraFreq.p.name = "Frequency";
+			paraFreq.min.set(20, hertz); paraFreq.max.set(2000, hertz); paraFreq.def.set(440, hertz);
+			paraFreq.internalUnit = fracfreq;
+			paraFreq.displayUnits = hertz | notenum;
+			paraFreq.defaultDisplayUnit = hertz;
+
+			static RealParamInfo paraVol;
+			paraVol.p.tag = COSECANT_TAG('volu');
+			paraVol.p.name = "Volume";
+			paraVol.min = 0; paraVol.max = 1; paraVol.def = 0.5;
+
+			static const ParamInfo* params[] = { &paraFreq.p, &paraVol.p, NULL };
+			info.params.params = params;
+
+			static PinInfo outPin = { "Output", SignalType::stereoAudio };
+			static const PinInfo* outPins[] = { &outPin, NULL };
+			info.outPins = outPins;
+
+			initialised = true;
+		}
+
+		return &info;
+	}
+
 protected:
 	double m_phase, m_phasestep, m_amp;
 };
 
-void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factories)
+void CosecantPlugin::enumerateFactories(MiFactoryList* list)
 {
-	factories["btdsys/test/sinedll"] = new MiFactory_T<SineTest>;
+	g_host->registerMiFactory(list, "btdsys/test/sinedll", "BTDSys Bathroom Sink", NULL, 0);
+}
+
+Mi* CosecantPlugin::createMachine(const void*, unsigned int, HostMachine* hm)
+{
+	return new SineTest(hm);
 }

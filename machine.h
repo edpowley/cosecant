@@ -1,6 +1,5 @@
 #pragma once
 
-#include "machinfo.h"
 #include "workbuffer.h"
 #include "sequence.h"
 #include "cosecant_api.h"
@@ -15,7 +14,7 @@ class Pin : public ObjectWithUuid
 public:
 	enum Direction {in, out};
 
-	Pin(Machine* machine, Direction direction, SignalType::st type)
+	Pin(Machine* machine, Direction direction, SignalType::e type)
 		: m_machine(machine), m_direction(direction), m_type(type), m_isParamPin(false) {}
 
 	// Not a smart ptr: the circular references would give me a headache
@@ -27,7 +26,7 @@ public:
 	Side m_side;
 	float m_pos;
 	QString m_name;
-	SignalType::st m_type;
+	SignalType::e m_type;
 	bool m_isParamPin;
 	ParamTag m_paramTag;
 
@@ -94,7 +93,7 @@ namespace Parameter
 	class Group : public Base
 	{
 	public:
-		Group(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Group* info);
+		Group(const Ptr<Machine>& mac, const ParamGroupInfo* info);
 
 		virtual void initParamStuff(Machine* mac);
 
@@ -102,7 +101,7 @@ namespace Parameter
 		void populateParamEditorGrid(QGridLayout* grid);
 
 	protected:
-		std::vector< Ptr<Base> > m_params;
+		QList< Ptr<Base> > m_params;
 	};
 
 	class Scalar : public Base
@@ -115,16 +114,15 @@ namespace Parameter
 		void setRange(double min, double max);
 		void setDefault(double def);
 		void setState(double state);
-		void setFlags(unsigned int flags);
+		void setScale(ParamScale::e scale);
 
 		double getMin()		{ return m_min; }
 		double getMax()		{ return m_max; }
 		double getRange()	{ return m_max - m_min; }
 		double getDefault()	{ return m_def; }
 		double getState()	{ return m_state; }
+		ParamScale::e getScale() { return m_scale; }
 		
-		bool hasFlag(unsigned int f) { return (m_flags & f) == f; }
-
 		virtual void initParamStuff(Machine* mac);
 
 		void change(double newval);
@@ -135,7 +133,7 @@ namespace Parameter
 	protected:
 		double m_min, m_max, m_def, m_state;
 		ParamTag m_tag;
-		unsigned int m_flags;
+		ParamScale::e m_scale;
 
 		virtual double sanitise(double v) = 0;
 	};
@@ -143,7 +141,7 @@ namespace Parameter
 	class Real : public Scalar
 	{
 	public:
-		Real(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Real* info);
+		Real(const Ptr<Machine>& mac, const RealParamInfo* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 
 	protected:
@@ -153,7 +151,7 @@ namespace Parameter
 	class Int : public Scalar
 	{
 	public:
-		Int(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Int* info);
+		Int(const Ptr<Machine>& mac, const IntParamInfo* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 
 	protected:
@@ -163,19 +161,19 @@ namespace Parameter
 	class Time : public Scalar
 	{
 	public:
-		Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info);
+		Time(const Ptr<Machine>& mac, const TimeParamInfo* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 
-		TimeUnit::unit getInternalUnit() { return m_internalUnit; }
-		TimeUnit::unit getDisplayUnit() { return m_displayUnit; }
-		void setDisplayUnit(TimeUnit::unit unit) { m_displayUnit = unit; }
+		TimeUnit::e getInternalUnit() { return m_internalUnit; }
+		TimeUnit::e getDisplayUnit() { return m_displayUnit; }
+		void setDisplayUnit(TimeUnit::e unit) { m_displayUnit = unit; }
 		unsigned int getDisplayUnits() { return m_displayUnits; }
 
 		TimeValue getTMin() { return m_tmin; }
 		TimeValue getTMax() { return m_tmax; }
 
 	protected:
-		TimeUnit::unit m_internalUnit, m_displayUnit;
+		TimeUnit::e m_internalUnit, m_displayUnit;
 		unsigned int m_displayUnits;
 		TimeValue m_tmin, m_tmax, m_tdef, m_tstate;
 		virtual double sanitise(double v);
@@ -184,7 +182,7 @@ namespace Parameter
 	class Enum : public Scalar
 	{
 	public:
-		Enum(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Enum* info);
+		Enum(const Ptr<Machine>& mac, const EnumParamInfo* info);
 		void setItems(const QStringList& items);
 		QStringList getItems() { return m_items; }
 
@@ -211,18 +209,18 @@ public:
 	Machine();
 	virtual ~Machine();
 
-	virtual CosecantAPI::Mi* createMi(CosecantAPI::Callbacks* cb) = 0;
-	CosecantAPI::Mi* getMi() { return m_mi; }
+	void init();
 
 	QString getName() { return m_name; }
 	void setName(const QString& name) { m_name = name; signalRename(name); }
 
-	MachineTypeHint::mt getColorHint() { return m_colorhint; }
-	void setColorHint(MachineTypeHint::mt hint) { m_colorhint = hint; signalChangeAppearance(); }
+	MachineTypeHint::e getColorHint() { return m_colorhint; }
+	void setColorHint(MachineTypeHint::e hint) { m_colorhint = hint; signalChangeAppearance(); }
 
 	QColor getColor();
 
-	InfoImpl::MachineInfo* m_info;
+	MachineInfo* getInfo() { return m_info; }
+
 	QPointF m_pos, m_halfsize;
 	Routing* m_routing;
 
@@ -256,7 +254,7 @@ public:
 	void showParamEditor();
 
 	QMutex m_paramChangesMutex;
-	std::map<ParamTag, ParamValue> m_paramChanges;
+	std::map<ParamTag, double> m_paramChanges;
 
 	void addPin(const Ptr<Pin>& pin);
 	void removePin(const Ptr<Pin>& pin);
@@ -265,6 +263,9 @@ public:
 	void autoArrangePins();
 
 	__int64 m_perfCount;
+
+	virtual void changeParam(ParamTag tag, double value) = 0;
+	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
 
 	std::map<void*, void*> m_noteIdMap;
 
@@ -280,18 +281,25 @@ public:
 	QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
 
 	void addScriptFunction(const QString& name, int id);
+	virtual QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id)
+	{ return QScriptValue::NullValue; }
 
 protected:
 	CosecantAPI::Mi* m_mi;
 
-	void init(InfoImpl::MachineInfo* info);
-	void initPins(Pin::Direction direction, const std::vector<InfoImpl::PinInfo*>& pininfos);
-	void initParams(InfoImpl::ParamInfo::Group* group);
+	virtual void initImpl() = 0;
+	void initPins(Pin::Direction direction, const PinInfo** pininfos);
+	void initParams(ParamGroupInfo* group);
+
+	MachineInfo* m_info;
+	virtual void initInfo() = 0;
 
 	QString m_name;
-	CosecantAPI::MachineTypeHint::mt m_colorhint;
+	CosecantAPI::MachineTypeHint::e m_colorhint;
 
 	QScriptValue m_scriptObject, m_scriptFunctionObject;
+
+	virtual Ptr<Sequence::Pattern> createPatternImpl(double length) { return NULL; }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,8 +312,6 @@ public:
 	ERROR_CLASS(BadIdError);
 
 	Ptr<Machine> createMachine();
-
-	virtual InfoImpl::MachineInfo* getMachInfo() = 0;
 
 	static std::map<QString, Ptr<MachineFactory> > s_factories;
 

@@ -206,9 +206,8 @@ void Seq::showEditor(NotebookWindow* win)
 ////////////////////////////////////////////////////////////////////////////////
 
 Pattern::Pattern(Machine* mac, double length)
-: m_mac(mac), m_editor(NULL), m_name("Unnamed"), m_color("#80FF80")
+: m_mac(mac), m_editor(NULL), m_name("Unnamed"), m_color("#80FF80"), m_length(length)
 {
-	m_miPattern = m_mac->getMi()->createPattern(length);
 }
 
 Pattern::~Pattern()

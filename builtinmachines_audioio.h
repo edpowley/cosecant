@@ -8,31 +8,46 @@ namespace Builtin
 
 ///////////////////////////////////////////////////////////////////////
 
-class AudioInOut : public QObject, public Mi
+class AudioInOut : public BuiltinMachine
 {
 	Q_OBJECT
 
 public:
-	virtual void changeParam(ParamTag tag, ParamValue value)
+	virtual void changeParam(ParamTag tag, double value)
 	{
 		qDebug() << "changeParam" << tag << value;
-		if (tag == 'chan')
+		if (tag == COSECANT_TAG('chan'))
 		{
 			int c = static_cast<int>(value) - 1;
 			m_leftChannel  = c*2;
 			m_rightChannel = c*2+1;
-			qDebug() << "channels" << m_leftChannel << m_rightChannel;
 		}
 	}
 
 protected:
 	int m_leftChannel, m_rightChannel;
 
-	AudioInOut(Callbacks* cb) : Mi(cb), m_leftChannel(-1), m_rightChannel(-1)
+	AudioInOut() : m_leftChannel(-1), m_rightChannel(-1)
 	{
 	}
 
 	virtual int getNumChannels() = 0;
+
+	static const EnumParamInfo& getChannelParamInfo()
+	{
+		static EnumParamInfo info;
+		static bool initialised = false;
+		if (!initialised)
+		{
+			info.p.tag = COSECANT_TAG('chan');
+			info.p.name = "Channel";
+			static const char* items[] = {"None", "Channel 1/2", NULL};
+			info.items = items;
+			info.def = 1;
+			initialised = true;
+		}
+		return info;
+	}
 
 	static QStringList getChannelParamItems(int nChans, boost::function<QString(int)> getName)
 	{
@@ -47,7 +62,7 @@ protected:
 	void populateChannelParam(int nChans, boost::function<QString(int)> getName)
 	{
 		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(
-			m_cb->getHostMachine()->m_paramMap.get('chan').c_ptr() );
+			m_paramMap.get(COSECANT_TAG('chan')).c_ptr() );
 		param->setItems(getChannelParamItems(nChans, getName));
 	}
 };
@@ -59,7 +74,7 @@ class AudioOut : public AudioInOut
 	Q_OBJECT
 
 public:
-	AudioOut(Callbacks* cb) : AudioInOut(cb) {}
+	AudioOut() : AudioInOut() {}
 
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
@@ -76,17 +91,27 @@ public:
 		}
 	}
 
-	static bool getInfo(InfoImpl::MachineInfo* info, InfoImpl::InfoCallbacks* cb)
+	virtual void initInfo()
 	{
-		info->setName("AOut")->setTypeHint(MachineTypeHint::master)
-			->addInPin(cb->createPin()->setName("To soundcard")->setType(SignalType::stereoAudio));
-		info->getParams()->addParam(
-			cb->createEnumParam('chan')->setName("Channel")
-			->setItems(getChannelParamItems(AudioIO::get().m_numOutputChannels,
-				boost::bind(&AudioIO::getOutputChannelName, &AudioIO::get(), _1)
-			))->setDefault(1)
-		);
-		return true;
+		static MachineInfo info;
+
+		static bool initialised = false;
+		if (!initialised)
+		{
+			info.defaultName = "AOut";
+			info.typeHint = MachineTypeHint::master;
+			
+			static const ParamInfo* params[] = { &getChannelParamInfo().p, NULL };
+			info.params.params = params;
+
+			static PinInfo pin = { "To soundcard", SignalType::stereoAudio };
+			static const PinInfo* pins[] = { &pin, NULL };
+			info.inPins = pins;
+
+			initialised = true;
+		}
+
+		m_info = &info;
 	}
 
 	void populateChannelParam()
@@ -96,6 +121,7 @@ public:
 	}
 
 protected:
+	virtual void initImpl() { populateChannelParam(); }
 	virtual int getNumChannels() { return AudioIO::get().m_numOutputChannels; }
 };
 
@@ -106,7 +132,7 @@ class AudioIn : public AudioInOut
 	Q_OBJECT
 
 public:
-	AudioIn(Callbacks* cb) : AudioInOut(cb) {}
+	AudioIn() : AudioInOut() {}
 
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
@@ -121,13 +147,27 @@ public:
 		}
 	}
 
-	static bool getInfo(InfoImpl::MachineInfo* info, InfoImpl::InfoCallbacks* cb)
+	virtual void initInfo()
 	{
-		info->setName("AIn")->setTypeHint(MachineTypeHint::master)
-			->addOutPin(cb->createPin()->setName("From soundcard")->setType(SignalType::stereoAudio));
-		info->getParams()->addParam(
-			cb->createEnumParam('chan')->setName("Channel")->addItem("None") );
-		return true;
+		static MachineInfo info;
+
+		static bool initialised = false;
+		if (!initialised)
+		{
+			info.defaultName = "AIn";
+			info.typeHint = MachineTypeHint::master;
+			
+			static const ParamInfo* params[] = { &getChannelParamInfo().p, NULL };
+			info.params.params = params;
+
+			static PinInfo pin = { "From soundcard", SignalType::stereoAudio };
+			static const PinInfo* pins[] = { &pin, NULL };
+			info.outPins = pins;
+
+			initialised = true;
+		}
+
+		m_info = &info;
 	}
 
 	void populateChannelParam()
@@ -137,6 +177,7 @@ public:
 	}
 
 protected:
+	virtual void initImpl() { populateChannelParam(); }
 	virtual int getNumChannels() { return AudioIO::get().m_numInputChannels; }
 };
 

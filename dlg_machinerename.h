@@ -14,11 +14,11 @@ public:
 	~Dlg_MachineRename();
 
 	QString getName() { return ui.editName->text(); }
-	CosecantAPI::MachineTypeHint::mt getColorType();
+	CosecantAPI::MachineTypeHint::e getColorType();
 
 protected:
 	Ptr<Machine> m_mac;
-	void addColorComboItem(CosecantAPI::MachineTypeHint::mt type, const QString& text);
+	void addColorComboItem(CosecantAPI::MachineTypeHint::e type, const QString& text);
 	QIcon createColorIcon(const QColor& color, int size = 16);
 
 private:

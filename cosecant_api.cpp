@@ -1,59 +1,75 @@
 #include "stdafx.h"
 #include "cosecant_api.h"
-using namespace CosecantAPI;
 
-#define DLLEXPORT(RETURN_TYPE) extern "C" __declspec(dllexport) RETURN_TYPE
-
-////////////////////////////////////////////////////////////////////////////
-
-class MachineFactories
+COSECANT_EXPORT(unsigned int) csc_getVersion()
 {
-public:
-	static MachineFactories singleton;
-	std::map<std::string, MiFactory*> m_fac;
+	return CosecantAPI::version;
+}
 
-private:
-	MachineFactories()
-	{
-		CosecantAPI::populateMiFactories(m_fac);
-	}
+CosecantAPI::HostFunctions* CosecantAPI::g_host;
+
+COSECANT_EXPORT(void) csc_setHostFunctions(CosecantAPI::HostFunctions* host)
+{
+	CosecantAPI::g_host = host;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+namespace PluginFuncImpl
+{
+	void Mi_destroy(Mi* m)
+	{ delete m; }
+		
+	MachineInfo* Mi_getInfo(Mi* m)
+	{ return m->getInfo(); }
+
+	void Mi_init(Mi* m)
+	{ m->init(); }
+		
+	void Mi_changeParam(Mi* m, ParamTag tag, double value)
+	{ m->changeParam(tag, value); }
+
+	void Mi_work(Mi* m, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	{ m->work(inpins, outpins, firstframe, lastframe); }
+
+	MiNote* Mi_noteOn(Mi* m, double pitch, double velocity)
+	{ return m->noteOn(pitch, velocity); }
+
+	void Mi_noteOff(Mi* m, MiNote* n)
+	{ n->noteOff(); }
+	
+	Variant Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
+	{ return m->callScriptFunction(id, args, numargs); }
+	
+	MiPattern* MiPattern_create(Mi* m, double length)
+	{ return m->createPattern(length); }
+
+	void MiPattern_destroy(MiPattern* p)
+	{ delete p; }
+
+	void Mi_playPattern(Mi* m, SequenceTrack* track, MiPattern* pattern, double startpos)
+	{ pattern->play(track, startpos); }
 };
 
-MachineFactories MachineFactories::singleton;
+static CosecantAPI::PluginFunctions g_pluginFuncs = {
+	CosecantPlugin::enumerateFactories,
+	CosecantPlugin::createMachine,
+	PluginFuncImpl::Mi_destroy,
+	PluginFuncImpl::Mi_getInfo,
+	PluginFuncImpl::Mi_init,
+	PluginFuncImpl::Mi_changeParam,
+	PluginFuncImpl::Mi_work,
+	PluginFuncImpl::Mi_noteOn,
+	PluginFuncImpl::Mi_noteOff,
+	PluginFuncImpl::Mi_callScriptFunction,
+	PluginFuncImpl::MiPattern_create,
+	PluginFuncImpl::MiPattern_destroy,
+	PluginFuncImpl::Mi_playPattern,
+};
 
-////////////////////////////////////////////////////////////////////////////
-
-DLLEXPORT(void) getMachineIds(void (*cb)(void*, const char*), void* cbArg)
+COSECANT_EXPORT(CosecantAPI::PluginFunctions*) csc_getPluginFunctions()
 {
-	for (std::map<std::string, MiFactory*>::const_iterator
-		iter  = MachineFactories::singleton.m_fac.begin();
-		iter != MachineFactories::singleton.m_fac.end();
-		++ iter)
-	{
-		cb(cbArg, iter->first.c_str());
-	}
+	return &g_pluginFuncs;
 }
 
-////////////////////////////////////////////////////////////////////////////
 
-DLLEXPORT(bool) getInfo(MachineInfo* info, InfoCallbacks* cb, const char* id)
-{
-	std::map<std::string, MiFactory*>::const_iterator
-		iter  = MachineFactories::singleton.m_fac.find(id);
-	if (iter != MachineFactories::singleton.m_fac.end())
-		return iter->second->getInfo(info, cb);
-	else
-		return false;
-}
-
-////////////////////////////////////////////////////////////////////////////
-
-DLLEXPORT(Mi*) createMachine(const char* id, Callbacks* cb)
-{
-	std::map<std::string, MiFactory*>::const_iterator
-		iter  = MachineFactories::singleton.m_fac.find(id);
-	if (iter != MachineFactories::singleton.m_fac.end())
-		return iter->second->createMachine(cb);
-	else
-		return NULL;
-}

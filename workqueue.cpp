@@ -44,16 +44,22 @@ namespace PseudoMachine
 	class Base : public Machine
 	{
 	public:
-		virtual Mi* createMi(Callbacks* cb) { THROW_ERROR(Error, "PseudoMachine should never be createMi'd"); }
+		virtual void initInfo() { THROW_ERROR(Error, "This should never be called"); }
+		
+		virtual void changeParam(ParamTag tag, double value) { THROW_ERROR(Error, "This should never be called"); }
+		virtual void work(PinBuffer*, PinBuffer*, int, int) { THROW_ERROR(Error, "This should never be called"); }
+
+	protected:
+		virtual void initImpl() { THROW_ERROR(Error, "This should never be called"); }
 	};
 
 	class FanIn : public Base
 	{
 	public:
-		SignalType::st m_type;
+		SignalType::e m_type;
 		size_t m_n;
 
-		FanIn(size_t n, SignalType::st type) : m_type(type), m_n(n)
+		FanIn(size_t n, SignalType::e type) : m_type(type), m_n(n)
 		{
 			for (size_t i=0; i<n; i++)
 				m_inpins.push_back(new Pin(this, Pin::in, type));
@@ -64,7 +70,7 @@ namespace PseudoMachine
 	class FeedbackRead : public Base
 	{
 	public:
-		FeedbackRead(SignalType::st type, const Ptr<DelayLine::Base>& line)
+		FeedbackRead(SignalType::e type, const Ptr<DelayLine::Base>& line)
 			: m_line(line)
 		{
 			m_outpins.push_back(new Pin(this, Pin::out, type));
@@ -76,7 +82,7 @@ namespace PseudoMachine
 	class FeedbackWrite : public Base
 	{
 	public:
-		FeedbackWrite(SignalType::st type, const Ptr<DelayLine::Base>& line)
+		FeedbackWrite(SignalType::e type, const Ptr<DelayLine::Base>& line)
 			: m_line(line)
 		{
 			m_inpins.push_back(new Pin(this, Pin::in, type));
@@ -90,7 +96,7 @@ namespace PseudoMachine
 		Ptr<FeedbackRead> read;
 		Ptr<FeedbackWrite> write;
 
-		FeedbackPair(SignalType::st type, const Ptr<DelayLine::Base>& line)
+		FeedbackPair(SignalType::e type, const Ptr<DelayLine::Base>& line)
 		{
 			read = new FeedbackRead(type, line);
 			write = new FeedbackWrite(type, line);
@@ -131,7 +137,7 @@ struct CtorHelper
 	std::vector<PseudoMachine::FeedbackPair> feedbackPairs;
 
 	std::map< Ptr<Pin>, Ptr<WorkBuffer::Base> > pinbuffers;
-	std::map<SignalType::st, Ptr<WorkBuffer::Base> > silentbuffer;
+	std::map<SignalType::e, Ptr<WorkBuffer::Base> > silentbuffer;
 
 	std::map< Ptr<Machine>, Ptr<WorkUnit::Base> > workunits;
 
@@ -230,7 +236,7 @@ struct CtorHelper
 			}
 			else
 			{
-				SignalType::st type = edge.first->m_type;
+				SignalType::e type = edge.first->m_type;
 				if (!silentbuffer[type])
 				{
 					silentbuffer[type] = WorkBuffer::create(type);

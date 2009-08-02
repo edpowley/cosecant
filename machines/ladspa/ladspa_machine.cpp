@@ -125,7 +125,7 @@ void LadspaMachine::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, 
 	}
 }
 
-void LadspaMachine::changeParam(ParamTag tag, ParamValue value)
+void LadspaMachine::changeParam(ParamTag tag, double value)
 {
 	std::map<ParamTag, float*>::iterator iter = m_paramBuffers.find(tag);
 	if (iter != m_paramBuffers.end())

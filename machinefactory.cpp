@@ -25,8 +25,7 @@ Ptr<MachineFactory> MachineFactory::get(const QString &id)
 Ptr<Machine> MachineFactory::createMachine()
 {
 	Ptr<Machine> machine = createMachineImpl();
-	machine->createMi(new CallbacksImpl(machine)); // TODO: memory leak
-	machine->init(getMachInfo());
+	machine->init();
 
 	return machine;
 }

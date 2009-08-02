@@ -5,7 +5,7 @@ using namespace CosecantAPI;
 using namespace CosecantAPI::TimeUnit;
 #include "seqplay.h"
 
-double fromSamples(unit u, double x, const TimeInfo& ti)
+double fromSamples(TimeUnit::e u, double x, const TimeInfo& ti)
 {
 	switch (u)
 	{
@@ -19,7 +19,7 @@ double fromSamples(unit u, double x, const TimeInfo& ti)
 	}
 }
 
-double toSamples(TimeUnit::unit u, double x, const TimeInfo& ti)
+double toSamples(TimeUnit::e u, double x, const TimeInfo& ti)
 {
 	switch (u)
 	{
@@ -33,7 +33,7 @@ double toSamples(TimeUnit::unit u, double x, const TimeInfo& ti)
 	}
 }
 
-double ConvertTimeUnits(TimeUnit::unit from, TimeUnit::unit to, double value, const TimeInfo* timeinfo)
+double ConvertTimeUnits(TimeUnit::e from, TimeUnit::e to, double value, const TimeInfo* timeinfo)
 {
 	if (from == to) return value;
 

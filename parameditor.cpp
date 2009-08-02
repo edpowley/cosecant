@@ -102,7 +102,7 @@ int Parameter::Group::addToParamEditor(QGridLayout* grid, int row)
 ScalarSlider::ScalarSlider(const Ptr<Parameter::Scalar>& param)
 : m_param(param), QSlider(Qt::Horizontal), m_valueChanging(false)
 {
-	m_logarithmic = m_param->hasFlag(ParamFlags::logarithmic);
+	m_logarithmic = (m_param->getScale() == ParamScale::logarithmic);
 
 	connect(
 		this, SIGNAL(valueChanged(int)),
@@ -282,11 +282,11 @@ int Parameter::Time::addToParamEditor(QGridLayout* grid, int row)
 	grid->addWidget(unitcombo, row, 3);
 
 	connect(
-		unitcombo, SIGNAL(signalUnitChanged(TimeUnit::unit)),
-		slider, SLOT(setUnit(TimeUnit::unit)) );
+		unitcombo, SIGNAL(signalUnitChanged(TimeUnit::e)),
+		slider, SLOT(setUnit(TimeUnit::e)) );
 	connect(
-		unitcombo, SIGNAL(signalUnitChanged(TimeUnit::unit)),
-		edit, SLOT(setUnit(TimeUnit::unit)) );
+		unitcombo, SIGNAL(signalUnitChanged(TimeUnit::e)),
+		edit, SLOT(setUnit(TimeUnit::e)) );
 
 	return row+1;
 }
@@ -297,7 +297,7 @@ TimeSlider::TimeSlider(const Ptr<Parameter::Time>& param)
 	setUnit(m_param->getDisplayUnit());
 }
 
-void TimeSlider::setUnit(TimeUnit::unit unit)
+void TimeSlider::setUnit(TimeUnit::e unit)
 {
 	m_unit = unit;
 	m_min = ConvertTimeUnits(m_param->getTMin(), m_unit);
@@ -343,7 +343,7 @@ TimeEdit::TimeEdit(const Ptr<Parameter::Time>& param)
 	setUnit(m_param->getDisplayUnit());
 }
 
-void TimeEdit::setUnit(TimeUnit::unit unit)
+void TimeEdit::setUnit(TimeUnit::e unit)
 {
 	m_unit = unit;
 	setTextFromValue(m_param->getState());
@@ -383,12 +383,12 @@ TimeUnitCombo::TimeUnitCombo(const Ptr<Parameter::Time>& param)
 		this, SLOT(onCurrentIndexChanged(int)) );
 }
 
-int TimeUnitCombo::findUnit(TimeUnit::unit unit)
+int TimeUnitCombo::findUnit(TimeUnit::e unit)
 {
 	return findData( QVariant::fromValue<unsigned int>(unit) );
 }
 
-QString TimeUnitCombo::getUnitName(TimeUnit::unit unit)
+QString TimeUnitCombo::getUnitName(TimeUnit::e unit)
 {
 	switch (unit)
 	{
@@ -406,7 +406,7 @@ void TimeUnitCombo::onCurrentIndexChanged(int index)
 {
 //	if (!m_valueChanging)
 	{
-		TimeUnit::unit unit = static_cast<TimeUnit::unit>( itemData(index).value<unsigned int>() );
+		TimeUnit::e unit = static_cast<TimeUnit::e>( itemData(index).value<unsigned int>() );
 		m_param->setDisplayUnit(unit);
 		signalUnitChanged(unit);
 	}

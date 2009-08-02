@@ -112,10 +112,10 @@ void WorkMachine::sendParamChanges()
 {
 	QMutexLocker paramChangeLock(&m_machine->m_paramChangesMutex);
 
-	typedef std::pair<ParamTag, ParamValue> parampair;
+	typedef std::pair<ParamTag, double> parampair;
 	BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
 	{
-		m_machine->getMi()->changeParam(p.first, p.second);
+		m_machine->changeParam(p.first, p.second);
 	}
 
 	// Clear parameter changes
@@ -143,7 +143,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 			ppb.iter = ppb.buf->m_data.lower_bound(firstframe);
 			ppb.enditer = ppb.buf->m_data.lower_bound(lastframe);
 
-			for (std::map<int, ParamValue>::const_iterator pi = ppb.iter; pi != ppb.enditer; ++pi)
+			for (std::map<int, double>::const_iterator pi = ppb.iter; pi != ppb.enditer; ++pi)
 			{
 				breakpoints.insert(pi->first);
 			}
@@ -170,12 +170,13 @@ void WorkMachine::work(int firstframe, int lastframe)
 			{
 				if (ppb.iter != ppb.enditer && ppb.iter->first == frame)
 				{
-					m_machine->getMi()->changeParam(ppb.tag, ppb.iter->second);
+					m_machine->changeParam(ppb.tag, ppb.iter->second);
 					++ ppb.iter;
 				}
 			}
 
 			// Notes
+#if 0
 			NotePinBuf& npb = m_notePinBuf;
 			if (npb.buf)
 			{
@@ -203,10 +204,11 @@ void WorkMachine::work(int firstframe, int lastframe)
 					}
 				}
 			}
+#endif
 
 			if (breakpoint != frame)
 			{
-				m_machine->getMi()->work(m_inPinBuffer, m_outPinBuffer, frame, breakpoint);
+				m_machine->work(m_inPinBuffer, m_outPinBuffer, frame, breakpoint);
 			}
 
 			frame = breakpoint;

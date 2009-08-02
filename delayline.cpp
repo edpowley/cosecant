@@ -107,5 +107,5 @@ void EventMap<TBuffer, TMap>::write(WorkBuffer::Base* bufb, int firstframe, int 
 	template void EventMap< __VA_ARGS__ >::write(WorkBuffer::Base*, int, int);	\
 // end define
 
-EVENTMAP_INSTANTIATE(WorkBuffer::ParamControl, std::map<int, ParamValue>)
+EVENTMAP_INSTANTIATE(WorkBuffer::ParamControl, std::map<int, double>)
 EVENTMAP_INSTANTIATE(WorkBuffer::SequenceEvents, WorkBuffer::SequenceEvents::EventMap)

@@ -4,39 +4,49 @@
 #include "stdafx.h"
 #include "trackertest.h"
 
-bool TrackerTest::getInfo(MachineInfo* info, InfoCallbacks* cb)
-{
-	info->setName("Tracker")->setTypeHint(MachineTypeHint::control)
-		->addFlags(	MachineFlags::createSequenceTrack
-				|	MachineFlags::hasCustomPatterns
-				|	MachineFlags::hasScript )
-		->addOutPin(cb->createPin()->setName("Note")->setType(SignalType::noteTrigger));
+using namespace CosecantAPI;
 
-	return true;
+#include "script.inc"
+
+MachineInfo* TrackerTest::getInfo()
+{
+	static MachineInfo info;
+
+	static bool initialised = false;
+	if (!initialised)
+	{
+		info.defaultName = "Tracker";
+		info.typeHint = MachineTypeHint::control;
+		info.flags = MachineFlags::createSequenceTrack 
+					| MachineFlags::hasCustomPatterns;
+		info.script = g_script;
+
+		static PinInfo pinNoteOut = { "Note", SignalType::noteTrigger };
+		static const PinInfo* outPins[] = { &pinNoteOut, NULL };
+		info.outPins = outPins;
+
+		initialised = true;
+	}
+
+	return &info;
 }
 
-TrackerTest::TrackerTest(Callbacks* cb) : Mi(cb)
+TrackerTest::TrackerTest(HostMachine* hm) : Mi(hm)
 {
 }
 
 void TrackerTest::init()
 {
-	m_cb->addScriptFunction("scriptTest", 27);
+	g_host->registerScriptFunction(m_hm, "scriptTest", 27);
 }
 
-#include "script.inc"
-
-const char* TrackerTest::getScript() { return g_script; }
-
-Script::ValuePtr TrackerTest::callScriptFunction(int id, Script::Arguments* arg)
+Variant TrackerTest::callScriptFunction(int id, const ScriptValue** args, int numargs)
 {
-	char txt[1024];
-	sprintf(txt,"You're in callScriptFunction! id=%i, arg count = %i", id, arg->count());
-	m_cb->debugPrint(txt);
-	return m_cb->scriptValueNull();
+	DebugPrint() << "You're in callScriptFunction!" << id << numargs;
+	return Variant();
 }
 
-void TrackerTest::changeParam(ParamTag tag, ParamValue value)
+void TrackerTest::changeParam(ParamTag tag, double value)
 {
 }
 
@@ -44,7 +54,24 @@ void TrackerTest::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, in
 {
 }
 
-void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factories)
+/////////////////////////////////////////////////////////////////////////////
+
+void Pattern::play(SequenceTrack* track, double startpos)
 {
-	factories["btdsys/test/tracker"] = new MiFactory_T<TrackerTest>;
+}
+
+void Pattern::stop(SequenceTrack* track)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+void CosecantPlugin::enumerateFactories(MiFactoryList* list)
+{
+	g_host->registerMiFactory(list, "btdsys/test/tracker", "BTDSys Crappy Tracker Example", NULL, 0);
+}
+
+Mi* CosecantPlugin::createMachine(const void*, unsigned int, HostMachine* hm)
+{
+	return new TrackerTest(hm);
 }

@@ -3,13 +3,12 @@
 #include "callbacks.h"
 #include "cosecant_api.h"
 using namespace CosecantAPI;
-#include "machinfo.h"
 #include "eventlist.h"
 #include "song.h"
 #include "dllmachine.h"
 #include "seqplay.h"
 
-int CallbacksImpl::returnString(const QString& s, char* buf, int buf_size)
+static int returnString(const QString& s, char* buf, int buf_size)
 {
 	QByteArray bytes = s.toUtf8();
 
@@ -22,55 +21,72 @@ int CallbacksImpl::returnString(const QString& s, char* buf, int buf_size)
 	return static_cast<int>(bytes.size() + 1);
 }
 
-/////////////////////////////////////////////////////////////////////////
-
-bool CallbacksImpl::lockMutex()
+static unsigned int getHostVersion()
 {
-	return m_mac->m_mutex.tryLock(1000);
+	return CosecantAPI::version;
 }
 
-void CallbacksImpl::unlockMutex()
+static void debugPrint(const char* msg)
 {
-	m_mac->m_mutex.unlock();
+	qDebug(msg);
 }
 
-const TimeInfo* CallbacksImpl::getTimeInfo()
+static void registerMiFactory(MiFactoryList* list,
+							  const char* id, const char* desc, void* user, unsigned int userSize)
+{
+	MachineFactory::add(id, new DllMachine::Factory(list->m_dllpath, id, desc, user, userSize));
+}
+
+static const TimeInfo* getTimeInfo(HostMachine* mac)
 {
 	return &SeqPlay::get().getTimeInfo();
 }
 
-void CallbacksImpl::addScriptFunction(const char* name, int id)
+static void registerScriptFunction(HostMachine* mac, const char* name, int id)
 {
-	m_mac->addScriptFunction(name, id);
+	mac->addScriptFunction(name, id);
 }
 
-void CallbacksImpl::addParamChange(PinBuffer* buf, int time, ParamValue value)
+static bool lockMutex(HostMachine* mac)
 {
-	WorkBuffer::ParamControl* pc = dynamic_cast<WorkBuffer::ParamControl*>(buf->workbuffer);
-	if (pc)
-	{
-		pc->m_data[time] = value;
-	}
+	return mac->m_mutex.tryLock(1000);
 }
 
-void CallbacksImpl::addNoteEvent(PinBuffer* buf, int time, NoteEvent* ev)
+static bool unlockMutex(HostMachine* mac)
 {
-	WorkBuffer::SequenceEvents* nt = dynamic_cast<WorkBuffer::SequenceEvents*>(buf->workbuffer);
-	if (nt)
-	{
-		nt->m_data.insert(std::make_pair(time, new SequenceEvent::Note(*ev)));
-	}
+	mac->m_mutex.unlock();
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-template<typename T> static ScriptValueImpl* createScriptValue(const T& v)
+QScriptValue variantToScriptValue(const Variant& var)
 {
-	return new ScriptValueImpl(QScriptValue(v));
+	switch (var.type)
+	{
+	case Variant::tInt:
+		return var.dInt;
+	case Variant::tDouble:
+		return var.dDouble;
+	case Variant::tString:
+		return var.dString;
+	case Variant::tNull:
+	default:
+		return QScriptValue::NullValue;
+	}
 }
 
-Script::ValuePtr CallbacksImpl::scriptValueNull()			{ return createScriptValue(QScriptValue::NullValue); }
-Script::ValuePtr CallbacksImpl::scriptValue(bool v)			{ return createScriptValue(v); }
-Script::ValuePtr CallbacksImpl::scriptValue(int v)			{ return createScriptValue(v); }
-Script::ValuePtr CallbacksImpl::scriptValue(double v)		{ return createScriptValue(v); }
-Script::ValuePtr CallbacksImpl::scriptValue(const char* v)	{ return createScriptValue(v); }
+/////////////////////////////////////////////////////////////////////////
+
+static HostFunctions g_hostFuncs =
+{
+	getHostVersion,
+	debugPrint,
+	registerMiFactory,
+	getTimeInfo,
+	registerScriptFunction,
+	lockMutex,
+	unlockMutex,
+};
+
+HostFunctions* CosecantAPI::g_host = &g_hostFuncs;

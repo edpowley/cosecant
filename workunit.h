@@ -64,7 +64,7 @@ namespace WorkUnit
 		{
 			ParamTag tag;
 			Ptr<WorkBuffer::ParamControl> buf;
-			std::map<int, ParamValue>::const_iterator iter, enditer;
+			std::map<int, double>::const_iterator iter, enditer;
 		};
 		std::vector<ParamPinBuf> m_paramPinBufs;
 

@@ -12,8 +12,8 @@ public:
 	static void initSingleton();
 	static Theme& get() { return *s_singleton; }
 
-	QColor getSignalTypeColor(CosecantAPI::SignalType::st type);
-	QColor getMachineTypeHintColor(CosecantAPI::MachineTypeHint::mt type);
+	QColor getSignalTypeColor(CosecantAPI::SignalType::e type);
+	QColor getMachineTypeHintColor(CosecantAPI::MachineTypeHint::e type);
 
 	QColor getColor(const QString& key);
 

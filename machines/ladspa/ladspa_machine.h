@@ -32,7 +32,7 @@ public:
 	~LadspaMachine();
 
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
-	void changeParam(ParamTag tag, ParamValue value);
+	void changeParam(ParamTag tag, double value);
 
 protected:
 	LadspaDll m_dll;

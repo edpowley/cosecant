@@ -61,7 +61,7 @@ namespace DelayLine
 		virtual void reallocate() { m_data.clear(); }
 	};
 
-	class ParamControl : public EventMap< WorkBuffer::ParamControl, std::map<int, ParamValue> >
+	class ParamControl : public EventMap< WorkBuffer::ParamControl, std::map<int, double> >
 	{
 	public:
 		ParamControl(int length) : EventMap(length) {}

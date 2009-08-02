@@ -1,7 +1,6 @@
 #pragma once
 
 #include "audioio.h"
-#include "machinfo.h"
 #include "delayline.h"
 #include "sequenceevent.h"
 
@@ -40,7 +39,7 @@ namespace WorkBuffer
 		virtual unsigned int getFlags() const { return s_flags; }
 
 		virtual PinBuffer getPinBuffer()
-		{ PinBuffer pb(this); pb.f = &m_data[0]; return pb; }
+		{ PinBuffer pb; pb.reserved = this; pb.f = &m_data[0]; return pb; }
 
 		virtual void clearAll();
 		virtual void clear(int firstframe, int lastframe);
@@ -80,7 +79,7 @@ namespace WorkBuffer
 		ParamControl() : m_lastValue(0) {}
 
 		virtual PinBuffer getPinBuffer()
-		{ PinBuffer pb(this); return pb; }
+		{ PinBuffer pb; pb.reserved = this; return pb; }
 
 		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::ParamControl(length); }
 
@@ -90,8 +89,8 @@ namespace WorkBuffer
 		virtual void copy(WorkBuffer::Base* other, int firstframe, int lastframe);
 		virtual void mix (WorkBuffer::Base* other, int firstframe, int lastframe);
 
-		std::map<int, ParamValue> m_data;
-		ParamValue m_lastValue;
+		std::map<int, double> m_data;
+		double m_lastValue;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -105,7 +104,7 @@ namespace WorkBuffer
 		SequenceEvents() {}
 
 		virtual PinBuffer getPinBuffer()
-		{ PinBuffer pb(this); return pb; }
+		{ PinBuffer pb; pb.reserved = this; return pb; }
 
 		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::SequenceEvents(length); }
 
@@ -144,7 +143,7 @@ namespace WorkBuffer
 		const char* m_description;
 	};
 
-	extern std::map<SignalType::st, Ptr<Factory_Base> > s_factories;
+	extern std::map<SignalType::e, Ptr<Factory_Base> > s_factories;
 
 	class FactoriesInitialiser
 	{
@@ -152,17 +151,17 @@ namespace WorkBuffer
 		FactoriesInitialiser();
 	};
 
-	inline Ptr<Base> create(SignalType::st signaltype)
+	inline Ptr<Base> create(SignalType::e signaltype)
 	{
 		return s_factories[signaltype]->create();
 	}
 
-	inline unsigned int getFlags(SignalType::st signaltype)
+	inline unsigned int getFlags(SignalType::e signaltype)
 	{
 		return s_factories[signaltype]->getFlags();
 	}
 
-	inline const char* getDescription(SignalType::st signaltype)
+	inline const char* getDescription(SignalType::e signaltype)
 	{
 		return s_factories[signaltype]->getDescription();
 	}

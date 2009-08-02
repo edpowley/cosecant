@@ -154,7 +154,7 @@ public:
 	AddMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
 		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("add machine '%1'").arg(mac->getName()))
 	{
-		if (m_mac->m_info->m_flags & CosecantAPI::MachineFlags::createSequenceTrack)
+		if (m_mac->getInfo()->flags & CosecantAPI::MachineFlags::createSequenceTrack)
 		{
 			m_seq = Song::get().m_sequence;
 			m_seqTrack = new Sequence::Track(m_mac);
@@ -448,7 +448,7 @@ protected:
 class RenameMachineCommand : public QUndoCommand
 {
 public:
-	RenameMachineCommand(const Ptr<Machine>& mac, const QString& newname, MachineTypeHint::mt newcolorhint)
+	RenameMachineCommand(const Ptr<Machine>& mac, const QString& newname, MachineTypeHint::e newcolorhint)
 		: m_mac(mac), m_oldname(mac->getName()), m_newname(newname),
 		m_oldcolorhint(mac->getColorHint()), m_newcolorhint(newcolorhint)
 	{
@@ -483,7 +483,7 @@ public:
 protected:
 	Ptr<Machine> m_mac;
 	QString m_oldname, m_newname;
-	MachineTypeHint::mt m_oldcolorhint, m_newcolorhint;
+	MachineTypeHint::e m_oldcolorhint, m_newcolorhint;
 };
 
 void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
@@ -502,7 +502,7 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 			if (dlg.exec() == QDialog::Accepted)
 			{
 				QString newname = dlg.getName();
-				MachineTypeHint::mt newcolorhint = dlg.getColorType();
+				MachineTypeHint::e newcolorhint = dlg.getColorType();
 
 				if (newname != m_mac->getName() || newcolorhint != m_mac->getColorHint())
 				{
@@ -719,7 +719,7 @@ void ConnectionLineItem::updatePath()
 
 void ConnectionLineItem::updateColor()
 {
-	CosecantAPI::SignalType::st signaltype;
+	CosecantAPI::SignalType::e signaltype;
 	if		(getPin1()) signaltype = getPin1()->m_type;
 	else if	(getPin2()) signaltype = getPin2()->m_type;
 	else	return;

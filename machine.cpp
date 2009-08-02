@@ -27,25 +27,29 @@ static QScriptValue MachineScriptFunctionCaller(QScriptContext* ctx, QScriptEngi
 	Machine* mac = dynamic_cast<Machine*>(ctx->thisObject().property("cscMachine").toQObject());
 	ASSERT(mac != NULL);
 
-	ScriptArgumentsImpl args(ctx);
+/*	ScriptArgumentsImpl args(ctx);
 	Script::ValuePtr vp = mac->getMi()->callScriptFunction(ctx->argument(0).toInt32(), &args);
 	ScriptValueImpl* vi = dynamic_cast<ScriptValueImpl*>(vp.c_ptr());
 	ASSERT(vi != NULL);
 	return vi->getQValue();
+	*/
+
+	return QScriptValue::NullValue;
 }
 
-void Machine::init(InfoImpl::MachineInfo* info)
+void Machine::init()
 {
-	m_info = info;
-	m_name = info->m_name;
-	m_colorhint = info->m_typeHint;
+	initInfo();
 
-	initParams(&info->m_params);
+	m_name = m_info->defaultName;
+	m_colorhint = static_cast<MachineTypeHint::e>(m_info->typeHint);
 
-	initPins(Pin::in,  info->m_inpins);
-	initPins(Pin::out, info->m_outpins);
+	initParams(&m_info->params);
 
-	if (info->m_flags & MachineFlags::hasNoteTrigger)
+	initPins(Pin::in,  m_info->inPins);
+	initPins(Pin::out, m_info->outPins);
+
+	if (m_info->flags & MachineFlags::hasNoteTrigger)
 	{
 		Ptr<Pin> pin = new Pin(this, Pin::in, SignalType::noteTrigger);
 		pin->m_side = Pin::top;
@@ -55,13 +59,13 @@ void Machine::init(InfoImpl::MachineInfo* info)
 		m_noteTriggerPin = pin;
 	}
 
-	if (info->m_flags & MachineFlags::hasScript)
+	if (m_info->script)
 	{
 		QScriptEngine* se = Application::get().getScriptEngine();
 
 		QScriptValue ctor = se->evaluate(
-			m_mi->getScript(),
-			QString("<Mi(0x%1)->getScript()>").arg(reinterpret_cast<quintptr>(m_mi), 0, 16) );
+			m_info->script,
+			QString("<Machine 0x%1 script>").arg(reinterpret_cast<quintptr>(this), 0, 16) );
 		m_scriptObject = ctor.construct();
 
 		if (!m_scriptObject.isObject())
@@ -81,7 +85,7 @@ void Machine::init(InfoImpl::MachineInfo* info)
 
 	qDebug() << "m_scriptObject =" << m_scriptObject.toString();
 
-	m_mi->init();
+	initImpl();
 }
 
 void Machine::addScriptFunction(const QString& name, int id)
@@ -137,30 +141,45 @@ void Machine::showParamEditor()
 	}
 }
 
-void Machine::initParams(InfoImpl::ParamInfo::Group* group)
+void Machine::initParams(ParamGroupInfo* group)
 {
 	m_params = new Parameter::Group(this, group);
 	m_params->initParamStuff(this);
 }
 
-Parameter::Group::Group(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Group* info)
+Parameter::Group::Group(const Ptr<Machine>& mac, const ParamGroupInfo* info)
 : Base(mac)
 {
-	setName(info->m_name);
+	setName(info->p.name);
 
-	BOOST_FOREACH(CosecantAPI::ParamInfo::Base* p, info->m_params)
+	if (info->params)
 	{
-#		define MY_IF_MACRO(NAME) \
-			if (InfoImpl::ParamInfo::NAME* q = dynamic_cast<InfoImpl::ParamInfo::NAME*>(p)) \
-				m_params.push_back(new NAME(mac, q));
+		for (const ParamInfo** p = info->params; *p; ++p)
+		{
+			Ptr<Parameter::Base> newpar;
 
-		MY_IF_MACRO(Group)
-		else MY_IF_MACRO(Real)
-		else MY_IF_MACRO(Int)
-		else MY_IF_MACRO(Time)
-		else MY_IF_MACRO(Enum)
+			switch ((*p)->type)
+			{
+			case ParamType::tGroup:
+				newpar = new Group(mac, reinterpret_cast<const ParamGroupInfo*>(*p) );
+				break;
+			case ParamType::tReal:
+				newpar = new Real(mac, reinterpret_cast<const RealParamInfo*>(*p) );
+				break;
+			case ParamType::tInt:
+				newpar = new Int(mac, reinterpret_cast<const IntParamInfo*>(*p) );
+				break;
+			case ParamType::tTime:
+				newpar = new Time(mac, reinterpret_cast<const TimeParamInfo*>(*p) );
+				break;
+			case ParamType::tEnum:
+				newpar = new Enum(mac, reinterpret_cast<const EnumParamInfo*>(*p) );
+				break;
+			}
 
-#		undef MY_IF_MACRO
+			ASSERT(newpar != NULL);
+			m_params.push_back(newpar);
+		}
 	}
 }
 
@@ -173,7 +192,7 @@ void Parameter::Group::initParamStuff(Machine* mac)
 }
 
 Parameter::Scalar::Scalar(const Ptr<Machine>& mac, ParamTag tag)
-: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0), m_flags(0)
+: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0), m_scale(ParamScale::linear)
 {
 }
 
@@ -199,9 +218,9 @@ void Parameter::Scalar::setState(double state)
 	m_state = sanitise(state);
 }
 
-void Parameter::Scalar::setFlags(unsigned int flags)
+void Parameter::Scalar::setScale(ParamScale::e scale)
 {
-	m_flags = flags;
+	m_scale = scale;
 }
 
 void Parameter::Scalar::change(double newval)
@@ -217,14 +236,14 @@ void Parameter::Scalar::change(double newval)
 	}
 }
 
-Parameter::Real::Real(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Real* info)
-: Scalar(mac, info->m_tag)
+Parameter::Real::Real(const Ptr<Machine>& mac, const RealParamInfo* info)
+: Scalar(mac, info->p.tag)
 {
-	setName(info->m_name);
-	setFlags(info->m_flags);
-	setRange(info->m_min, info->m_max);
-	setDefault(info->m_def);
-	setState(info->m_def);
+	setName(info->p.name);
+	setScale(static_cast<ParamScale::e>(info->scale));
+	setRange(info->min, info->max);
+	setDefault(info->def);
+	setState(info->def);
 }
 
 double Parameter::Real::sanitise(double v)
@@ -232,13 +251,13 @@ double Parameter::Real::sanitise(double v)
 	return clamp(v, m_min, m_max);
 }
 
-Parameter::Int::Int(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Int* info)
-: Scalar(mac, info->m_tag)
+Parameter::Int::Int(const Ptr<Machine>& mac, const IntParamInfo* info)
+: Scalar(mac, info->p.tag)
 {
-	setName(info->m_name);
-	setRange(info->m_min, info->m_max);
-	setDefault(info->m_def);
-	setState(info->m_def);
+	setName(info->p.name);
+	setRange(info->min, info->max);
+	setDefault(info->def);
+	setState(info->def);
 }
 
 double Parameter::Int::sanitise(double v)
@@ -246,13 +265,14 @@ double Parameter::Int::sanitise(double v)
 	return clamp(floor(v+0.5), m_min, m_max);
 }
 
-Parameter::Time::Time(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Time* info)
-:	Scalar(mac, info->m_tag),
-	m_tmin(info->m_min), m_tmax(info->m_max), m_tdef(info->m_def), m_tstate(info->m_def),
-	m_internalUnit(info->m_internalUnit), m_displayUnit(info->m_defaultDisplayUnit),
-	m_displayUnits(info->m_displayUnits)
+Parameter::Time::Time(const Ptr<Machine>& mac, const TimeParamInfo* info)
+:	Scalar(mac, info->p.tag),
+	m_tmin(info->min), m_tmax(info->max), m_tdef(info->def), m_tstate(info->def),
+	m_internalUnit(static_cast<TimeUnit::e>(info->internalUnit)),
+	m_displayUnit(static_cast<TimeUnit::e>(info->defaultDisplayUnit)),
+	m_displayUnits(info->displayUnits)
 {
-	setName(info->m_name);
+	setName(info->p.name);
 	setRange(ConvertTimeUnits(m_tmin, m_internalUnit), ConvertTimeUnits(m_tmax, m_internalUnit));
 	setDefault(ConvertTimeUnits(m_tdef, m_internalUnit));
 	setState(getDefault());
@@ -263,13 +283,23 @@ double Parameter::Time::sanitise(double v)
 	return v;
 }
 
-Parameter::Enum::Enum(const Ptr<Machine>& mac, InfoImpl::ParamInfo::Enum* info)
-:	Scalar(mac, info->m_tag)
+Parameter::Enum::Enum(const Ptr<Machine>& mac, const EnumParamInfo* info)
+:	Scalar(mac, info->p.tag)
 {
-	setName(info->m_name);
-	setItems(info->m_items);
-	setDefault(info->m_def);
-	setState(info->m_def);
+	setName(info->p.name);
+
+	if (info->items)
+	{
+		QStringList items;
+		for (const char** item = info->items; *item; ++item)
+		{
+			items << *item;
+		}
+		setItems(items);
+	}
+
+	setDefault(info->def);
+	setState(info->def);
 }
 
 double Parameter::Enum::sanitise(double v)
@@ -287,8 +317,12 @@ void Parameter::Enum::setItems(const QStringList& items)
 
 Ptr<Sequence::Pattern> Machine::createPattern(double length)
 {
-	Ptr<Sequence::Pattern> pat = new Sequence::Pattern(this, length);
-	pat->m_name = QString("%1").arg(m_patterns.size(), 2, 10, QLatin1Char('0'));
+	Ptr<Sequence::Pattern> pat = createPatternImpl(length);
+	if (pat)
+	{
+		pat->m_name = QString("%1").arg(m_patterns.size(), 2, 10, QLatin1Char('0'));
+	}
+
 	return pat;
 }
 
@@ -328,22 +362,22 @@ QWidget* Machine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& patter
 
 //////////////////////////////////////////////////////////////////////////
 
-void Machine::initPins(Pin::Direction direction, const std::vector<InfoImpl::PinInfo*>& pins)
+void Machine::initPins(Pin::Direction direction, const PinInfo** pins)
 {
+	if (!pins) return;
+
 	std::vector< Ptr<Pin> >& pinvector = (direction == Pin::in) ? m_inpins : m_outpins;
 	Pin::Side side = (direction == Pin::in) ? Pin::left : Pin::right;
 
-	size_t npins = pins.size();
-	float posstep = 1.0f / (float)(npins + 1);
-	float pos = posstep;
-
-	for (std::vector<InfoImpl::PinInfo*>::const_iterator i = pins.begin(); i != pins.end(); ++i)
+	int pinnum = 0;
+	for (const PinInfo** i = pins; *i; ++i)
 	{
-		Ptr<Pin> pin = new Pin(this, direction, (*i)->m_type);
+		Ptr<Pin> pin = new Pin(this, direction, static_cast<SignalType::e>((*i)->type));
 		pin->m_side = side;
-		pin->m_pos = pos; pos += posstep;
-		pin->m_name = (*i)->m_name;
+		pin->m_pos = pinnum;
+		pin->m_name = (*i)->name;
 		pinvector.push_back(pin);
+		++ pinnum;
 	}
 
 	autoArrangePins();

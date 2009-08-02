@@ -4,7 +4,7 @@
 using namespace WorkBuffer;
 #include "eventlist.h"
 
-std::map<SignalType::st, Ptr<Factory_Base> > WorkBuffer::s_factories;
+std::map<SignalType::e, Ptr<Factory_Base> > WorkBuffer::s_factories;
 FactoriesInitialiser facinit;
 FactoriesInitialiser::FactoriesInitialiser()
 {
@@ -86,19 +86,19 @@ void ParamControl::mix(Base* other, int firstframe, int lastframe)
 {
 	if (ParamControl* p = dynamic_cast<ParamControl*>(other))
 	{
-		std::map<int, ParamValue> newdata;
+		std::map<int, double> newdata;
 
-		std::map<int, ParamValue>::const_iterator
+		std::map<int, double>::const_iterator
 			iterThis	=    m_data.lower_bound(firstframe),
 			iterOther	= p->m_data.lower_bound(firstframe),
 			endThis		=    m_data.lower_bound(lastframe),
 			endOther	= p->m_data.lower_bound(lastframe);
 
-		ParamValue lastThis, lastOther;
+		double lastThis, lastOther;
 
 		if (iterThis != m_data.begin())
 		{
-			std::map<int, ParamValue>::const_iterator i = iterThis; --i; lastThis = i->second;
+			std::map<int, double>::const_iterator i = iterThis; --i; lastThis = i->second;
 		}
 		else
 		{
@@ -107,7 +107,7 @@ void ParamControl::mix(Base* other, int firstframe, int lastframe)
 
 		if (iterOther != p->m_data.begin())
 		{
-			std::map<int, ParamValue>::const_iterator i = iterOther; --i; lastOther = i->second;
+			std::map<int, double>::const_iterator i = iterOther; --i; lastOther = i->second;
 		}
 		else
 		{
