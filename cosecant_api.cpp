@@ -35,20 +35,23 @@ namespace PluginFuncImpl
 	MiNote* Mi_noteOn(Mi* m, double pitch, double velocity)
 	{ return m->noteOn(pitch, velocity); }
 
-	void Mi_noteOff(Mi* m, MiNote* n)
+	void MiNote_off(MiNote* n)
 	{ n->noteOff(); }
 	
 	Variant Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
 	{ return m->callScriptFunction(id, args, numargs); }
 	
-	MiPattern* MiPattern_create(Mi* m, double length)
+	MiPattern* Mi_createPattern(Mi* m, double length)
 	{ return m->createPattern(length); }
 
 	void MiPattern_destroy(MiPattern* p)
 	{ delete p; }
 
-	void Mi_playPattern(Mi* m, SequenceTrack* track, MiPattern* pattern, double startpos)
-	{ pattern->play(track, startpos); }
+	void MiPattern_play(MiPattern* p, SequenceTrack* track, double startpos)
+	{ p->play(track, startpos); }
+
+	void MiPattern_stop(MiPattern* p, SequenceTrack* track)
+	{ p->stop(track); }
 };
 
 static CosecantAPI::PluginFunctions g_pluginFuncs = {
@@ -60,11 +63,12 @@ static CosecantAPI::PluginFunctions g_pluginFuncs = {
 	PluginFuncImpl::Mi_changeParam,
 	PluginFuncImpl::Mi_work,
 	PluginFuncImpl::Mi_noteOn,
-	PluginFuncImpl::Mi_noteOff,
+	PluginFuncImpl::MiNote_off,
 	PluginFuncImpl::Mi_callScriptFunction,
-	PluginFuncImpl::MiPattern_create,
+	PluginFuncImpl::Mi_createPattern,
 	PluginFuncImpl::MiPattern_destroy,
-	PluginFuncImpl::Mi_playPattern,
+	PluginFuncImpl::MiPattern_play,
+	PluginFuncImpl::MiPattern_stop,
 };
 
 COSECANT_EXPORT(CosecantAPI::PluginFunctions*) csc_getPluginFunctions()

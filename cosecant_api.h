@@ -17,8 +17,11 @@
 #	include "hostapi.h"
 #endif
 
+/** The main namespace for the plugin API. */
 namespace CosecantAPI
 {
+	/** The API version for this header file.
+		\sa HostFunctions::getHostVersion */
 	const unsigned int version = 1000;
 
 	const unsigned int maxFramesPerBuffer = 1024;
@@ -43,6 +46,10 @@ namespace CosecantAPI
 #	endif
 
 	//////////////////////////////////////////////////////////////////////////////////
+
+	typedef unsigned char cbool;
+	static const cbool cfalse = 0;
+	static const cbool ctrue = 1;
 
 	namespace MachineFlags
 	{
@@ -209,6 +216,7 @@ namespace CosecantAPI
 
 	/////////////////////////////////////////////////////////////////////////////
 
+	/** A variable that can hold several different types of value. */
 	struct Variant
 	{
 		enum Type
@@ -225,10 +233,16 @@ namespace CosecantAPI
 			const char* dString;
 		};
 		
+		/** Constructs a variant of type tNull. */
 		Variant() : type(tNull) {}
 		
+		/** Constructs a variant of type tInt. */
 		Variant(int v)			: type(tInt)	{ dInt = v; }
+
+		/** Constructs a variant of type tDouble. */
 		Variant(double v)		: type(tDouble)	{ dDouble = v; }
+
+		/** Constructs a variant of type tString. */
 		Variant(const char* v)	: type(tString)	{ dString = v; }
 	};
 	
@@ -257,41 +271,87 @@ namespace CosecantAPI
 		void (*MiFactory_enumerate)(MiFactoryList* list);
 
 		Mi* (*Mi_create)(const void* facUser, unsigned int facUserSize, HostMachine* hm);
-		void (*Mi_destroy)(Mi*);
+		void (*Mi_destroy)(Mi* m);
 		
-		MachineInfo* (*Mi_getInfo)(Mi*);
-		void (*Mi_init)(Mi*);
+		MachineInfo* (*Mi_getInfo)(Mi* m);
+		void (*Mi_init)(Mi* m);
 		
-		void (*Mi_changeParam)(Mi*, ParamTag tag, double value);
-		void (*Mi_work)(Mi*, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
-		MiNote* (*Mi_noteOn)(Mi*, double pitch, double velocity);
-		void (*Mi_noteOff)(Mi*, MiNote*);
+		void (*Mi_changeParam)(Mi* m, ParamTag tag, double value);
+		void (*Mi_work)(Mi* m, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+		MiNote* (*Mi_noteOn)(Mi* m, double pitch, double velocity);
+		void (*MiNote_off)(MiNote* n);
 		
-		Variant (*Mi_callScriptFunction)(Mi*, int id, const ScriptValue** args, int numargs);
+		Variant (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
 		
-		MiPattern* (*MiPattern_create)(Mi*, double length);
-		void (*MiPattern_destroy)(MiPattern*);
-		void (*Mi_playPattern)(Mi*, SequenceTrack* track, MiPattern* pattern, double startpos);
+		MiPattern* (*Mi_createPattern)(Mi* m, double length);
+		void (*MiPattern_destroy)(MiPattern* p);
+		void (*MiPattern_play)(MiPattern* p, SequenceTrack* track, double startpos);
+		void (*MiPattern_stop)(MiPattern* p, SequenceTrack* track);
 	};
 	
 	////////////////////////////////////////////////////////////////////
 
+	/** Callbacks provided by the host. Use these functions via the global g_host variable. */
 	struct HostFunctions
 	{
+		/** Get the plugin API version of the host.
+			\sa version */
 		unsigned int (*getHostVersion)();
+
+		/** Write a string to the host's debug output. The DebugPrint class provides a convenient wrapper
+			for this function. */
 		void (*debugPrint)(const char* msg);
 		
+		/** Register a machine provided by your plugin. Call this in your implementation of
+			CosecantPlugin::enumerateFactories.
+			\param list the argument to CosecantPlugin::enumerateFactories
+			\param id a unique machine identifier, e.g. "btdsys/awesomesynth"
+			\param desc a human-readable machine name, e.g. "BTDSys AwesomeSynth"
+			\param user a pointer to data that will be passed to your CosecantPlugin::createMachine function.
+				Note that the data is copied, and in general the actual pointer you pass here will be different
+				from the pointer passed back to you. If you do not need any data, this can be \p NULL.
+			\param userSize the length, in bytes, of the data pointed to by \p user. If \p user points to a string,
+				remember to allow for the null terminator. Pass \p 0 if and only if user is \p NULL.
+			*/
 		void (*registerMiFactory)(MiFactoryList* list,
 			const char* id, const char* desc, void* user, unsigned int userSize);
 
+		/** Get the TimeInfo structure associated with this machine. */
 		const TimeInfo* (*getTimeInfo)(HostMachine*);
 		
+		/** Register a function that can be called from your machine's script. A function named \p name will be
+			added to your main script object's \p cscFunctions member; calling this function will call your
+			Mi::callScriptFunction to be called.
+			\param name the name of the function. This must be a valid QtScript identifier.
+			\param id the integer identifier passed to Mi::callScriptFunction
+			*/
 		void (*registerScriptFunction)(HostMachine*, const char* name, int id);
 		
-		bool (*lockMutex)(HostMachine*);
-		bool (*unlockMutex)(HostMachine*);
+		/** Lock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
+			\returns \p ctrue if the mutex was locked, \p cfalse if the lock timed out. */
+		cbool (*lockMutex)(HostMachine*);
+
+		/** Unlock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
+			\returns \p ctrue
+		*/
+		cbool (*unlockMutex)(HostMachine*);
+
+		cbool (*ScriptValue_isNull)(const ScriptValue*);
+		cbool (*ScriptValue_isValid)(const ScriptValue*);
+
+		cbool (*ScriptValue_isNumber)(const ScriptValue*);
+		int (*ScriptValue_toInt)(const ScriptValue*);
+		double (*ScriptValue_toDouble)(const ScriptValue*);
+
+		cbool (*ScriptValue_isString)(const ScriptValue*);
+		int (*ScriptValue_toString)(const ScriptValue*, char* buf, int bufsize);
+
+		Mi* (*ScriptValue_toMi)(const ScriptValue*);
+		MiPattern* (*ScriptValue_toMiPattern)(const ScriptValue*);
 	};
 	
+	/** A global instance of HostFunctions, initialised when your plugin is loaded.
+		\sa implementation of csc_setHostFunctions in cosecant_api.cpp */
 	extern HostFunctions* g_host;
 	
 	/////////////////////////////////////////////////////////////////////////////
@@ -304,10 +364,20 @@ namespace CosecantAPI
 		virtual void noteOff() = 0;
 	};
 
+	/** The base class for your machine's patterns. */
 	class MiPattern
 	{
 	public:
+		/** Start this pattern playing.
+			\param track the sequence track on which this pattern plays
+			\param startpos the starting position in beats. Do \em not assume that this is in the range [0, length).
+				Because of the way Cosecant calculates pattern start times, it is more likely to be in the range
+				(-beats_per_sample, length+beats_per_sample), but do not assume this either. */
 		virtual void play(SequenceTrack* track, double startpos) = 0;
+
+		/** Stop this pattern playing.
+			\param track the sequence track on which this pattern plays
+		*/
 		virtual void stop(SequenceTrack* track) = 0;
 	};
 
@@ -335,15 +405,42 @@ namespace CosecantAPI
 
 	////////////////////////////////////////////////////////////////////////////
 
+	/** A convenience wrapper for HostFunctions::debugPrint. An instance of this class behaves much like an STL
+		output stream. Note that nothing is actually printed until the instance is destroyed.
+
+		Example usage:
+		\code
+DebugPrint() << "The value of x is" << x;
+		\endcode
+	*/
 	class DebugPrint
 	{
 	public:
 		DebugPrint() : m_space(true) {}
 		~DebugPrint() { g_host->debugPrint(m_ss.str().c_str()); }
 		
+		/** Get whether a space is added between printed items. \sa setSpace */
 		bool getSpace() { return m_space; }
+
+		/** Set whether a space is added between printed items. The default is \p true. For example:
+			\code
+int answer = 42;
+{
+	DebugPrint d;
+	d.setSpace(true);
+	d << "The answer is" << answer; // prints "The answer is 42"
+}
+{
+	DebugPrint d;
+	d.setSpace(false);
+	d << "The answer is" << answer; // prints "The answer is42"
+}
+			\endcode
+		*/
 		void setSpace(bool space) { m_space = space; }
 		
+		/** Write an item to the stream. The item can be any type supported by \p std::ostringstream,
+			and you can add support for your own types in the same way. */
 		template<typename T> DebugPrint& operator<<(const T& v)
 		{
 			m_ss << v;
@@ -356,14 +453,31 @@ namespace CosecantAPI
 		bool m_space;
 	};
 	
+	/**	A RAII locker for a machine's mutex. This saves you the effort of remembering to unlock the mutex. Simply
+		create an instance of this class when you want to lock the mutex, and the mutex will be unlocked once that
+		instance falls out of scope.
+		\code
+{
+	MutexLock lock(m_hm);
+	// Now the mutex is locked
+	doSomething();
+}
+// Now the mutex is unlocked
+		\endcode
+		
+		Note that the mutex is recursive: it is safe to lock the mutex if it is already locked by this thread. */
 	class MutexLock
 	{
 	public:
+		/** This exception is thrown if the mutex lock in the constructor times out. */
 		class Timeout : public std::exception {};
 		
+		/** The constructor. If the lock times out (because some other thread keeps the mutex locked for too
+			long), an exception of class Timeout is thrown. Make sure that this eventuality will not put your machine
+			into an inconsistent state. */
 		MutexLock(HostMachine* hm) : m_hm(hm)
 		{
-			m_locked = g_host->lockMutex(m_hm);
+			m_locked = (g_host->lockMutex(m_hm) != cfalse);
 			if (!m_locked) throw Timeout();
 		}
 		
@@ -385,10 +499,21 @@ namespace CosecantAPI
 #endif
 
 #ifndef COSECANT_API_HOST
+/** Functions that must be implemented by your plugin. The implementation of csc_getPluginFunctions in
+	cosecant_api.cpp returns pointers to these functions to the host. */
 namespace CosecantPlugin
 {
-	// Your plugin must implement these
+	/** Get a list of the machines provided by this plugin. Here, your implementation should call
+		CosecantAPI::HostFunctions::registerMiFactory one or more times.
+		If your plugin is a loader for another plugin format, this is the appropriate place to scan for plugins. */
 	void enumerateFactories(CosecantAPI::MiFactoryList* list);
+
+	/** Create a machine. Here you should create and return a new instance of your machine class (using \p new).
+		\param facUser a pointer to a copy of the user data passed to CosecantAPI::HostFunctions::registerMiFactory,
+			or \p NULL if no data was passed
+		\param facUserSize the size, in bytes, of the data pointed to by \p facUser
+		\param hm a pointer to the host machine, to be passed to your machine class's constructor
+		\returns a \p new instance of your machine class */
 	CosecantAPI::Mi* createMachine(const void* facUser, unsigned int facUserSize, CosecantAPI::HostMachine* hm);
 };
 #endif

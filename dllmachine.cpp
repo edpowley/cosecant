@@ -131,7 +131,7 @@ QScriptValue Mac::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, in
 		}
 		argptrs << NULL;
 
-		Variant ret = m_dll->m_funcs->Mi_callScriptFunction(m_mi, id, argptrs.data(), ctx->argumentCount());
+		Variant ret = m_dll->m_funcs->Mi_callScriptFunction(m_mi, id, argptrs.data(), args.length());
 		return variantToScriptValue(ret);
 	}
 	
@@ -143,8 +143,8 @@ QScriptValue Mac::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, in
 Ptr<Sequence::Pattern> Mac::createPatternImpl(double length)
 {
 	MiPattern* mip = NULL;
-	if (m_dll->m_funcs->MiPattern_create)
-		mip = m_dll->m_funcs->MiPattern_create(m_mi, length);
+	if (m_dll->m_funcs->Mi_createPattern)
+		mip = m_dll->m_funcs->Mi_createPattern(m_mi, length);
 	
 	if (mip)
 		return new Pattern(this, mip, length);
@@ -161,4 +161,16 @@ Pattern::~Pattern()
 {
 	if (m_dll->m_funcs->MiPattern_destroy)
 		m_dll->m_funcs->MiPattern_destroy(m_mip);
+}
+
+void Pattern::play(Sequence::Track* track, double startpos)
+{
+	if (m_dll->m_funcs->MiPattern_play)
+		m_dll->m_funcs->MiPattern_play(m_mip, track, startpos);
+}
+
+void Pattern::stop(Sequence::Track* track)
+{
+	if (m_dll->m_funcs->MiPattern_stop)
+		m_dll->m_funcs->MiPattern_stop(m_mip, track);
 }

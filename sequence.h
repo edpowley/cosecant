@@ -9,6 +9,8 @@ class SongLoadContext;
 
 namespace Sequence
 {
+	class Track;
+
 	class Pattern : public ObjectWithUuid
 	{
 		friend class PatternEditor;
@@ -30,6 +32,9 @@ namespace Sequence
 		void showEditor();
 
 		Machine* m_mac;
+
+		virtual void play(Track* track, double startpos) = 0;
+		virtual void stop(Track* track) = 0;
 
 	signals:
 		void signalAdd();

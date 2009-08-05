@@ -47,16 +47,71 @@ static void registerScriptFunction(HostMachine* mac, const char* name, int id)
 	mac->addScriptFunction(name, id);
 }
 
-static bool lockMutex(HostMachine* mac)
+static cbool lockMutex(HostMachine* mac)
 {
-	return mac->m_mutex.tryLock(1000);
+	return mac->m_mutex.tryLock(1000) ? ctrue : cfalse;
 }
 
-static bool unlockMutex(HostMachine* mac)
+static cbool unlockMutex(HostMachine* mac)
 {
 	mac->m_mutex.unlock();
-	return true;
+	return ctrue;
 }
+
+static cbool ScriptValue_isNull(const ScriptValue* v)
+{
+	return v->isNull() ?ctrue:cfalse;
+}
+
+static cbool ScriptValue_isValid(const ScriptValue* v)
+{
+	return v->isValid() ?ctrue:cfalse;
+}
+
+static cbool ScriptValue_isNumber(const ScriptValue* v)
+{
+	return v->isNumber() ?ctrue:cfalse;
+}
+
+static int ScriptValue_toInt(const ScriptValue* v)
+{
+	return v->toInt32();
+}
+
+static double ScriptValue_toDouble(const ScriptValue* v)
+{
+	return v->toNumber();
+}
+
+static cbool ScriptValue_isString(const ScriptValue* v)
+{
+	return v->isString() ?ctrue:cfalse;
+}
+
+static int ScriptValue_toString(const ScriptValue* v, char* buf, int bufsize)
+{
+	return returnString(v->toString(), buf, bufsize);
+}
+
+static Mi* ScriptValue_toMi(const ScriptValue* v)
+{
+	return NULL;
+}
+
+static MiPattern* ScriptValue_toMiPattern(const ScriptValue* v)
+{
+	QObject* qo = v->toQObject();
+	if (qo)
+	{
+		if (DllMachine::Pattern* dllpat = dynamic_cast<DllMachine::Pattern*>(qo))
+		{
+			return dllpat->getMiPattern();
+		}
+	}
+
+	return NULL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -87,6 +142,15 @@ static HostFunctions g_hostFuncs =
 	registerScriptFunction,
 	lockMutex,
 	unlockMutex,
+	ScriptValue_isNull,
+	ScriptValue_isValid,
+	ScriptValue_isNumber,
+	ScriptValue_toInt,
+	ScriptValue_toDouble,
+	ScriptValue_isString,
+	ScriptValue_toString,
+	ScriptValue_toMi,
+	ScriptValue_toMiPattern,
 };
 
 HostFunctions* CosecantAPI::g_host = &g_hostFuncs;

@@ -5,6 +5,7 @@
 #include "eventlist.h"
 #include "perfclock.h"
 #include "song.h"
+#include "seqplay.h"
 
 using namespace WorkUnit;
 
@@ -134,7 +135,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 
 		sendParamChanges();
 
-		// Find break points (points where param pins change)
+		// Find break points (points where something changes)
 		std::set<int> breakpoints;
 		breakpoints.insert(lastframe);
 
@@ -161,8 +162,17 @@ void WorkMachine::work(int firstframe, int lastframe)
 			}
 		}
 
+		static const SeqPlayEventMap emptySpem;
+		const SeqPlayEventMap& spem = SeqPlay::get().m_events.value(m_machine, emptySpem);
+
+		for (SeqPlayEventMap::const_iterator iter = spem.begin(); iter != spem.end(); ++iter)
+		{
+			breakpoints.insert(iter.key());
+		}
+
 		// Do the work
 		int frame = firstframe;
+		SeqPlayEventMap::const_iterator spemIter = spem.begin();
 		BOOST_FOREACH(int breakpoint, breakpoints)
 		{
 			// Param pins
@@ -172,6 +182,22 @@ void WorkMachine::work(int firstframe, int lastframe)
 				{
 					m_machine->changeParam(ppb.tag, ppb.iter->second);
 					++ ppb.iter;
+				}
+			}
+
+			// Seq play events
+			for (; spemIter != spem.end() && spemIter.key() == frame; ++spemIter)
+			{
+				const SeqPlayEvent& spe = spemIter.value();
+				switch (spe.m_type)
+				{
+				case SeqPlayEvent::patternStart:
+					spe.m_patternStart.pattern->play(spe.m_patternStart.track, spe.m_patternStart.pos);
+					break;
+
+				case SeqPlayEvent::patternStop:
+					spe.m_patternStop.pattern->stop(spe.m_patternStop.track);
+					break;
 				}
 			}
 

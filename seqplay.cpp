@@ -155,6 +155,7 @@ void SeqTrackPlay::onRemoveClip(const Ptr<Sequence::Clip>& clip)
 	{
 		SeqPlayEvent spe(SeqPlayEvent::patternStop);
 		spe.m_patternStop.track = m_track;
+		spe.m_patternStop.pattern = m_playingClip->m_pattern;
 		m_pendingEvents.append(spe);
 		m_playingClip = NULL;
 	}
@@ -186,6 +187,7 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 		{
 			SeqPlayEvent spe(SeqPlayEvent::patternStop);
 			spe.m_patternStop.track = m_track;
+			spe.m_patternStop.pattern = m_playingClip->m_pattern;
 			m_events.insert(firstframe, spe);
 		}
 		m_playingClip = NULL;
@@ -200,6 +202,7 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 			int f = firstframe + (int)floor( (m_playingClip->getEndTime() - playpos) / m_sp->m_beatsPerSample );
 			SeqPlayEvent spe(SeqPlayEvent::patternStop);
 			spe.m_patternStop.track = m_track;
+			spe.m_patternStop.pattern = m_playingClip->m_pattern;
 			m_events.insert(f, spe);
 			m_playingClip = NULL;
 

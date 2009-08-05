@@ -25,6 +25,8 @@ Application& Application::initSingleton(int& argc, char** argv)
 Application::Application(int& argc, char** argv)
 : QApplication(argc, argv)
 {
+	qInstallMsgHandler(&Application::textMessageHandler);
+
 	QPixmap splashpic(":/CosecantMainWindow/images/splash.png");
 	{
 		QPainter painter(&splashpic);
@@ -124,6 +126,21 @@ void Application::setupAudio()
 	}
 }
 
+static QScriptValue myprint(QScriptContext* ctx, QScriptEngine* eng)
+{
+	QString str;
+
+	for (int i=0; i<ctx->argumentCount(); i++)
+	{
+		if (i>0) str.append(" ");
+		str.append(ctx->argument(i).toString());
+	}
+
+	qDebug(str.toAscii());
+
+	return QScriptValue::UndefinedValue;
+}
+
 void Application::setupScriptEngine()
 {
 	m_scriptEngine = new QScriptEngine(this);
@@ -141,7 +158,7 @@ void Application::setupScriptEngine()
 
 	attachScriptDebugger();
 
-	qDebug() << m_scriptEngine->evaluate("'hello'").toInteger();
+	m_scriptEngine->globalObject().setProperty("print", m_scriptEngine->newFunction(myprint));
 }
 
 void Application::onScriptSuspended()
@@ -152,4 +169,22 @@ void Application::onScriptSuspended()
 void Application::onScriptResumed()
 {
 	m_mainWindow->setEnabled(true);
+}
+
+void Application::textMessageHandler(QtMsgType type, const char *msg)
+{
+	QString str;
+
+	switch (type)
+	{
+	case QtDebugMsg:	str = "Dbg: "; break;
+	case QtWarningMsg:	str = "Wrn: "; break;
+	case QtCriticalMsg:	str = "Crt: "; break;
+	case QtFatalMsg:	str = "Ftl: "; break;
+	default:			str = "???: "; break;
+	}
+
+	str.append(msg);
+	str.append("\n");
+	OutputDebugStringA(str.toAscii());
 }

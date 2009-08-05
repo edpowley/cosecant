@@ -22,6 +22,7 @@ struct SeqPlayEvent
 	struct PatternStop
 	{
 		Sequence::Track* track;
+		Sequence::Pattern* pattern;
 	};
 
 	union
@@ -32,7 +33,7 @@ struct SeqPlayEvent
 	};
 };
 
-typedef QMap<int, SeqPlayEvent> SeqPlayEventMap;
+typedef QMultiMap<int, SeqPlayEvent> SeqPlayEventMap;
 
 class SeqTrackPlay : public Object
 {

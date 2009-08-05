@@ -26,15 +26,8 @@ static QScriptValue MachineScriptFunctionCaller(QScriptContext* ctx, QScriptEngi
 {
 	Machine* mac = dynamic_cast<Machine*>(ctx->thisObject().property("cscMachine").toQObject());
 	ASSERT(mac != NULL);
-
-/*	ScriptArgumentsImpl args(ctx);
-	Script::ValuePtr vp = mac->getMi()->callScriptFunction(ctx->argument(0).toInt32(), &args);
-	ScriptValueImpl* vi = dynamic_cast<ScriptValueImpl*>(vp.c_ptr());
-	ASSERT(vi != NULL);
-	return vi->getQValue();
-	*/
-
-	return QScriptValue::NullValue;
+	int id = ctx->callee().data().toInt32();
+	return mac->callScriptFunction(ctx, eng, id);
 }
 
 void Machine::init()
@@ -62,6 +55,7 @@ void Machine::init()
 	if (m_info->script)
 	{
 		QScriptEngine* se = Application::get().getScriptEngine();
+		se->pushContext();
 
 		QScriptValue ctor = se->evaluate(
 			m_info->script,
@@ -76,11 +70,13 @@ void Machine::init()
 		if (m_scriptObject.isObject())
 		{
 			m_scriptFunctionObject = se->newObject();
-			m_scriptObject.setProperty("cscFunctions", m_scriptFunctionObject);
-			QScriptValue caller = se->newFunction(MachineScriptFunctionCaller);
-			m_scriptFunctionObject.setProperty("cscCall", caller);
-			m_scriptFunctionObject.setProperty("cscMachine", se->newQObject(this));
+			m_scriptObject.setProperty("cscFunctions", m_scriptFunctionObject,
+				QScriptValue::ReadOnly | QScriptValue::Undeletable);
+			m_scriptFunctionObject.setProperty("cscMachine", se->newQObject(this),
+				QScriptValue::ReadOnly | QScriptValue::Undeletable);
 		}
+
+		se->popContext();
 	}
 
 	qDebug() << "m_scriptObject =" << m_scriptObject.toString();
@@ -93,16 +89,11 @@ void Machine::addScriptFunction(const QString& name, int id)
 	if (m_scriptFunctionObject.isObject())
 	{
 		QScriptEngine* se = Application::get().getScriptEngine();
-		QScriptValue func = se->evaluate(
-			QString(
-				"function()"
-				"{"
-				"	argarray = [%1].concat(Array.prototype.slice.call(arguments, 0));"
-				"	return this.cscCall.apply(this, argarray);"
-				"}"
-			).arg(id) );
 
-		m_scriptFunctionObject.setProperty(name, func);
+		QScriptValue func = se->newFunction(MachineScriptFunctionCaller);
+		func.setData(id);
+
+		m_scriptFunctionObject.setProperty(name, func, QScriptValue::ReadOnly | QScriptValue::Undeletable);
 	}
 }
 
@@ -342,10 +333,15 @@ QWidget* Machine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& patter
 {
 	if (m_scriptObject.isObject())
 	{
+		QScriptEngine* se = m_scriptObject.engine();
+
 		QScriptValue peCtor = m_scriptObject.property("cscPatternEditor");
 		if (!peCtor.isValid()) throw Error("Script object has no cscPatternEditor property");
 
-		QScriptValue pev = peCtor.construct();
+		QScriptValue patv = se->newQObject(
+			pattern, QScriptEngine::QtOwnership, QScriptEngine::ExcludeDeleteLater);
+
+		QScriptValue pev = peCtor.construct(QScriptValueList() << m_scriptObject << patv);
 		if (pev.engine()->hasUncaughtException())
 		{
 			throw Error(QString("Uncaught exception in cscPatternEditor:\n%1").arg(pev.toString()));

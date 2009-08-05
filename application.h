@@ -38,4 +38,6 @@ protected:
 	void setupI18n();
 	void setupAudio();
 	void setupScriptEngine();
+
+	static void textMessageHandler(QtMsgType type, const char* msg);
 };
