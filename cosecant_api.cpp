@@ -38,7 +38,7 @@ namespace PluginFuncImpl
 	void MiNote_off(MiNote* n)
 	{ n->noteOff(); }
 	
-	Variant Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
+	ScriptValue* Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
 	{ return m->callScriptFunction(id, args, numargs); }
 	
 	MiPattern* Mi_createPattern(Mi* m, double length)

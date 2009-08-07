@@ -59,7 +59,7 @@ public:
 	MachineInfo* getInfo();
 	void init();
 
-	Variant callScriptFunction(int id, const ScriptValue** args, int numargs);
+	ScriptValue* callScriptFunction(int id, const ScriptValue** args, int numargs);
 
 	void changeParam(ParamTag tag, double value);
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
@@ -71,6 +71,9 @@ public:
 
 	double m_beatsPerFrame;
 
+	int getNumTracks() { return m_nTracks; }
+
 protected:
 	PatternPlayerMap m_patternPlayers;
+	int m_nTracks;
 };

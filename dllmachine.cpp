@@ -131,8 +131,19 @@ QScriptValue Mac::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, in
 		}
 		argptrs << NULL;
 
-		Variant ret = m_dll->m_funcs->Mi_callScriptFunction(m_mi, id, argptrs.data(), args.length());
-		return variantToScriptValue(ret);
+		QScriptValue* pret = m_dll->m_funcs->Mi_callScriptFunction(m_mi, id, argptrs.data(), args.length());
+		QScriptValue ret;
+		if (pret)
+		{
+			ret = *pret;
+			delete pret;
+		}
+		else
+		{
+			ret = QScriptValue::NullValue;
+		}
+
+		return ret;
 	}
 	
 	return QScriptValue::NullValue;

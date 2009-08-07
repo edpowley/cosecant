@@ -216,36 +216,6 @@ namespace CosecantAPI
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	/** A variable that can hold several different types of value. */
-	struct Variant
-	{
-		enum Type
-		{
-			tNull, tInt, tDouble, tString,
-		};
-		
-		unsigned char type;
-		
-		union
-		{
-			int dInt;
-			double dDouble;
-			const char* dString;
-		};
-		
-		/** Constructs a variant of type tNull. */
-		Variant() : type(tNull) {}
-		
-		/** Constructs a variant of type tInt. */
-		Variant(int v)			: type(tInt)	{ dInt = v; }
-
-		/** Constructs a variant of type tDouble. */
-		Variant(double v)		: type(tDouble)	{ dDouble = v; }
-
-		/** Constructs a variant of type tString. */
-		Variant(const char* v)	: type(tString)	{ dString = v; }
-	};
-	
 	struct PinBuffer
 	{
 		void* reserved;
@@ -281,7 +251,7 @@ namespace CosecantAPI
 		MiNote* (*Mi_noteOn)(Mi* m, double pitch, double velocity);
 		void (*MiNote_off)(MiNote* n);
 		
-		Variant (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
+		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
 		
 		MiPattern* (*Mi_createPattern)(Mi* m, double length);
 		void (*MiPattern_destroy)(MiPattern* p);
@@ -346,8 +316,42 @@ namespace CosecantAPI
 		cbool (*ScriptValue_isString)(const ScriptValue*);
 		int (*ScriptValue_toString)(const ScriptValue*, char* buf, int bufsize);
 
+		cbool (*ScriptValue_isArray)(const ScriptValue*);
+		unsigned int (*ScriptValue_getArrayLength)(const ScriptValue*);
+
+		/** Get the array element at the specified index. Note that you take ownership of the return value,
+			so it is your responsibility to call ScriptValue_destroy() when you are finished with it.
+			\param sv the array
+			\param index the index into the array
+			\returns the index'th element of sv. If there is no such element, an invalid value is returned. */
+		const ScriptValue* (*ScriptValue_getArrayElement)(const ScriptValue* sv, unsigned int index);
+
 		Mi* (*ScriptValue_toMi)(const ScriptValue*);
 		MiPattern* (*ScriptValue_toMiPattern)(const ScriptValue*);
+
+		ScriptValue* (*ScriptValue_createNull)();
+		ScriptValue* (*ScriptValue_createInvalid)();
+		ScriptValue* (*ScriptValue_createInt)(int v);
+		ScriptValue* (*ScriptValue_createDouble)(double v);
+		ScriptValue* (*ScriptValue_createString)(const char* v);
+		void (*ScriptValue_destroy)(const ScriptValue*);
+
+		/** Create a new QtScript Array object.
+			\param length the initial length (number of elements) of the array. Note that the array can be expanded
+				by inserting elements beyond its current length. If you do not know the array length in advance, it
+				is acceptable to pass 0 here.
+			\returns a pointer to the new object, which you own. */
+		ScriptValue* (*ScriptValue_createArray)(unsigned int length);
+
+		/** Set the array element at the specified index. \p value is copied and the copy is inserted into the array,
+			so you may safely destroy \p value after calling this function. In fact, the \p takeOwnership parameter
+			allows this function to destroy \p value so you don't have to.
+			\param arr an array, previously created with ScriptValue_createArray()
+			\param index the index into the array
+			\param value the new value of the index'th element of arr
+			\param takeOwnership if \p ctrue, this function will destroy \p value before returning. */
+		void (*ScriptValue_setArrayElement)(
+			ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership);
 	};
 	
 	/** A global instance of HostFunctions, initialised when your plugin is loaded.
@@ -381,6 +385,7 @@ namespace CosecantAPI
 		virtual void stop(SequenceTrack* track) = 0;
 	};
 
+	/** The base class for your machine. */
 	class Mi
 	{
 	public:
@@ -394,8 +399,17 @@ namespace CosecantAPI
 		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
 		virtual MiNote* noteOn(double pitch, double velocity) { return NULL; }
 
-		virtual Variant callScriptFunction(int id, const ScriptValue** args, int numargs)
-		{ return Variant(); }
+		/** Your machine's script can call this.
+			\param id the integer function id, as passed to HostFunctions::registerScriptFunction
+			\param args the arguments passed to the function. This array is NULL-terminated, i.e.
+				<tt>args[numargs] == NULL</tt>. The host owns the arguments; you should not store or destroy them.
+			\param numargs the number of arguments passed to the function
+			\returns a new script value, probably created by one of the \p ScriptValue_create functions in
+				HostFunctions. The host takes ownership of the return value and destroys it, so you should not
+				store it. Returning a \p NULL pointer is the same as returning a null script value.
+		*/
+		virtual ScriptValue* callScriptFunction(int id, const ScriptValue** args, int numargs)
+		{ return NULL; }
 
 		virtual MiPattern* createPattern(double length) { return NULL; }
 

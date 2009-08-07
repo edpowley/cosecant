@@ -9,5 +9,3 @@ namespace MachineExports
 	typedef void (*csc_setHostFunctions)(HostFunctions*);
 	typedef CosecantAPI::PluginFunctions* (*csc_getPluginFunctions)();
 };
-
-QScriptValue variantToScriptValue(const Variant& var);

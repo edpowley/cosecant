@@ -15,15 +15,17 @@ function PatternEditor(machine, pattern)
 	this.alignment = Qt.AlignLeft | Qt.AlignTop;
 	
 	var numrows = this.cscFunctions.getNumRows(this.m_pattern);
-	print("numrows =", numrows);
+	var numtracks = this.cscFunctions.getNumTracks();
 	
-	this.m_cells = new Array();
+	this.m_cells = new Array(numrows);
+	var cell;
 	for (r=0; r<numrows; r++)
 	{
-		this.m_cells[r] = new Array();
-		for (t=0; t<4; t++)
+		print("row", r, "of", numrows);
+		this.m_cells[r] = new Array(numtracks);
+		for (t=0; t<numtracks; t++)
 		{
-			var cell = new Cell(this, r, t);
+			cell = new Cell(this, r, t);
 			this.m_cells[r][t] = cell;
 			this.m_scene.addItem(cell);
 			cell.setPos((t+1) * this.m_fontWidth * 7, (r+1) * this.m_fontHeight);
@@ -67,15 +69,16 @@ Cell.prototype.noteToStr = function(note)
 
 Cell.prototype.updateFromMachine = function()
 {
-	var note = this.m_pe.cscFunctions.getCellNote(this.m_pe.m_pattern, this.m_row, this.m_track);
-	var vel  = this.m_pe.cscFunctions.getCellVel (this.m_pe.m_pattern, this.m_row, this.m_track);
+	var celldata = this.m_pe.cscFunctions.getCell(this.m_pe.m_pattern, this.m_row, this.m_track);
 	
-	var notetext = this.noteToStr(note);
+	var notetext = this.noteToStr(celldata[0]);
+	
+	var vel = celldata[1];
 	var veltext;
 	if (vel == -1)
 		veltext = "..";
 	else if (vel >= 0 && vel <= 255)
-		veltext = vel.toString(16);
+		veltext = vel.toString(16).toUpperCase();
 	else
 		veltext = "?!";
 	

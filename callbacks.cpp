@@ -7,6 +7,7 @@ using namespace CosecantAPI;
 #include "song.h"
 #include "dllmachine.h"
 #include "seqplay.h"
+#include "application.h"
 
 static int returnString(const QString& s, char* buf, int buf_size)
 {
@@ -93,6 +94,21 @@ static int ScriptValue_toString(const ScriptValue* v, char* buf, int bufsize)
 	return returnString(v->toString(), buf, bufsize);
 }
 
+static cbool ScriptValue_isArray(const ScriptValue* v)
+{
+	return v->isArray() ?ctrue:cfalse;
+}
+
+static unsigned int ScriptValue_getArrayLength(const ScriptValue* v)
+{
+	return v->property("length").toInt32();
+}
+
+static const ScriptValue* ScriptValue_getArrayElement(const ScriptValue* v, unsigned int index)
+{
+	return new QScriptValue(v->property(index));
+}
+
 static Mi* ScriptValue_toMi(const ScriptValue* v)
 {
 	return NULL;
@@ -112,26 +128,48 @@ static MiPattern* ScriptValue_toMiPattern(const ScriptValue* v)
 	return NULL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////
-
-QScriptValue variantToScriptValue(const Variant& var)
+static ScriptValue* ScriptValue_createNull()
 {
-	switch (var.type)
-	{
-	case Variant::tInt:
-		return var.dInt;
-	case Variant::tDouble:
-		return var.dDouble;
-	case Variant::tString:
-		return var.dString;
-	case Variant::tNull:
-	default:
-		return QScriptValue::NullValue;
-	}
+	return new QScriptValue(QScriptValue::NullValue);
 }
 
-/////////////////////////////////////////////////////////////////////////
+static ScriptValue* ScriptValue_createInvalid()
+{
+	return new QScriptValue(QScriptValue::UndefinedValue);
+}
+
+static ScriptValue* ScriptValue_createInt(int v)
+{
+	return new QScriptValue(v);
+}
+
+static ScriptValue* ScriptValue_createDouble(double v)
+{
+	return new QScriptValue(v);
+}
+
+static ScriptValue* ScriptValue_createString(const char* v)
+{
+	return new QScriptValue(v);
+}
+
+static void ScriptValue_destroy(const ScriptValue* v)
+{
+	delete v;
+}
+
+static ScriptValue* ScriptValue_createArray(unsigned int length)
+{
+	return new QScriptValue(Application::get().getScriptEngine()->newArray(length));
+}
+
+static void ScriptValue_setArrayElement(ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership)
+{
+	arr->setProperty(index, *value);
+	if (takeOwnership) delete value;
+}
+
+///////////////////////////////////////////////////////////////////////////
 
 static HostFunctions g_hostFuncs =
 {
@@ -149,8 +187,19 @@ static HostFunctions g_hostFuncs =
 	ScriptValue_toDouble,
 	ScriptValue_isString,
 	ScriptValue_toString,
+	ScriptValue_isArray,
+	ScriptValue_getArrayLength,
+	ScriptValue_getArrayElement,
 	ScriptValue_toMi,
 	ScriptValue_toMiPattern,
+	ScriptValue_createNull,
+	ScriptValue_createInvalid,
+	ScriptValue_createInt,
+	ScriptValue_createDouble,
+	ScriptValue_createString,
+	ScriptValue_destroy,
+	ScriptValue_createArray,
+	ScriptValue_setArrayElement,
 };
 
 HostFunctions* CosecantAPI::g_host = &g_hostFuncs;

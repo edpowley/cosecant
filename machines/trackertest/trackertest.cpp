@@ -9,8 +9,8 @@ using namespace CosecantAPI;
 enum ScriptFunctions
 {
 	sf_getNumRows,
-	sf_getCellNote,
-	sf_getCellVel,
+	sf_getNumTracks,
+	sf_getCell,
 	sf_setCell,
 };
 
@@ -39,52 +39,55 @@ MachineInfo* TrackerTest::getInfo()
 	return &info;
 }
 
-TrackerTest::TrackerTest(HostMachine* hm) : Mi(hm)
+TrackerTest::TrackerTest(HostMachine* hm) : Mi(hm), m_nTracks(4)
 {
 }
 
 void TrackerTest::init()
 {
-	g_host->registerScriptFunction(m_hm, "getNumRows",	sf_getNumRows);
-	g_host->registerScriptFunction(m_hm, "getCellNote",	sf_getCellNote);
-	g_host->registerScriptFunction(m_hm, "getCellVel",	sf_getCellVel);
-	g_host->registerScriptFunction(m_hm, "setCell",		sf_setCell);
+	g_host->registerScriptFunction(m_hm, "getNumRows",		sf_getNumRows);
+	g_host->registerScriptFunction(m_hm, "getNumTracks",	sf_getNumTracks);
+	g_host->registerScriptFunction(m_hm, "getCell",			sf_getCell);
+	g_host->registerScriptFunction(m_hm, "setCell",			sf_setCell);
 }
 
-Variant TrackerTest::callScriptFunction(int id, const ScriptValue** args, int numargs)
+ScriptValue* TrackerTest::callScriptFunction(int id, const ScriptValue** args, int numargs)
 {
 	switch (id)
 	{
 	case sf_getNumRows:
 		{
-			if (numargs != 1) return Variant();
+			if (numargs != 1) return NULL;
 			Pattern* pat = dynamic_cast<Pattern*>(g_host->ScriptValue_toMiPattern(args[0]));
-			if (!pat) return Variant();
+			if (!pat) return NULL;
 
-			return pat->getNumRows();
+			return g_host->ScriptValue_createInt(pat->getNumRows());
 		}
 		break;
 
-	case sf_getCellNote:
-	case sf_getCellVel:
+	case sf_getNumTracks:
+		return g_host->ScriptValue_createInt(m_nTracks);
+
+	case sf_getCell:
 		{
-			if (numargs != 3) return Variant();
+			if (numargs != 3) return NULL;
 			Pattern* pat = dynamic_cast<Pattern*>(g_host->ScriptValue_toMiPattern(args[0]));
-			if (!pat) return Variant();
+			if (!pat) return NULL;
 			int row = g_host->ScriptValue_toInt(args[1]);
 			int track = g_host->ScriptValue_toInt(args[2]);
 			
-			Pattern::Cell cell; cell.note = 69; cell.vel = 69;
+			Pattern::Cell cell;
 			if (row >= 0 && row < pat->getNumRows())
 			{
 				if (track >= 0 && track < (int)pat->getRow(row).size())
 					cell = pat->getRow(row)[track];
 			}
 
-			if (id == sf_getCellNote)
-				return cell.note;
-			else
-				return cell.vel;
+			ScriptValue* ret = g_host->ScriptValue_createArray(2);
+			g_host->ScriptValue_setArrayElement(ret, 0, g_host->ScriptValue_createInt(cell.note), ctrue);
+			g_host->ScriptValue_setArrayElement(ret, 1, g_host->ScriptValue_createInt(cell.vel) , ctrue);
+
+			return ret;
 		}
 		break;
 
@@ -92,7 +95,7 @@ Variant TrackerTest::callScriptFunction(int id, const ScriptValue** args, int nu
 		break;
 	}
 
-	return Variant();
+	return NULL;
 }
 
 void TrackerTest::changeParam(ParamTag tag, double value)
@@ -133,7 +136,8 @@ void PatternPlayer::work(PinBuffer* outpins, int firstframe, int lastframe)
 
 Pattern::Pattern(TrackerTest* mi, double length) : m_mi(mi), m_length(length), m_subdiv(4)
 {
-	m_data.resize((int)ceil(m_length * m_subdiv));
+	Row row(m_mi->getNumTracks());
+	m_data.resize((int)ceil(m_length * m_subdiv), row);
 }
 
 void Pattern::play(SequenceTrack* track, double startpos)
