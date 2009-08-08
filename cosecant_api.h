@@ -35,6 +35,7 @@ namespace CosecantAPI
 		class HostMachine;
 		class ScriptValue;
 		class SequenceTrack;
+		class HostPinBuffer;
 #	endif
 
 	typedef unsigned long ParamTag;
@@ -218,7 +219,7 @@ namespace CosecantAPI
 
 	struct PinBuffer
 	{
-		void* reserved;
+		HostPinBuffer* hostbuf;
 
 		union
 		{
@@ -305,6 +306,8 @@ namespace CosecantAPI
 			\returns \p ctrue
 		*/
 		cbool (*unlockMutex)(HostMachine*);
+
+		void (*addParamChangeEvent)(PinBuffer* buf, int time, double value);
 
 		cbool (*ScriptValue_isNull)(const ScriptValue*);
 		cbool (*ScriptValue_isValid)(const ScriptValue*);

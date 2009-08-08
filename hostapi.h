@@ -5,6 +5,7 @@
 class MachineFactory;
 class Machine;
 namespace Sequence { class Track; };
+namespace WorkBuffer { class Base; };
 
 namespace CosecantAPI
 {
@@ -21,4 +22,6 @@ namespace CosecantAPI
 	typedef QScriptValue ScriptValue;
 	
 	typedef Sequence::Track SequenceTrack;
+
+	typedef WorkBuffer::Base HostPinBuffer;
 };

@@ -39,7 +39,7 @@ namespace WorkBuffer
 		virtual unsigned int getFlags() const { return s_flags; }
 
 		virtual PinBuffer getPinBuffer()
-		{ PinBuffer pb; pb.reserved = this; pb.f = &m_data[0]; return pb; }
+		{ PinBuffer pb; pb.hostbuf = this; pb.f = &m_data[0]; return pb; }
 
 		virtual void clearAll();
 		virtual void clear(int firstframe, int lastframe);
@@ -79,7 +79,7 @@ namespace WorkBuffer
 		ParamControl() : m_lastValue(0) {}
 
 		virtual PinBuffer getPinBuffer()
-		{ PinBuffer pb; pb.reserved = this; return pb; }
+		{ PinBuffer pb; pb.hostbuf = this; return pb; }
 
 		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::ParamControl(length); }
 
@@ -104,7 +104,7 @@ namespace WorkBuffer
 		SequenceEvents() {}
 
 		virtual PinBuffer getPinBuffer()
-		{ PinBuffer pb; pb.reserved = this; return pb; }
+		{ PinBuffer pb; pb.hostbuf = this; return pb; }
 
 		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::SequenceEvents(length); }
 

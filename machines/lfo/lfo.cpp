@@ -6,31 +6,44 @@
 class Lfo : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, InfoCallbacks* cb)
+	MachineInfo* getInfo()
 	{
-		info->setName("LFO")->setTypeHint(MachineTypeHint::control);
-		info->addOutPin(
-			cb->createPin()->setName("Output")->setType(SignalType::paramControl) );
+		static MachineInfo info;
 
-		ParamInfo::Group* params = info->getParams();
+		static bool initialised = false;
+		if (!initialised)
+		{
+			info.defaultName = "LFO";
+			info.typeHint = MachineTypeHint::control;
 
-		using namespace TimeUnit;
-		params->addParam(
-			cb->createTimeParam('sped')->setName("Speed")
-			->setRange(2, samples, 10, seconds)->setDefault(1, seconds)
-			->setInternalUnit(samples)
-			->addDisplayUnits(seconds | samples | beats | hertz)->setDefaultDisplayUnit(seconds)
-		);
+			using namespace TimeUnit;
+			static TimeParamInfo paraFreq;
+			paraFreq.p.tag = COSECANT_TAG('sped');
+			paraFreq.p.name = "Speed";
+			paraFreq.min.set(2, samples); paraFreq.max.set(10, seconds); paraFreq.def.set(1, seconds);
+			paraFreq.internalUnit = samples;
+			paraFreq.displayUnits = seconds | samples | beats | hertz;
+			paraFreq.defaultDisplayUnit = seconds;
 
-		params->addParam(
-			cb->createIntParam('step')->setName("Send step")
-			->setRange(1, 256)->setDefault(16)
-		);
+			static IntParamInfo paraStep;
+			paraStep.p.tag = COSECANT_TAG('step');
+			paraStep.p.name = "Send step";
+			paraStep.min = 1; paraStep.max = 256; paraStep.def = 16;
 
-		return true;
+			static const ParamInfo* params[] = { &paraFreq.p, &paraStep.p, NULL };
+			info.params.params = params;
+
+			static PinInfo outPin = { "Output", SignalType::paramControl };
+			static const PinInfo* outPins[] = { &outPin, NULL };
+			info.outPins = outPins;
+
+			initialised = true;
+		}
+
+		return &info;
 	}
 
-	Lfo(Callbacks* cb) : Mi(cb), m_phase(0), m_centre(0.5), m_amp(0.5),
+	Lfo(HostMachine* hm) : Mi(hm), m_phase(0), m_centre(0.5), m_amp(0.5),
 		m_sendphase(0), m_sendphasemax(32)
 	{
 		setPeriod(1.0);
@@ -60,7 +73,7 @@ public:
 		{
 			if (m_sendphase == 0)
 			{
-				m_cb->addParamChange(&outpins[0], i, m_centre + sin(m_phase) * m_amp);
+				g_host->addParamChangeEvent(&outpins[0], i, m_centre + sin(m_phase) * m_amp);
 			}
 
 			m_sendphase ++;
@@ -76,7 +89,12 @@ protected:
 	int m_sendphase, m_sendphasemax;
 };
 
-void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factories)
+void CosecantPlugin::enumerateFactories(MiFactoryList* list)
 {
-	factories["btdsys/lfo"] = new MiFactory_T<Lfo>;
+	g_host->registerMiFactory(list, "btdsys/lfo", "BTDSys LFO", NULL, 0);
+}
+
+Mi* CosecantPlugin::createMachine(const void*, unsigned int, HostMachine* hm)
+{
+	return new Lfo(hm);
 }

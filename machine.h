@@ -11,6 +11,8 @@ class Connection;
 
 class Pin : public ObjectWithUuid
 {
+	Q_OBJECT
+
 public:
 	enum Direction {in, out};
 
@@ -23,8 +25,11 @@ public:
 	Direction m_direction;
 
 	enum Side {top, right, bottom, left};
-	Side m_side;
-	float m_pos;
+	float getPos() { return m_pos; }
+	void setPos(float pos) { m_pos  = pos; signalPosChanged(); }
+	Side getSide() { return m_side; }
+	void setSide(Side side) { m_side = side; signalPosChanged(); }
+	
 	QString m_name;
 	SignalType::e m_type;
 	bool m_isParamPin;
@@ -36,10 +41,17 @@ public:
 	QPointF getAbsPos();
 	double getRotation() { return (int)m_side * 90.0; }
 
-	std::vector< Ptr<Connection> > m_connections;
+	QList< Ptr<Connection> > m_connections;
 
 	void load(class SongLoadContext& ctx, const QDomElement& el);
 	void save(const QDomElement& el);
+
+signals:
+	void signalPosChanged();
+
+protected:
+	Side m_side;
+	float m_pos;
 };
 
 ///////////////////////////////////////////////////////////////////////
@@ -77,6 +89,7 @@ namespace Parameter
 		Base(const Ptr<Machine>& mac) : m_mac(mac) {}
 		Ptr<Machine> getMachine() { return m_mac; }
 		QString getName() { return m_name; }
+		virtual ParamTag getTag() = 0;
 
 		void setName(const QString& name) { m_name = name; }
 
@@ -84,6 +97,10 @@ namespace Parameter
 		virtual void initParamStuff(Machine* mac) = 0;
 
 		virtual int addToParamEditor(QGridLayout* grid, int row) = 0;
+
+		virtual QMenu* populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions);
+
+		Ptr<Pin> m_paramPin;
 
 	protected:
 		Ptr<Machine> m_mac;
@@ -94,11 +111,14 @@ namespace Parameter
 	{
 	public:
 		Group(const Ptr<Machine>& mac, const ParamGroupInfo* info);
+		virtual ParamTag getTag() { return 0; }
 
 		virtual void initParamStuff(Machine* mac);
 
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 		void populateParamEditorGrid(QGridLayout* grid);
+
+		virtual QMenu* populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions);
 
 	protected:
 		QList< Ptr<Base> > m_params;
@@ -110,6 +130,7 @@ namespace Parameter
 
 	public:
 		Scalar(const Ptr<Machine>& mac, ParamTag tag);
+		virtual ParamTag getTag() { return m_tag; }
 
 		void setRange(double min, double max);
 		void setDefault(double def);
@@ -238,6 +259,9 @@ signals:
 
 	void signalRename(const QString& newname);
 	void signalChangeAppearance();
+
+	void signalAddPin(const Ptr<Pin>& pin);
+	void signalRemovePin(const Ptr<Pin>& pin);
 
 public:
 	void added() { signalAdd(); }

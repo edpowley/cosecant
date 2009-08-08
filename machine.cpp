@@ -45,8 +45,8 @@ void Machine::init()
 	if (m_info->flags & MachineFlags::hasNoteTrigger)
 	{
 		Ptr<Pin> pin = new Pin(this, Pin::in, SignalType::noteTrigger);
-		pin->m_side = Pin::top;
-		pin->m_pos = 0.5f;
+		pin->setSide(Pin::top);
+		pin->setPos(0.5f);
 		pin->m_name = "Note trigger";
 		m_inpins.push_back(pin);
 		m_noteTriggerPin = pin;
@@ -369,8 +369,8 @@ void Machine::initPins(Pin::Direction direction, const PinInfo** pins)
 	for (const PinInfo** i = pins; *i; ++i)
 	{
 		Ptr<Pin> pin = new Pin(this, direction, static_cast<SignalType::e>((*i)->type));
-		pin->m_side = side;
-		pin->m_pos = pinnum;
+		pin->setSide(side);
+		pin->setPos(pinnum);
 		pin->m_name = (*i)->name;
 		pinvector.push_back(pin);
 		++ pinnum;
@@ -386,7 +386,9 @@ void Machine::addPin(const Ptr<Pin>& pin)
 	else
 		m_outpins.push_back(pin);
 
-	autoArrangePins(pin->m_side);
+	signalAddPin(pin);
+
+	autoArrangePins(pin->getSide());
 
 	if (m_routing) m_routing->signalTopologyChange();
 }
@@ -396,7 +398,9 @@ void Machine::removePin(const Ptr<Pin>& pin)
 	vectorEraseFirst(m_inpins, pin);
 	vectorEraseFirst(m_outpins, pin);
 
-	autoArrangePins(pin->m_side);
+	signalRemovePin(pin);
+
+	autoArrangePins(pin->getSide());
 
 	if (m_routing) m_routing->signalTopologyChange();
 }
@@ -414,13 +418,13 @@ void Machine::autoArrangePins(Pin::Side side)
 	std::multimap< float, Ptr<Pin> > pins;
 	BOOST_FOREACH(const Ptr<Pin>& pin, m_inpins)
 	{
-		if (pin->m_side == side)
-			pins.insert(std::make_pair(pin->m_pos, pin));
+		if (pin->getSide() == side)
+			pins.insert(std::make_pair(pin->getPos(), pin));
 	}
 	BOOST_FOREACH(const Ptr<Pin>& pin, m_outpins)
 	{
-		if (pin->m_side == side)
-			pins.insert(std::make_pair(pin->m_pos, pin));
+		if (pin->getSide() == side)
+			pins.insert(std::make_pair(pin->getPos(), pin));
 	}
 
 	if (pins.empty())
@@ -431,7 +435,7 @@ void Machine::autoArrangePins(Pin::Side side)
 
 	for (std::multimap< float, Ptr<Pin> >::iterator iter = pins.begin(); iter != pins.end(); ++iter)
 	{
-		iter->second->m_pos = pos;
+		iter->second->setPos(pos);
 		pos += posstep;
 	}
 

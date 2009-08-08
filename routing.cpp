@@ -58,10 +58,9 @@ Ptr<Connection> Routing::createConnection(const Ptr<Pin> &pin1, const Ptr<Pin> &
 		);
 
 	// Don't create it if it already exists
-	for (std::vector< Ptr<Connection> >::iterator i = pin1->m_connections.begin();
-		i != pin1->m_connections.end(); ++i)
+	foreach (const Ptr<Connection>& c, pin1->m_connections)
 	{
-		if ((*i)->getPin1() == pin1 && (*i)->getPin2() == pin2)
+		if (c->getPin1() == pin1 && c->getPin2() == pin2)
 			throw CreateConnectionError("This connection already exists.");
 	}
 
@@ -81,8 +80,8 @@ void Routing::addConnection(const Ptr<Connection> &conn)
 
 void Routing::removeConnection(const Ptr<Connection> &conn)
 {
-	vectorEraseFirst(conn->getPin1()->m_connections, conn);
-	vectorEraseFirst(conn->getPin2()->m_connections, conn);
+	conn->getPin1()->m_connections.removeOne(conn);
+	conn->getPin2()->m_connections.removeOne(conn);
 	signalRemoveConnection(conn);
 	signalTopologyChangeIfNotInBatch();
 }
@@ -94,14 +93,13 @@ bool Routing::existsPathBetweenMachines(Machine* mac1, Machine* mac2, bool usefb
 	for (std::vector< Ptr<Pin> >::iterator pi = mac1->m_outpins.begin();
 		pi != mac1->m_outpins.end(); ++pi)
 	{
-		for (std::vector< Ptr<Connection> >::iterator ci = (*pi)->m_connections.begin();
-			ci != (*pi)->m_connections.end(); ++ci)
+		foreach (const Ptr<Connection>& c, (*pi)->m_connections)
 		{
 			// skip feedback connections
-			if (!usefb && (*ci)->m_feedback)
+			if (!usefb && c->m_feedback)
 				continue;
 
-			if (existsPathBetweenMachines((*ci)->getPin2()->m_machine, mac2, usefb))
+			if (existsPathBetweenMachines(c->getPin2()->m_machine, mac2, usefb))
 				return true;
 		}
 	}

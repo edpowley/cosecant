@@ -245,6 +245,27 @@ MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 	connect(
 		m_mac, SIGNAL(signalChangeAppearance()),
 		this, SLOT(slotUpdate()) );
+	connect(
+		m_mac, SIGNAL(signalAddPin(const Ptr<Pin>&)),
+		this, SLOT(onMachineAddPin(const Ptr<Pin>&)) );
+	connect(
+		m_mac, SIGNAL(signalRemovePin(const Ptr<Pin>&)),
+		this, SLOT(onMachineRemovePin(const Ptr<Pin>&)) );
+}
+
+void MachineItem::onMachineAddPin(const Ptr<Pin> &pin)
+{
+	m_editor->m_pinItemMap[pin] = new PinItem(m_editor, pin, this);
+}
+
+void MachineItem::onMachineRemovePin(const Ptr<Pin>& pin)
+{
+	std::map<Ptr<Pin>, PinItem*>::iterator iter = m_editor->m_pinItemMap.find(pin);
+	if (iter != m_editor->m_pinItemMap.end())
+	{
+		delete iter->second;
+		m_editor->m_pinItemMap.erase(iter);
+	}
 }
 
 void MachineItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
@@ -486,12 +507,128 @@ protected:
 	MachineTypeHint::e m_oldcolorhint, m_newcolorhint;
 };
 
+class AddParamPinCommand : public QUndoCommand
+{
+public:
+	AddParamPinCommand(const Ptr<Machine>& mac, const Ptr<Parameter::Base>& param)
+		: m_mac(mac), m_param(param), QUndoCommand(Editor::tr("add pin for parameter '%1'").arg(param->getName()))
+	{
+		m_pin = new Pin(m_mac, Pin::in, SignalType::paramControl);
+		m_pin->m_isParamPin = true;
+		m_pin->m_paramTag = m_param->getTag();
+		m_pin->setPos(2.0f);
+		m_pin->setSide(Pin::top);
+		m_pin->m_name = Editor::tr("Parameter '%1'").arg(m_param->getName());
+	}
+
+	virtual void redo()
+	{
+		m_mac->addPin(m_pin);
+		m_param->m_paramPin = m_pin;
+	}
+
+	virtual void undo()
+	{
+		m_param->m_paramPin = NULL;
+		m_mac->removePin(m_pin);
+	}
+
+protected:
+	Ptr<Machine> m_mac;
+	Ptr<Parameter::Base> m_param;
+	Ptr<Pin> m_pin;
+};
+
+class RemoveParamPinCommand : public QUndoCommand
+{
+public:
+	RemoveParamPinCommand(const Ptr<Machine>& mac, const Ptr<Parameter::Base>& param)
+		: m_routing(mac->m_routing), m_mac(mac), m_param(param), m_pin(param->m_paramPin),
+		QUndoCommand(Editor::tr("remove pin for parameter '%1'").arg(param->getName()))
+	{
+		m_conns = m_pin->m_connections;
+	}
+
+	virtual void redo()
+	{
+		Routing::ChangeBatch batch(m_routing);
+
+		foreach(const Ptr<Connection>& conn, m_conns)
+		{
+			m_routing->removeConnection(conn);
+		}
+
+		m_param->m_paramPin = NULL;
+		m_mac->removePin(m_pin);
+	}
+
+	virtual void undo()
+	{
+		Routing::ChangeBatch batch(m_routing);
+
+		m_mac->addPin(m_pin);
+		m_param->m_paramPin = NULL;
+
+		foreach(const Ptr<Connection>& conn, m_conns)
+		{
+			m_routing->addConnection(conn);
+		}
+	}
+
+protected:
+	Ptr<Routing> m_routing;
+	Ptr<Machine> m_mac;
+	Ptr<Parameter::Base> m_param;
+	Ptr<Pin> m_pin;
+	QList< Ptr<Connection> > m_conns;
+};
+
+
+QMenu* Parameter::Base::populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions)
+{
+	QAction* act = menu->addAction(m_name);
+	actions.insert(act, this);
+	return NULL;
+}
+
+QMenu* Parameter::Group::populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions)
+{
+	QMenu* submenu = menu->addMenu(m_name);
+	foreach(Base* p, m_params)
+	{
+		p->populateMenu(submenu, actions);
+	}
+	return submenu;
+}
+
 void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 {
 	QList<MachineItem*> sel = m_editor->getSelectedMachineItems();
 	if (sel.length() == 1 && sel[0] == this)
 	{
 		QMenu menu;
+
+		QMap<QAction*, Parameter::Base*> actParamPin;
+		QMenu* parampinmenu = m_mac->m_params->populateMenu(&menu, actParamPin);
+		parampinmenu->setTitle(tr("&Parameter pins"));
+
+		if (actParamPin.isEmpty())
+		{
+			delete parampinmenu;
+			parampinmenu = NULL;
+		}
+		else
+		{
+			QMapIterator<QAction*, Parameter::Base*> iter(actParamPin);
+			while (iter.hasNext())
+			{
+				iter.next();
+				iter.key()->setCheckable(true);
+				iter.key()->setChecked(iter.value()->m_paramPin != NULL);
+			}
+		}
+
+		menu.addSeparator();
 		QAction* actRename = menu.addAction(tr("&Name and appearance"));
 		QAction* actDelete = menu.addAction(tr("&Delete"));
 
@@ -514,8 +651,20 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 		{
 			theUndo().push(new DeleteMachineCommand(m_editor->getRouting(), m_mac));
 		}
+		else if (actParamPin.contains(action))
+		{
+			Parameter::Base* param = actParamPin.value(action);
+			if (param->m_paramPin)
+			{
+				theUndo().push(new RemoveParamPinCommand(m_mac, param));
+			}
+			else
+			{
+				theUndo().push(new AddParamPinCommand(m_mac, param));
+			}
+		}
 	}
-	else
+	else if (sel.length() > 1)
 	{
 	}
 }
@@ -564,7 +713,23 @@ PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
 	pen.setJoinStyle(Qt::MiterJoin);
 	setPen(pen);
 
-	connect(parent, SIGNAL(signalMove()), this, SIGNAL(signalMove()));
+	connect(
+		parent, SIGNAL(signalMove()),
+		this, SIGNAL(signalMove()) );
+	connect(
+		m_pin, SIGNAL(signalPosChanged()),
+		this, SLOT(onPinPosChanged()) );
+}
+
+void PinItem::onPinPosChanged()
+{
+	QPointF pos = multElementWise(m_pin->m_machine->m_halfsize, m_pin->getPosOffset());
+	setPos(pos);
+
+	QTransform trans; trans.rotate(m_pin->getRotation());
+	setTransform(trans);
+
+	signalMove();
 }
 
 QPainterPath PinItem::shape() const
@@ -687,7 +852,7 @@ void ConnectionLineItem::updatePath()
 	if (pin1)
 	{
 		pos1 = m_editor->getPinItem(pin1)->scenePos();
-		off1 = getPinBezierOffset(pin1->m_side);
+		off1 = getPinBezierOffset(pin1->getSide());
 	}
 	else
 	{
@@ -698,7 +863,7 @@ void ConnectionLineItem::updatePath()
 	if (pin2)
 	{
 		pos2 = m_editor->getPinItem(pin2)->scenePos();
-		off2 = getPinBezierOffset(pin2->m_side);
+		off2 = getPinBezierOffset(pin2->getSide());
 	}
 	else
 	{

@@ -41,6 +41,8 @@ namespace RoutingEditor
 	protected slots:
 		void onMachinePosChanged();
 		void slotUpdate() { update(); }
+		void onMachineAddPin(const Ptr<Pin>& pin);
+		void onMachineRemovePin(const Ptr<Pin>& pin);
 	};
 
 	class NewConnectionItem;
@@ -55,6 +57,9 @@ namespace RoutingEditor
 		Ptr<Pin> getPin() { return m_pin; }
 
 		virtual QPainterPath shape() const;
+
+	protected slots:
+		void onPinPosChanged();
 
 	protected:
 		Ptr<Pin> m_pin;

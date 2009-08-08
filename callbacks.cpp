@@ -59,6 +59,12 @@ static cbool unlockMutex(HostMachine* mac)
 	return ctrue;
 }
 
+static void addParamChangeEvent(PinBuffer* buf, int time, double value)
+{
+	WorkBuffer::ParamControl* p = dynamic_cast<WorkBuffer::ParamControl*>(buf->hostbuf);
+	if (p) p->m_data.insert(std::make_pair(time, value));
+}
+
 static cbool ScriptValue_isNull(const ScriptValue* v)
 {
 	return v->isNull() ?ctrue:cfalse;
@@ -180,6 +186,7 @@ static HostFunctions g_hostFuncs =
 	registerScriptFunction,
 	lockMutex,
 	unlockMutex,
+	addParamChangeEvent,
 	ScriptValue_isNull,
 	ScriptValue_isValid,
 	ScriptValue_isNumber,
