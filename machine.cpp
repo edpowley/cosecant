@@ -138,6 +138,13 @@ void Machine::initParams(ParamGroupInfo* group)
 	m_params->initParamStuff(this);
 }
 
+void Parameter::Base::setParamPin(const Ptr<Pin>& pin)
+{
+	if (m_paramPin) signalRemoveParamPin();
+	m_paramPin = pin;
+	if (m_paramPin) signalAddParamPin();
+}
+
 Parameter::Group::Group(const Ptr<Machine>& mac, const ParamGroupInfo* info)
 : Base(mac)
 {

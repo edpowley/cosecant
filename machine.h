@@ -100,11 +100,18 @@ namespace Parameter
 
 		virtual QMenu* populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions);
 
-		Ptr<Pin> m_paramPin;
+		Ptr<Pin> getParamPin() { return m_paramPin; }
+		void setParamPin(const Ptr<Pin>& pin);
+		void unsetParamPin() { setParamPin(NULL); }
+
+	signals:
+		void signalAddParamPin();
+		void signalRemoveParamPin();
 
 	protected:
 		Ptr<Machine> m_mac;
 		QString m_name;
+		Ptr<Pin> m_paramPin;
 	};
 
 	class Group : public Base
@@ -132,6 +139,8 @@ namespace Parameter
 		Scalar(const Ptr<Machine>& mac, ParamTag tag);
 		virtual ParamTag getTag() { return m_tag; }
 
+		virtual double sanitise(double v) = 0;
+
 		void setRange(double min, double max);
 		void setDefault(double def);
 		void setState(double state);
@@ -155,8 +164,6 @@ namespace Parameter
 		double m_min, m_max, m_def, m_state;
 		ParamTag m_tag;
 		ParamScale::e m_scale;
-
-		virtual double sanitise(double v) = 0;
 	};
 
 	class Real : public Scalar
@@ -165,7 +172,6 @@ namespace Parameter
 		Real(const Ptr<Machine>& mac, const RealParamInfo* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 
-	protected:
 		virtual double sanitise(double v);
 	};
 
@@ -175,7 +181,6 @@ namespace Parameter
 		Int(const Ptr<Machine>& mac, const IntParamInfo* info);
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 
-	protected:
 		virtual double sanitise(double v);
 	};
 
@@ -193,11 +198,12 @@ namespace Parameter
 		TimeValue getTMin() { return m_tmin; }
 		TimeValue getTMax() { return m_tmax; }
 
+		virtual double sanitise(double v);
+
 	protected:
 		TimeUnit::e m_internalUnit, m_displayUnit;
 		unsigned int m_displayUnits;
 		TimeValue m_tmin, m_tmax, m_tdef, m_tstate;
-		virtual double sanitise(double v);
 	};
 
 	class Enum : public Scalar
@@ -272,7 +278,7 @@ public:
 	Ptr<Pin> m_noteTriggerPin;
 
 	Ptr<Parameter::Group> m_params;
-	MyMap< ParamTag, Ptr<Parameter::Base> > m_paramMap;
+	QHash< ParamTag, Ptr<Parameter::Base> > m_paramMap;
 
 	ParamEditor* m_parameditor;
 	void showParamEditor();

@@ -51,6 +51,7 @@ namespace ParamEditorWidget
 	public:
 		ScalarSlider(const Ptr<Parameter::Scalar>& param);
 
+	public slots:
 		void initFromState();
 
 	protected:
@@ -62,9 +63,13 @@ namespace ParamEditorWidget
 
 		bool m_valueChanging;
 
+		QTimer m_stateUpdateTimer;
+
 	protected slots:
 		void onValueChanged(int value);
 		void onParameterChanged(double value);
+		void onParamPinAdded();
+		void onParamPinRemoved();
 	};
 
 	////////////////////////////////////////////////////////////////////////////
@@ -85,9 +90,14 @@ namespace ParamEditorWidget
 
 		virtual void focusOutEvent(QFocusEvent* ev);
 
+		QTimer m_stateUpdateTimer;
+
 	protected slots:
 		void onParameterChanged(double value);
 		void onReturnPressed();
+		void onParamPinAdded();
+		void onParamPinRemoved();
+		void onStateUpdateTimer();
 	};
 
 	//////////////////////////////////////////////////////////////////////

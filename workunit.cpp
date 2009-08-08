@@ -99,6 +99,7 @@ void WorkMachine::updatePinBuffers()
 		{
 			ParamPinBuf ppb;
 			ppb.tag = m_inpins[pin]->m_paramTag;
+			ppb.param = dynamic_cast<Parameter::Scalar*>(m_machine->m_paramMap.value(ppb.tag).c_ptr());
 			ppb.buf = dynamic_cast<WorkBuffer::ParamControl*>(m_inWorkBuffer[pin].c_ptr());
 			m_paramPinBufs.push_back(ppb);
 		}
@@ -180,7 +181,10 @@ void WorkMachine::work(int firstframe, int lastframe)
 			{
 				if (ppb.iter != ppb.enditer && ppb.iter->first == frame)
 				{
-					m_machine->changeParam(ppb.tag, ppb.iter->second);
+					double v = ppb.iter->second;
+					if (ppb.param) v = ppb.param->sanitise(v);
+					m_machine->changeParam(ppb.tag, v);
+					if (ppb.param) ppb.param->setState(v);
 					++ ppb.iter;
 				}
 			}

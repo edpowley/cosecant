@@ -524,12 +524,12 @@ public:
 	virtual void redo()
 	{
 		m_mac->addPin(m_pin);
-		m_param->m_paramPin = m_pin;
+		m_param->setParamPin(m_pin);
 	}
 
 	virtual void undo()
 	{
-		m_param->m_paramPin = NULL;
+		m_param->unsetParamPin();
 		m_mac->removePin(m_pin);
 	}
 
@@ -543,7 +543,7 @@ class RemoveParamPinCommand : public QUndoCommand
 {
 public:
 	RemoveParamPinCommand(const Ptr<Machine>& mac, const Ptr<Parameter::Base>& param)
-		: m_routing(mac->m_routing), m_mac(mac), m_param(param), m_pin(param->m_paramPin),
+		: m_routing(mac->m_routing), m_mac(mac), m_param(param), m_pin(param->getParamPin()),
 		QUndoCommand(Editor::tr("remove pin for parameter '%1'").arg(param->getName()))
 	{
 		m_conns = m_pin->m_connections;
@@ -558,7 +558,7 @@ public:
 			m_routing->removeConnection(conn);
 		}
 
-		m_param->m_paramPin = NULL;
+		m_param->unsetParamPin();
 		m_mac->removePin(m_pin);
 	}
 
@@ -567,7 +567,7 @@ public:
 		Routing::ChangeBatch batch(m_routing);
 
 		m_mac->addPin(m_pin);
-		m_param->m_paramPin = NULL;
+		m_param->setParamPin(m_pin);
 
 		foreach(const Ptr<Connection>& conn, m_conns)
 		{
@@ -624,7 +624,7 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 			{
 				iter.next();
 				iter.key()->setCheckable(true);
-				iter.key()->setChecked(iter.value()->m_paramPin != NULL);
+				iter.key()->setChecked(iter.value()->getParamPin() != NULL);
 			}
 		}
 
@@ -654,7 +654,7 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 		else if (actParamPin.contains(action))
 		{
 			Parameter::Base* param = actParamPin.value(action);
-			if (param->m_paramPin)
+			if (param->getParamPin())
 			{
 				theUndo().push(new RemoveParamPinCommand(m_mac, param));
 			}

@@ -63,6 +63,7 @@ namespace WorkUnit
 		struct ParamPinBuf
 		{
 			ParamTag tag;
+			Ptr<Parameter::Scalar> param;
 			Ptr<WorkBuffer::ParamControl> buf;
 			std::map<int, double>::const_iterator iter, enditer;
 		};

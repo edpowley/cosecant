@@ -104,16 +104,44 @@ ScalarSlider::ScalarSlider(const Ptr<Parameter::Scalar>& param)
 {
 	m_logarithmic = (m_param->getScale() == ParamScale::logarithmic);
 
+	m_stateUpdateTimer.setInterval(100);
+
+	if (m_param->getParamPin())
+		onParamPinAdded();
+
 	connect(
 		this, SIGNAL(valueChanged(int)),
 		this, SLOT(onValueChanged(int)) );
 	connect(
 		m_param, SIGNAL(valueChanged(double)),
 		this, SLOT(onParameterChanged(double)) );
+	connect(
+		m_param, SIGNAL(signalAddParamPin()),
+		this, SLOT(onParamPinAdded()) );
+	connect(
+		m_param, SIGNAL(signalRemoveParamPin()),
+		this, SLOT(onParamPinRemoved()) );
+	connect(
+		&m_stateUpdateTimer, SIGNAL(timeout()),
+		this, SLOT(initFromState()) );
+}
+
+void ScalarSlider::onParamPinAdded()
+{
+	setEnabled(false);
+	m_stateUpdateTimer.start();
+}
+
+void ScalarSlider::onParamPinRemoved()
+{
+	m_stateUpdateTimer.stop();
+	initFromState();
+	setEnabled(true);
 }
 
 void ScalarSlider::initFromState()
 {
+	QMutexLocker lock(&m_param->getMachine()->m_mutex);
 	m_valueChanging = true;
 	setValue(valueToInt(m_param->getState()));
 	m_valueChanging = false;
@@ -145,12 +173,42 @@ ScalarEdit::ScalarEdit(const Ptr<Parameter::Scalar>& param)
 	setTextFromValue(m_param->getState());
 	setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
+	if (m_param->getParamPin())
+		onParamPinAdded();
+
 	connect(
 		m_param, SIGNAL(valueChanged(double)),
 		this, SLOT(onParameterChanged(double)) );
 	connect(
 		this, SIGNAL(returnPressed()),
 		this, SLOT(onReturnPressed()) );
+	connect(
+		m_param, SIGNAL(signalAddParamPin()),
+		this, SLOT(onParamPinAdded()) );
+	connect(
+		m_param, SIGNAL(signalRemoveParamPin()),
+		this, SLOT(onParamPinRemoved()) );
+	connect(
+		&m_stateUpdateTimer, SIGNAL(timeout()),
+		this, SLOT(onStateUpdateTimer()) );
+}
+
+void ScalarEdit::onParamPinAdded()
+{
+	setEnabled(false);
+	m_stateUpdateTimer.start();
+}
+
+void ScalarEdit::onParamPinRemoved()
+{
+	m_stateUpdateTimer.stop();
+	setTextFromValue(m_param->getState());
+	setEnabled(true);
+}
+
+void ScalarEdit::onStateUpdateTimer()
+{
+	setTextFromValue(m_param->getState());
 }
 
 void ScalarEdit::setTextFromValue(double value)

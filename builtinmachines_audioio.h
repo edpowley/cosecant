@@ -62,7 +62,7 @@ protected:
 	void populateChannelParam(int nChans, boost::function<QString(int)> getName)
 	{
 		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(
-			m_paramMap.get(COSECANT_TAG('chan')).c_ptr() );
+			m_paramMap.value(COSECANT_TAG('chan')).c_ptr() );
 		param->setItems(getChannelParamItems(nChans, getName));
 	}
 };
