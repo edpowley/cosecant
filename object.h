@@ -22,7 +22,7 @@ public:
 	*/
 	void incRef()
 	{
-		InterlockedIncrement(&m_refcount);
+		m_refcount.ref();
 	}
 
 	/** Decrement this object's reference count. This is called automatically if you are
@@ -32,7 +32,7 @@ public:
 	*/
 	void decRef()
 	{
-		if (InterlockedDecrement(&m_refcount) == 0 && m_refcountenable)
+		if (!m_refcount.deref() && m_refcountenable)
 			delete this;
 	}
 
@@ -44,7 +44,7 @@ public:
 	void enableRefCounting(bool enable=true) { m_refcountenable = enable; }
 
 private:
-	__declspec(align(4)) long m_refcount;
+	QAtomicInt m_refcount;
 	bool m_refcountenable;
 
 	Q_DISABLE_COPY(Object);
