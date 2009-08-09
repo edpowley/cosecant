@@ -30,7 +30,17 @@ public:
 			paraStep.p.name = "Send step";
 			paraStep.min = 1; paraStep.max = 256; paraStep.def = 16;
 
-			static const ParamInfo* params[] = { &paraFreq.p, &paraStep.p, NULL };
+			static RealParamInfo paraMin, paraMax;
+			paraMin.p.tag = COSECANT_TAG('rmin');
+			paraMin.p.name = "Minimum";
+			paraMin.p.flags = ParamFlags::noMinMax;
+			paraMin.def = 0;
+			paraMax.p.tag = COSECANT_TAG('rmax');
+			paraMax.p.name = "Maximum";
+			paraMax.p.flags = ParamFlags::noMinMax;
+			paraMax.def = 1;
+
+			static const ParamInfo* params[] = { &paraFreq.p, &paraStep.p, &paraMin.p, &paraMax.p, NULL };
 			info.params.params = params;
 
 			static PinInfo outPin = { "Output", SignalType::paramControl };
@@ -43,7 +53,7 @@ public:
 		return &info;
 	}
 
-	Lfo(HostMachine* hm) : Mi(hm), m_phase(0), m_centre(0.5), m_amp(0.5),
+	Lfo(HostMachine* hm) : Mi(hm), m_phase(0), m_min(0.0), m_max(1.0),
 		m_sendphase(0), m_sendphasemax(32)
 	{
 		setPeriod(1.0);
@@ -58,11 +68,17 @@ public:
 	{
 		switch (tag)
 		{
-		case 'sped':
+		case COSECANT_TAG('sped'):
 			setPeriod(value);
 			break;
-		case 'step':
+		case COSECANT_TAG('step'):
 			m_sendphasemax = (int)value;
+			break;
+		case COSECANT_TAG('rmin'):
+			m_min = value;
+			break;
+		case COSECANT_TAG('rmax'):
+			m_max = value;
 			break;
 		}
 	}
@@ -73,7 +89,9 @@ public:
 		{
 			if (m_sendphase == 0)
 			{
-				g_host->addParamChangeEvent(&outpins[0], i, m_centre + sin(m_phase) * m_amp);
+				double v = 0.5 * sin(m_phase) + 0.5;
+				v = m_min + v * (m_max - m_min);
+				g_host->addParamChangeEvent(&outpins[0], i, v);
 			}
 
 			m_sendphase ++;
@@ -85,7 +103,7 @@ public:
 	}
 
 protected:
-	double m_phase, m_phasestep, m_centre, m_amp;
+	double m_phase, m_phasestep, m_min, m_max;
 	int m_sendphase, m_sendphasemax;
 };
 

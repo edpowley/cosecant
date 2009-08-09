@@ -246,12 +246,18 @@ int Parameter::Real::addToParamEditor(QGridLayout* grid, int row)
 {
 	grid->addWidget(new QLabel(m_name), row, 0);
 
-	RealSlider* slider = new RealSlider(this);
-	slider->initFromState();
-	grid->addWidget(slider, row, 1);
+	if (!m_freeRange)
+	{
+		RealSlider* slider = new RealSlider(this);
+		slider->initFromState();
+		grid->addWidget(slider, row, 1);
+	}
 
 	ScalarEdit* edit = new ScalarEdit(this);
-	grid->addWidget(edit, row, 2);
+	if (!m_freeRange)
+		grid->addWidget(edit, row, 2);
+	else
+		grid->addWidget(edit, row, 1, 1, 2);
 
 	return row+1;
 }

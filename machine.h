@@ -138,10 +138,11 @@ namespace Parameter
 	public:
 		Scalar(const Ptr<Machine>& mac, ParamTag tag);
 		virtual ParamTag getTag() { return m_tag; }
+		bool getFreeRange() { return m_freeRange; }
 
 		virtual double sanitise(double v) = 0;
 
-		void setRange(double min, double max);
+		void setRange(double min, double max, ParamFlags::i flags);
 		void setDefault(double def);
 		void setState(double state);
 		void setScale(ParamScale::e scale);
@@ -164,6 +165,7 @@ namespace Parameter
 		double m_min, m_max, m_def, m_state;
 		ParamTag m_tag;
 		ParamScale::e m_scale;
+		bool m_freeRange;
 	};
 
 	class Real : public Scalar

@@ -99,6 +99,17 @@ namespace CosecantAPI
 		typedef unsigned char i;
 	};
 
+	namespace ParamFlags
+	{
+		enum
+		{
+			noMin = 1 << 0,
+			noMax = 1 << 1,
+			noMinMax = noMin | noMax,
+		};
+		typedef unsigned int i;
+	};
+
 	/////////////////////////////////////////////////////////////////////////////
 
 	namespace TimeUnit
@@ -146,8 +157,9 @@ namespace CosecantAPI
 		ParamType::i type;
 		ParamTag tag;
 		const char* name;
+		ParamFlags::i flags;
 
-		ParamInfo(ParamType::e t) : type(t), tag(0), name(NULL) {}
+		ParamInfo(ParamType::e t) : type(t), tag(0), name(NULL), flags(0) {}
 	};
 
 	struct ParamGroupInfo

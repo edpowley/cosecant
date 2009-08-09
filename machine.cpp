@@ -190,7 +190,7 @@ void Parameter::Group::initParamStuff(Machine* mac)
 }
 
 Parameter::Scalar::Scalar(const Ptr<Machine>& mac, ParamTag tag)
-: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0), m_scale(ParamScale::linear)
+: Base(mac), m_tag(tag), m_min(0), m_max(1), m_def(0), m_state(0), m_scale(ParamScale::linear), m_freeRange(false)
 {
 }
 
@@ -200,10 +200,27 @@ void Parameter::Scalar::initParamStuff(Machine* mac)
 	mac->m_paramChanges[m_tag] = m_state;
 }
 
-void Parameter::Scalar::setRange(double min, double max)
+void Parameter::Scalar::setRange(double min, double max, ParamFlags::i flags)
 {
-	m_min = min;
-	m_max = max;
+	if (flags & ParamFlags::noMin)
+	{
+		m_min = -DBL_MAX;
+		m_freeRange = true;
+	}
+	else
+	{
+		m_min = min;
+	}
+
+	if (flags & ParamFlags::noMax)
+	{
+		m_max = DBL_MAX;
+		m_freeRange = true;
+	}
+	else
+	{
+		m_max = max;
+	}
 }
 
 void Parameter::Scalar::setDefault(double def)
@@ -239,7 +256,7 @@ Parameter::Real::Real(const Ptr<Machine>& mac, const RealParamInfo* info)
 {
 	setName(info->p.name);
 	setScale(static_cast<ParamScale::e>(info->scale));
-	setRange(info->min, info->max);
+	setRange(info->min, info->max, info->p.flags);
 	setDefault(info->def);
 	setState(info->def);
 }
@@ -253,7 +270,7 @@ Parameter::Int::Int(const Ptr<Machine>& mac, const IntParamInfo* info)
 : Scalar(mac, info->p.tag)
 {
 	setName(info->p.name);
-	setRange(info->min, info->max);
+	setRange(info->min, info->max, info->p.flags);
 	setDefault(info->def);
 	setState(info->def);
 }
@@ -271,7 +288,7 @@ Parameter::Time::Time(const Ptr<Machine>& mac, const TimeParamInfo* info)
 	m_displayUnits(info->displayUnits)
 {
 	setName(info->p.name);
-	setRange(ConvertTimeUnits(m_tmin, m_internalUnit), ConvertTimeUnits(m_tmax, m_internalUnit));
+	setRange(ConvertTimeUnits(m_tmin, m_internalUnit), ConvertTimeUnits(m_tmax, m_internalUnit), info->p.flags);
 	setDefault(ConvertTimeUnits(m_tdef, m_internalUnit));
 	setState(getDefault());
 }
@@ -308,7 +325,7 @@ double Parameter::Enum::sanitise(double v)
 void Parameter::Enum::setItems(const QStringList& items)
 {
 	m_items = items;
-	setRange(0, m_items.length()-1);
+	setRange(0, m_items.length()-1, 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
