@@ -138,6 +138,11 @@ void Machine::initParams(ParamGroupInfo* group)
 	m_params->initParamStuff(this);
 }
 
+ParamPin::ParamPin(Parameter::Scalar* param, TimeUnit::e timeUnit)
+: Pin(param->getMachine(), in, SignalType::paramControl), m_param(param), m_timeUnit(timeUnit)
+{
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 Ptr<Sequence::Pattern> Machine::createPattern(double length)

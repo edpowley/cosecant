@@ -179,14 +179,14 @@ namespace ParamEditorWidget
 	public:
 		TimeUnitCombo(const Ptr<Parameter::Time>& param);
 
+		static QString getUnitName(TimeUnit::e unit);
+		static QString getUnitName(unsigned int unit) { return getUnitName( static_cast<TimeUnit::e>(unit) ); }
+
 	signals:
 		void signalUnitChanged(TimeUnit::e unit);
 
 	protected:
 		Ptr<Parameter::Time> m_param;
-
-		QString getUnitName(TimeUnit::e unit);
-		QString getUnitName(unsigned int unit) { return getUnitName( static_cast<TimeUnit::e>(unit) ); }
 
 		int findUnit(TimeUnit::e unit);
 

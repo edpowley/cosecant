@@ -4,6 +4,18 @@
 
 namespace Parameter
 {
+	class Scalar;
+
+	struct ParamPinSpec
+	{
+		ParamPinSpec() {}
+		ParamPinSpec(Parameter::Scalar* p, CosecantAPI::TimeUnit::e u = CosecantAPI::TimeUnit::none) 
+			: param(p), timeUnit(u) {}
+
+		Parameter::Scalar* param;
+		CosecantAPI::TimeUnit::e timeUnit;
+	};
+
 	class Base : public Object
 	{
 		Q_OBJECT
@@ -21,10 +33,10 @@ namespace Parameter
 
 		virtual int addToParamEditor(QGridLayout* grid, int row) = 0;
 
-		virtual QMenu* populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions);
+		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions) { return NULL; }
 
-		Ptr<Pin> getParamPin() { return m_paramPin; }
-		void setParamPin(const Ptr<Pin>& pin);
+		Ptr<ParamPin> getParamPin() { return m_paramPin; }
+		void setParamPin(const Ptr<ParamPin>& pin);
 		void unsetParamPin() { setParamPin(NULL); }
 
 	signals:
@@ -34,7 +46,7 @@ namespace Parameter
 	protected:
 		Ptr<Machine> m_mac;
 		QString m_name;
-		Ptr<Pin> m_paramPin;
+		Ptr<ParamPin> m_paramPin;
 	};
 
 	class Group : public Base
@@ -48,7 +60,7 @@ namespace Parameter
 		virtual int addToParamEditor(QGridLayout* grid, int row);
 		void populateParamEditorGrid(QGridLayout* grid);
 
-		virtual QMenu* populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions);
+		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
 
 	protected:
 		QList< Ptr<Base> > m_params;
@@ -80,6 +92,8 @@ namespace Parameter
 		virtual void initParamStuff(Machine* mac);
 
 		void change(double newval);
+
+		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
 
 	signals:
 		void valueChanged(double v);
@@ -124,6 +138,8 @@ namespace Parameter
 		TimeValue getTMax() { return m_tmax; }
 
 		virtual double sanitise(double v);
+
+		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
 
 	protected:
 		TimeUnit::e m_internalUnit, m_displayUnit;

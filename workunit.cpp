@@ -6,6 +6,7 @@
 #include "perfclock.h"
 #include "song.h"
 #include "seqplay.h"
+#include "timeunit_convert.h"
 
 using namespace WorkUnit;
 
@@ -95,12 +96,24 @@ void WorkMachine::updatePinBuffers()
 
 	for (size_t pin=0; pin<m_inpins.size(); pin++)
 	{
-		if (m_inpins[pin]->m_isParamPin)
+		ParamPin* parampin = dynamic_cast<ParamPin*>(m_inpins[pin].c_ptr());
+		if (parampin)
 		{
 			ParamPinBuf ppb;
-			ppb.tag = m_inpins[pin]->m_paramTag;
-			ppb.param = dynamic_cast<Parameter::Scalar*>(m_machine->m_paramMap.value(ppb.tag).c_ptr());
+			ppb.param = parampin->getParam();
+			ppb.tag = ppb.param->getTag();
 			ppb.buf = dynamic_cast<WorkBuffer::ParamControl*>(m_inWorkBuffer[pin].c_ptr());
+
+			Parameter::Time* ptime = dynamic_cast<Parameter::Time*>(ppb.param.c_ptr());
+			if (ptime)
+			{
+				ppb.doTimeUnitConversion = true;
+				ppb.fromTimeUnit = parampin->getTimeUnit();
+				ppb.toTimeUnit = ptime->getInternalUnit();
+			}
+			else
+				ppb.doTimeUnitConversion = false;
+
 			m_paramPinBufs.push_back(ppb);
 		}
 		else if (m_inpins[pin] == m_noteTriggerPin)
@@ -182,9 +195,15 @@ void WorkMachine::work(int firstframe, int lastframe)
 				if (ppb.iter != ppb.enditer && ppb.iter->first == frame)
 				{
 					double v = ppb.iter->second;
-					if (ppb.param) v = ppb.param->sanitise(v);
+
+					if (ppb.doTimeUnitConversion)
+						v = ConvertTimeUnits(ppb.fromTimeUnit, ppb.toTimeUnit, v);
+
+					v = ppb.param->sanitise(v);
+
 					m_machine->changeParam(ppb.tag, v);
-					if (ppb.param) ppb.param->setState(v);
+					ppb.param->setState(v);
+
 					++ ppb.iter;
 				}
 			}

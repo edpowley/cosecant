@@ -173,6 +173,8 @@ ScalarEdit::ScalarEdit(const Ptr<Parameter::Scalar>& param)
 	setTextFromValue(m_param->getState());
 	setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
+	m_stateUpdateTimer.setInterval(100);
+
 	if (m_param->getParamPin())
 		onParamPinAdded();
 

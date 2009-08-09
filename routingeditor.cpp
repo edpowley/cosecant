@@ -510,12 +510,10 @@ protected:
 class AddParamPinCommand : public QUndoCommand
 {
 public:
-	AddParamPinCommand(const Ptr<Machine>& mac, const Ptr<Parameter::Base>& param)
+	AddParamPinCommand(const Ptr<Machine>& mac, const Ptr<Parameter::Scalar>& param, TimeUnit::e timeUnit)
 		: m_mac(mac), m_param(param), QUndoCommand(Editor::tr("add pin for parameter '%1'").arg(param->getName()))
 	{
-		m_pin = new Pin(m_mac, Pin::in, SignalType::paramControl);
-		m_pin->m_isParamPin = true;
-		m_pin->m_paramTag = m_param->getTag();
+		m_pin = new ParamPin(m_param, timeUnit);
 		m_pin->setPos(2.0f);
 		m_pin->setSide(Pin::top);
 		m_pin->m_name = Editor::tr("Parameter '%1'").arg(m_param->getName());
@@ -535,8 +533,8 @@ public:
 
 protected:
 	Ptr<Machine> m_mac;
-	Ptr<Parameter::Base> m_param;
-	Ptr<Pin> m_pin;
+	Ptr<Parameter::Scalar> m_param;
+	Ptr<ParamPin> m_pin;
 };
 
 class RemoveParamPinCommand : public QUndoCommand
@@ -579,26 +577,61 @@ protected:
 	Ptr<Routing> m_routing;
 	Ptr<Machine> m_mac;
 	Ptr<Parameter::Base> m_param;
-	Ptr<Pin> m_pin;
+	Ptr<ParamPin> m_pin;
 	QList< Ptr<Connection> > m_conns;
 };
 
 
-QMenu* Parameter::Base::populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions)
-{
-	QAction* act = menu->addAction(m_name);
-	actions.insert(act, this);
-	return NULL;
-}
-
-QMenu* Parameter::Group::populateMenu(QMenu* menu, QMap<QAction*, Parameter::Base*>& actions)
+QMenu* Parameter::Group::populateParamPinMenu(QMenu* menu, QMap<QAction*, Parameter::ParamPinSpec>& actions)
 {
 	QMenu* submenu = menu->addMenu(m_name);
 	foreach(Base* p, m_params)
 	{
-		p->populateMenu(submenu, actions);
+		p->populateParamPinMenu(submenu, actions);
 	}
 	return submenu;
+}
+
+QMenu* Parameter::Scalar::populateParamPinMenu(QMenu* menu, QMap<QAction*, Parameter::ParamPinSpec>& actions)
+{
+	QAction* act = menu->addAction(m_name);
+	act->setCheckable(true);
+	act->setChecked(getParamPin() != NULL);
+	actions.insert(act, ParamPinSpec(this));
+	return NULL;
+}
+
+QMenu* Parameter::Time::populateParamPinMenu(QMenu* menu, QMap<QAction*, Parameter::ParamPinSpec>& actions)
+{
+	if (getParamPin() != NULL)
+	{
+		TimeUnit::e unit = getParamPin()->getTimeUnit();
+		QString unitName = ParamEditorWidget::TimeUnitCombo::getUnitName(unit);
+		QAction* act = menu->addAction( QString("%1 (%2)").arg(m_name).arg(unitName) );
+		act->setCheckable(true);
+		act->setChecked(true);
+		actions.insert(act, ParamPinSpec(this, unit));
+	}
+	else
+	{
+		QMenu* submenu = menu->addMenu(m_name);
+		submenu->menuAction()->setCheckable(true);
+		submenu->menuAction()->setChecked(false);
+		for (int i=0; i<TimeUnit::numUnits; i++)
+		{
+			if (m_displayUnits & (1 << i))
+			{
+				TimeUnit::e unit = static_cast<TimeUnit::e>(1 << i);
+				QAction* act = submenu->addAction(ParamEditorWidget::TimeUnitCombo::getUnitName(unit));
+
+				if (unit == m_displayUnit)
+					submenu->setDefaultAction(act);
+
+				actions.insert(act, ParamPinSpec(this, unit));
+			}
+		}
+	}
+	return NULL;
 }
 
 void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
@@ -608,24 +641,14 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 	{
 		QMenu menu;
 
-		QMap<QAction*, Parameter::Base*> actParamPin;
-		QMenu* parampinmenu = m_mac->m_params->populateMenu(&menu, actParamPin);
+		QMap<QAction*, Parameter::ParamPinSpec> actParamPin;
+		QMenu* parampinmenu = m_mac->m_params->populateParamPinMenu(&menu, actParamPin);
 		parampinmenu->setTitle(tr("&Parameter pins"));
 
 		if (actParamPin.isEmpty())
 		{
 			delete parampinmenu;
 			parampinmenu = NULL;
-		}
-		else
-		{
-			QMapIterator<QAction*, Parameter::Base*> iter(actParamPin);
-			while (iter.hasNext())
-			{
-				iter.next();
-				iter.key()->setCheckable(true);
-				iter.key()->setChecked(iter.value()->getParamPin() != NULL);
-			}
 		}
 
 		menu.addSeparator();
@@ -653,14 +676,14 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 		}
 		else if (actParamPin.contains(action))
 		{
-			Parameter::Base* param = actParamPin.value(action);
-			if (param->getParamPin())
+			const Parameter::ParamPinSpec& pps = actParamPin.value(action);
+			if (pps.param->getParamPin())
 			{
-				theUndo().push(new RemoveParamPinCommand(m_mac, param));
+				theUndo().push(new RemoveParamPinCommand(m_mac, pps.param));
 			}
 			else
 			{
-				theUndo().push(new AddParamPinCommand(m_mac, param));
+				theUndo().push(new AddParamPinCommand(m_mac, pps.param, pps.timeUnit));
 			}
 		}
 	}
@@ -893,6 +916,10 @@ void ConnectionLineItem::updateColor()
 	QPen pen;
 	pen.setColor(color);
 	pen.setWidth(2);
+	if (isFeedback())
+		pen.setStyle(Qt::DashLine);
+	else
+		pen.setStyle(Qt::SolidLine);
 	m_lineItem->setPen(pen);
 	pen.setStyle(Qt::NoPen);
 	m_triangleItem->setPen(pen);

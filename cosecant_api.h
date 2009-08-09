@@ -116,6 +116,7 @@ namespace CosecantAPI
 	{
 		enum e
 		{
+			none		= 0,
 			seconds		= 1 << 0,
 			beats		= 1 << 1,
 			samples		= 1 << 2,

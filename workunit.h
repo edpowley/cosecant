@@ -66,6 +66,8 @@ namespace WorkUnit
 			ParamTag tag;
 			Ptr<Parameter::Scalar> param;
 			Ptr<WorkBuffer::ParamControl> buf;
+			bool doTimeUnitConversion;
+			TimeUnit::e fromTimeUnit, toTimeUnit;
 			std::map<int, double>::const_iterator iter, enditer;
 		};
 		std::vector<ParamPinBuf> m_paramPinBufs;

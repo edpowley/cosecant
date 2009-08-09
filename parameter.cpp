@@ -3,7 +3,7 @@
 #include "parameter.h"
 #include "timeunit_convert.h"
 
-void Parameter::Base::setParamPin(const Ptr<Pin>& pin)
+void Parameter::Base::setParamPin(const Ptr<ParamPin>& pin)
 {
 	if (m_paramPin) signalRemoveParamPin();
 	m_paramPin = pin;

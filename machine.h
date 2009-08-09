@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 
-namespace Parameter { class Base; class Group; };
+namespace Parameter { class Base; class Group; class Scalar; };
 
 class Machine;
 class Connection;
@@ -19,7 +19,7 @@ public:
 	enum Direction {in, out};
 
 	Pin(Machine* machine, Direction direction, SignalType::e type)
-		: m_machine(machine), m_direction(direction), m_type(type), m_isParamPin(false) {}
+		: m_machine(machine), m_direction(direction), m_type(type) {}
 
 	// Not a smart ptr: the circular references would give me a headache
 	Machine* m_machine;
@@ -34,8 +34,6 @@ public:
 	
 	QString m_name;
 	SignalType::e m_type;
-	bool m_isParamPin;
-	ParamTag m_paramTag;
 
 	Ptr<WorkBuffer::Base> m_buffer;
 
@@ -54,6 +52,19 @@ signals:
 protected:
 	Side m_side;
 	float m_pos;
+};
+
+class ParamPin : public Pin
+{
+public:
+	ParamPin(Parameter::Scalar* param, TimeUnit::e timeUnit);
+
+	Parameter::Scalar* getParam() { return m_param; }
+	TimeUnit::e getTimeUnit() { return m_timeUnit; }
+
+protected:
+	Parameter::Scalar* m_param;
+	TimeUnit::e m_timeUnit;
 };
 
 ///////////////////////////////////////////////////////////////////////

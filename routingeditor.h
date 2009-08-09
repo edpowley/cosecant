@@ -89,6 +89,7 @@ namespace RoutingEditor
 		virtual Ptr<Pin> getPin2() = 0;
 		virtual QPointF getPos1() { return QPointF(0,0); }
 		virtual QPointF getPos2() { return QPointF(0,0); }
+		virtual bool isFeedback() = 0;
 
 		QGraphicsPathItem* m_lineItem;
 		QGraphicsPathItem* m_triangleItem;
@@ -107,6 +108,8 @@ namespace RoutingEditor
 	public:
 		ConnectionItem(Editor* editor, const Ptr<Connection>& conn);
 
+		virtual bool isFeedback() { return m_conn->m_feedback; }
+
 	protected:
 		Ptr<Connection> m_conn;
 		virtual Ptr<Pin> getPin1() { return m_conn->getPin1(); }
@@ -119,6 +122,8 @@ namespace RoutingEditor
 
 	public:
 		NewConnectionItem(Editor* editor, const Ptr<Pin>& pin);
+
+		virtual bool isFeedback() { return false; }
 
 		void onMouseMove(QGraphicsSceneMouseEvent* ev);
 		void finish(QGraphicsSceneMouseEvent* ev);
