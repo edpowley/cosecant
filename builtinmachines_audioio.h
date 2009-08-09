@@ -2,6 +2,7 @@
 
 #include "builtinmachines.h"
 #include "audioio.h"
+#include "parameter.h"
 
 namespace Builtin
 {

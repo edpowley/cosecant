@@ -1,6 +1,7 @@
 #pragma once
 
 #include "machine.h"
+#include "parameter.h"
 #include "undo_command_ids.h"
 
 class ParamEditor : public QScrollArea

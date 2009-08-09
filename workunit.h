@@ -3,6 +3,7 @@
 #include "machine.h"
 #include "workbuffer.h"
 #include "sequence.h"
+#include "parameter.h"
 
 class WorkQueue;
 
