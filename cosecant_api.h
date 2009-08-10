@@ -11,6 +11,7 @@
 #endif
 
 #include <sstream>
+#include <vector>
 
 // Your plugin must NOT define COSECANT_API_HOST
 #ifdef COSECANT_API_HOST
@@ -520,6 +521,63 @@ int answer = 42;
 
 #endif
 
+	class Blob
+	{
+	public:
+		Blob() : m_dataHead(0) {}
+		Blob(const void* data, unsigned int dataSize) : m_dataHead(0) { push(data, dataSize); }
+
+		void* getData() { return &m_data[m_dataHead]; }
+		unsigned int getDataSize() { return m_data.size() - m_dataHead; }
+
+		void push(const void* data, unsigned int dataSize)
+		{
+			const char* p = reinterpret_cast<const char*>(data);
+			for (unsigned int i=0; i<dataSize; i++,p++)
+				m_data.push_back(*p);
+		}
+
+		template<typename T> void push(const T& data) { push(&data, sizeof(T)); }
+
+		template<typename C> void pushString(const std::basic_string<C>& str)
+		{
+			push<unsigned int>(str.length());
+			push(str.c_str(), str.length() * sizeof(C));
+		}
+
+		unsigned int pull(void* data, unsigned int dataSize)
+		{
+			char* p = reinterpret_cast<char*>(data);
+			unsigned int i;
+			for (i=0; i<dataSize && m_dataHead < m_data.size(); i++,p++,m_dataHead++)
+				*p = m_data[m_dataHead];
+			return i;
+		}
+
+		class BlobEmpty : public std::exception {};
+
+		template<typename T> T pull()
+		{
+			T t;
+			if (pull(&t, sizeof(T)) != sizeof(T))
+				throw BlobEmpty();
+			return t;
+		}
+
+		template<typename C> std::basic_string<C> pullString()
+		{
+			unsigned int len; len = pull<unsigned int>();
+			std::basic_string<C> str;
+			str.reserve(len);
+			for (unsigned int i=0; i<len; i++)
+				str.append(1, pull<C>());
+			return str;
+		}
+
+	protected:
+		std::vector<char> m_data;
+		unsigned int m_dataHead;
+	};
 };
 
 #ifdef COSECANT_OS_WIN32

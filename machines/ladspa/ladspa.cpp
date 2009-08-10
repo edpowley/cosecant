@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "ladspa_machine.h"
 
-void scanDll(std::map<std::string, MiFactory*>& factories, const std::wstring& filename)
+void scanDll(MiFactoryList* list, const std::wstring& filename)
 {
 	LadspaDll dll;
 	try
@@ -16,23 +16,30 @@ void scanDll(std::map<std::string, MiFactory*>& factories, const std::wstring& f
 		return;
 	}
 
-	for (int index=0; true; index++)
+	for (int index=0; true; index++) // loop ends when callDescriptorFunc returns NULL
 	{
 		const LADSPA_Descriptor* desc = dll.callDescriptorFunc(index);
 		if (!desc) break;
 
-		LadspaMachineFactory* fac = new LadspaMachineFactory(filename, index, desc);
+		Blob data;
+		data.push(index);
+		data.pushString(filename);
 
 		std::ostringstream cscId;
 		cscId << "btdsys/ladspa/" << desc->UniqueID;
 
-		factories[cscId.str()] = fac;
+		g_host->registerMiFactory(list,
+			cscId.str().c_str(),
+			desc->Name,
+			data.getData(),
+			data.getDataSize()
+		);
 	}
 }
 
-void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factories)
+void CosecantPlugin::enumerateFactories(MiFactoryList* list)
 {
-	std::wstring basepath = L"C:\\Program Files\\Audacity\\Plug-Ins";
+	std::wstring basepath = L"C:\\Users\\Ed\\Documents\\ladspa_plugins";
 	if (basepath[basepath.length()-1] != '\\') basepath += L"\\";
 
 	WIN32_FIND_DATA finddata;
@@ -41,43 +48,50 @@ void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factori
 	{
 		do
 		{
-			scanDll(factories, basepath + finddata.cFileName);
+			scanDll(list, basepath + finddata.cFileName);
 		}
 		while (FindNextFile(hfind, &finddata));
 		FindClose(hfind);
 	}
 }
 
-/////////////////////////////////////////////////////////////////////////
-
-bool LadspaMachineFactory::getInfo(MachineInfo* info, InfoCallbacks* cb)
+Mi* CosecantPlugin::createMachine(const void* facUser, unsigned int facUserSize, HostMachine* hm)
 {
-	LadspaDll dll;
 	try
 	{
-		dll.init(m_dllname.c_str());
+		Blob data(facUser, facUserSize);
+		int index = data.pull<int>();
+		std::wstring dllname = data.pullString<wchar_t>();
+
+		return new LadspaMachine(hm, dllname, index);
 	}
-	catch (const LadspaError&)
+	catch (const Blob::BlobEmpty&)
 	{
-		return false;
+		return NULL;
 	}
+	catch (const LadspaError& err)
+	{
+		DebugPrint() << err.what();
+		return NULL;
+	}
+}
 
-	const LADSPA_Descriptor* desc = dll.callDescriptorFunc(m_index);
-	if (!desc) return false;
+/////////////////////////////////////////////////////////////////////////
 
-	info->setName(desc->Name);
-	ParamInfo::Group* params = info->getParams();
+MachineInfo* LadspaMachine::getInfo()
+{
+	m_info.defaultName = m_desc->Name;
 
 	bool hasAudioInput = false;
 	bool hasAudioOutput = false;
 
-	for (unsigned long port=0; port < desc->PortCount; port++)
+	for (unsigned long port=0; port < m_desc->PortCount; port++)
 	{
-		LADSPA_PortDescriptor pdesc = desc->PortDescriptors[port];
-		const char* pname = desc->PortNames[port];
+		LADSPA_PortDescriptor pdesc = m_desc->PortDescriptors[port];
+		const char* pname = m_desc->PortNames[port];
 		if (LADSPA_IS_PORT_INPUT(pdesc) && LADSPA_IS_PORT_CONTROL(pdesc))
 		{
-			const LADSPA_PortRangeHint* phint = &desc->PortRangeHints[port];
+			const LADSPA_PortRangeHint* phint = &m_desc->PortRangeHints[port];
 			LADSPA_PortRangeHintDescriptor h = phint->HintDescriptor;
 
 			double min = phint->LowerBound;
@@ -113,47 +127,74 @@ bool LadspaMachineFactory::getInfo(MachineInfo* info, InfoCallbacks* cb)
 
 			ParamTag tag = 0x10000 + port;
 
-			unsigned long flags = 0;
-			if (LADSPA_IS_HINT_LOGARITHMIC(h))	flags |= ParamFlags::logarithmic;
+			ParamScale::e scale = ParamScale::linear;
+			if (LADSPA_IS_HINT_LOGARITHMIC(h)) scale = ParamScale::logarithmic;
 
 			if (LADSPA_IS_HINT_INTEGER(h))
 			{
-				params->addParam(
-					cb->createIntParam(tag)->setName(pname)->setRange((int)min,(int)max)->setDefault((int)def)
-				);
+				m_intParams.push_back(IntParamInfo());
+				IntParamInfo& pi = m_intParams.back();
+				pi.p.name = pname;
+				pi.p.tag = tag;
+				pi.min = (int)min;
+				pi.max = (int)max;
+				pi.def = (int)def;
+				m_paramPtrs.push_back(&pi.p);
 			}
 			else
 			{
-				params->addParam(
-					cb->createRealParam(tag)->setName(pname)->setRange(min,max)->setDefault(def)->addFlags(flags)
-				);
+				m_realParams.push_back(RealParamInfo());
+				RealParamInfo& pi = m_realParams.back();
+				pi.p.name = pname;
+				pi.p.tag = tag;
+				pi.scale = scale;
+				pi.min = min;
+				pi.max = max;
+				pi.def = def;
+				m_paramPtrs.push_back(&pi.p);
 			}
 		}
 		else if (LADSPA_IS_PORT_OUTPUT(pdesc) && LADSPA_IS_PORT_CONTROL(pdesc))
 		{
-			info->addOutPin(cb->createPin()->setName(pname)->setType(SignalType::paramControl));
+			m_pins.push_back(PinInfo());
+			PinInfo& pi = m_pins.back();
+			pi.name = pname;
+			pi.type = SignalType::paramControl;
+			m_outPinPtrs.push_back(&pi);
 		}
 		else if (LADSPA_IS_PORT_AUDIO(pdesc))
 		{
+			m_pins.push_back(PinInfo());
+			PinInfo& pi = m_pins.back();
+			pi.name = pname;
+			pi.type = SignalType::monoAudio;
+
 			if (LADSPA_IS_PORT_INPUT(pdesc))
 			{
-				info->addInPin(cb->createPin()->setName(pname)->setType(SignalType::monoAudio));
+				m_inPinPtrs.push_back(&pi);
 				hasAudioInput = true;
 			}
 			else
 			{
-				info->addOutPin(cb->createPin()->setName(pname)->setType(SignalType::monoAudio));
+				m_outPinPtrs.push_back(&pi);
 				hasAudioOutput = true;
 			}
 		}
 	}
 
-	if (hasAudioInput)
-		info->setTypeHint(MachineTypeHint::effect);
-	else if (hasAudioOutput)
-		info->setTypeHint(MachineTypeHint::generator);
-	else
-		info->setTypeHint(MachineTypeHint::control);
+	m_paramPtrs.push_back(NULL);
+	m_info.params.params = const_cast<const ParamInfo**>(&m_paramPtrs.front());
+	m_inPinPtrs.push_back(NULL);
+	m_info.inPins = const_cast<const PinInfo**>(&m_inPinPtrs.front());
+	m_outPinPtrs.push_back(NULL);
+	m_info.outPins = const_cast<const PinInfo**>(&m_outPinPtrs.front());
 
-	return true;
+	if (hasAudioInput)
+		m_info.typeHint = MachineTypeHint::effect;
+	else if (hasAudioOutput)
+		m_info.typeHint = MachineTypeHint::generator;
+	else
+		m_info.typeHint = MachineTypeHint::control;
+
+	return &m_info;
 }

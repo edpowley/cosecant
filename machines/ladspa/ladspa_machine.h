@@ -28,8 +28,10 @@ protected:
 class LadspaMachine : public Mi
 {
 public:
-	LadspaMachine(Callbacks* cb, const std::wstring& dllname, int index);
+	LadspaMachine(HostMachine* hm, const std::wstring& dllname, int index);
 	~LadspaMachine();
+
+	MachineInfo* getInfo();
 
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 	void changeParam(ParamTag tag, double value);
@@ -38,28 +40,16 @@ protected:
 	LadspaDll m_dll;
 	const LADSPA_Descriptor* m_desc;
 	LADSPA_Handle m_handle;
+	
+	MachineInfo m_info;
+	std::list<RealParamInfo> m_realParams;
+	std::list<IntParamInfo> m_intParams;
+	std::vector<ParamInfo*> m_paramPtrs;
+	std::list<PinInfo> m_pins;
+	std::vector<PinInfo*> m_inPinPtrs, m_outPinPtrs;
 
 	std::vector< std::vector<float> > m_portBuffers;
 	std::map<ParamTag, float*> m_paramBuffers;
 	std::vector<float*> m_inPinBuffers, m_outPinBuffers;
 	std::vector<bool> m_outPinIsControl;
-};
-
-/////////////////////////////////////////////////////////////////////////////
-
-class LadspaMachineFactory : public MiFactory
-{
-public:
-	LadspaMachineFactory(const std::wstring& dllname, int index, const LADSPA_Descriptor* desc)
-		: m_dllname(dllname), m_index(index), m_ladspaId(desc->UniqueID) {}
-
-	virtual bool getInfo(MachineInfo* info, InfoCallbacks* cb);
-	
-	virtual Mi* createMachine(Callbacks* cb)
-	{	return new LadspaMachine(cb, m_dllname, m_index);   }
-
-protected:
-	std::wstring m_dllname;
-	int m_index;
-	unsigned long m_ladspaId;
 };

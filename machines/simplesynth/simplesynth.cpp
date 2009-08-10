@@ -6,11 +6,11 @@
 class SimpleSynth : public Mi
 {
 public:
-	static bool getInfo(MachineInfo* info, InfoCallbacks* cb);
+	MachineInfo* getInfo();
 
 	static const int c_polyphony = 16;
 
-	SimpleSynth(Callbacks* cb);
+	SimpleSynth(HostMachine* hm);
 
 	class Note
 	{
@@ -32,8 +32,8 @@ public:
 		double m_envAmp;
 	};
 
-	virtual void* noteOn(double note, double velocity);
-	virtual void noteOff(void* note);
+//	virtual void* noteOn(double note, double velocity);
+//	virtual void noteOff(void* note);
 
 	virtual void changeParam(ParamTag tag, double value);
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
@@ -45,30 +45,50 @@ protected:
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-bool SimpleSynth::getInfo(MachineInfo* info, InfoCallbacks* cb)
+MachineInfo* SimpleSynth::getInfo()
 {
-	info->setName("Synth")->setTypeHint(MachineTypeHint::generator)
-		->addFlags(MachineFlags::hasNoteTrigger | MachineFlags::createSequenceTrack)
-		->addOutPin(cb->createPin()->setName("Output")->setType(SignalType::stereoAudio));
+	static MachineInfo info;
 
-	using namespace TimeUnit;
+	static bool initialised = false;
+	if (!initialised)
+	{
+		info.defaultName = "Synth";
+		info.typeHint = MachineTypeHint::generator;
 
-	ParamInfo::Time* param = cb->createTimeParam('enva');
-	param->setName("Attack")->setRange(1, samples, 10, seconds)->setDefault(0.2, seconds)
-		->setInternalUnit(samples)->setDefaultDisplayUnit(seconds)->addDisplayUnits(seconds | samples | beats);
-	info->getParams()->addParam(param);
+		using namespace TimeUnit;
+		static TimeParamInfo paraAttack, paraRelease;
 
-	param = param->copy()->setTag('envr');
-	param->setName("Release")->setDefault(1, seconds);
-	info->getParams()->addParam(param);
+		paraAttack.p.tag = COSECANT_TAG('enva');
+		paraAttack.p.name = "Attack";
+		paraAttack.min.set(1, samples); paraAttack.max.set(10, seconds); paraAttack.def.set(0.2, seconds);
+		paraAttack.internalUnit = samples;
+		paraAttack.displayUnits = seconds | samples | beats;
+		paraAttack.defaultDisplayUnit = seconds;
 
-	return true;
+		paraRelease.p.tag = COSECANT_TAG('envr');
+		paraRelease.p.name = "Release";
+		paraRelease.min.set(1, samples); paraRelease.max.set(10, seconds); paraRelease.def.set(1, seconds);
+		paraRelease.internalUnit = samples;
+		paraRelease.displayUnits = seconds | samples | beats;
+		paraRelease.defaultDisplayUnit = seconds;
+
+		static const ParamInfo* params[] = { &paraAttack.p, &paraRelease.p, NULL };
+		info.params.params = params;
+
+		static PinInfo outPin = { "Output", SignalType::stereoAudio };
+		static const PinInfo* outPins[] = { &outPin, NULL };
+		info.outPins = outPins;
+
+		initialised = true;
+	}
+
+	return &info;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-SimpleSynth::SimpleSynth(Callbacks* cb)
-: Mi(cb)
+SimpleSynth::SimpleSynth(HostMachine* hm)
+: Mi(hm)
 {
 	for (int n=0; n<c_polyphony; n++)
 		m_notes[n].init(this);
@@ -85,6 +105,7 @@ void SimpleSynth::Note::init(SimpleSynth* mac)
 
 //////////////////////////////////////////////////////////////////////////////////
 
+/*
 void* SimpleSynth::noteOn(double note, double velocity)
 {
 	// Find an inactive note, or a releasing note with minimal amplitude
@@ -116,6 +137,7 @@ void* SimpleSynth::noteOn(double note, double velocity)
 	m_notes[0].noteOn(note, velocity);
 	return static_cast<void*>(&m_notes[0]);
 }
+*/
 
 void SimpleSynth::Note::noteOn(double note, double vel)
 {
@@ -133,7 +155,7 @@ void SimpleSynth::Note::setNote(double n)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 void SimpleSynth::noteOff(void* note)
 {
 	if (note == NULL) // all notes off
@@ -142,6 +164,7 @@ void SimpleSynth::noteOff(void* note)
 	else // one note off
 		static_cast<Note*>(note)->noteOff();
 }
+*/
 
 void SimpleSynth::Note::noteOff()
 {
@@ -154,10 +177,10 @@ void SimpleSynth::changeParam(ParamTag tag, double value)
 {
 	switch (tag)
 	{
-	case 'enva':
+	case COSECANT_TAG('enva'):
 		m_envAttackStep = 1.0 / value;
 		break;
-	case 'envr':
+	case COSECANT_TAG('envr'):
 		m_envReleaseStep = 1.0 / value;
 		break;
 	}
@@ -216,7 +239,12 @@ void SimpleSynth::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, in
 
 //////////////////////////////////////////////////////////////////////////
 
-void CosecantAPI::populateMiFactories(std::map<std::string, MiFactory*>& factories)
+void CosecantPlugin::enumerateFactories(MiFactoryList* list)
 {
-	factories["btdsys/simplesynth"] = new MiFactory_T<SimpleSynth>;
+	g_host->registerMiFactory(list, "btdsys/simplesynth", "BTDSys Simple Synth", NULL, 0);
+}
+
+Mi* CosecantPlugin::createMachine(const void*, unsigned int, HostMachine* hm)
+{
+	return new SimpleSynth(hm);
 }
