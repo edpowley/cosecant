@@ -89,3 +89,13 @@ protected:
 	QMutex* m_mutex;
 	bool m_locked;
 };
+
+/////////////////////////////////////////////////////////////////////////////
+
+template<typename T> uint qHash(QList<T> list)
+{
+	uint hash = 0;
+	foreach(const T& el, list)
+		hash += qHash(el);
+	return hash;
+}

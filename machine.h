@@ -211,6 +211,7 @@ public:
 	ERROR_CLASS(BadIdError);
 
 	Ptr<Machine> createMachine();
+	virtual QString getDesc() = 0;
 
 	static std::map<QString, Ptr<MachineFactory> > s_factories;
 

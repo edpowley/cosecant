@@ -69,11 +69,19 @@ void MachineChooserWidget::populateIndexBranch()
 	}
 	catch (const XmlError& err)
 	{
-		root->addChild(new QTreeWidgetItem(QStringList() << "Error" << err.msg()));
+		qDebug() << "Error in populateIndexBranch:" << err.msg();
 	}
 
+	populateUnsortedBranch(root, idSeenInIndex);
+}
+
+void MachineChooserWidget::populateUnsortedBranch(QTreeWidgetItem* root, const std::map<QString, bool>& idSeenInIndex)
+{
 	QTreeWidgetItem* unsortedRoot = new QTreeWidgetItem(QStringList("Unsorted"));
 	root->addChild(unsortedRoot);
+
+	QHash<QStringList, QTreeWidgetItem*> hierarchy;
+
 	bool haveUnsortedMachines = false;
 	typedef std::pair<QString, bool> stringboolpair;
 	BOOST_FOREACH(const stringboolpair& sb, idSeenInIndex)
@@ -81,8 +89,11 @@ void MachineChooserWidget::populateIndexBranch()
 		if (!sb.second)
 		{
 			haveUnsortedMachines = true;
-			QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << sb.first << sb.first);
-			unsortedRoot->addChild(item);
+			QStringList pathHead = sb.first.split('/');
+			QString pathTail = pathHead.takeLast();
+			QTreeWidgetItem* parent = addToHierarchy(unsortedRoot, pathHead, hierarchy);
+			QString name = QString("%1 [%2]").arg(MachineFactory::get(sb.first)->getDesc()).arg(sb.first);
+			new QTreeWidgetItem(parent, QStringList() << name << sb.first);
 		}
 	}
 	if (!haveUnsortedMachines)
@@ -90,6 +101,18 @@ void MachineChooserWidget::populateIndexBranch()
 		root->removeChild(unsortedRoot);
 		delete unsortedRoot;
 	}
+}
+
+QTreeWidgetItem* MachineChooserWidget::addToHierarchy(
+	QTreeWidgetItem* root, const QStringList& path, QHash<QStringList, QTreeWidgetItem*>& hierarchy)
+{
+	if (path.isEmpty()) return root;
+	if (hierarchy.contains(path)) return hierarchy.value(path);
+
+	QTreeWidgetItem* parent = addToHierarchy(root, path.mid(0, path.length()-1), hierarchy);
+	QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(path.last()));
+	hierarchy.insert(path, item);
+	return item;
 }
 
 void MachineChooserWidget::populateIndexBranch(QTreeWidgetItem* parentItem,

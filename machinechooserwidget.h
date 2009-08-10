@@ -27,4 +27,8 @@ protected:
 	void populate();
 	void populateIndexBranch();
 	void populateIndexBranch(QTreeWidgetItem* parent, QDomElement el, std::map<QString, bool>& idSeenInIndex);
+	void populateUnsortedBranch(QTreeWidgetItem* root, const std::map<QString, bool>& idSeenInIndex);
+
+	static QTreeWidgetItem* addToHierarchy(
+		QTreeWidgetItem* root, const QStringList& path, QHash<QStringList, QTreeWidgetItem*>& hierarchy);
 };

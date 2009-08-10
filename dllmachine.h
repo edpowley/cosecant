@@ -14,6 +14,8 @@ namespace DllMachine
 
 		Factory(const QString& dllpath, const QString& id, const QString& desc, void* user, unsigned int userSize);
 
+		virtual QString getDesc() { return m_desc; }
+
 	protected:
 		QString m_dllpath, m_id, m_desc;
 		std::vector<char> m_userData;

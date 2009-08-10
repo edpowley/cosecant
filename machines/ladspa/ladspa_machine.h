@@ -44,6 +44,7 @@ protected:
 	MachineInfo m_info;
 	std::list<RealParamInfo> m_realParams;
 	std::list<IntParamInfo> m_intParams;
+	std::list<TimeParamInfo> m_timeParams;
 	std::vector<ParamInfo*> m_paramPtrs;
 	std::list<PinInfo> m_pins;
 	std::vector<PinInfo*> m_inPinPtrs, m_outPinPtrs;

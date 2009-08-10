@@ -78,6 +78,41 @@ Mi* CosecantPlugin::createMachine(const void* facUser, unsigned int facUserSize,
 
 /////////////////////////////////////////////////////////////////////////
 
+static double interpolate(double min, double max, double p, bool logarithmic)
+{
+	if (!logarithmic)
+		return (1-p)*min + p*max;
+	else
+		return exp(interpolate(log(min), log(max), p, false));
+}
+
+static double calcDefValue(double min, double max, LADSPA_PortRangeHintDescriptor h)
+{
+	if (!LADSPA_IS_HINT_HAS_DEFAULT(h)) return min;
+	bool islog = !!LADSPA_IS_HINT_LOGARITHMIC(h);
+
+	if (LADSPA_IS_HINT_DEFAULT_MINIMUM(h))
+		return min;
+	else if (LADSPA_IS_HINT_DEFAULT_LOW(h))
+		return interpolate(min, max, 0.25, islog);
+	else if (LADSPA_IS_HINT_DEFAULT_MIDDLE(h))
+		return interpolate(min, max, 0.5, islog);
+	else if (LADSPA_IS_HINT_DEFAULT_HIGH(h))
+		return interpolate(min, max, 0.75, islog);
+	else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(h))
+		return max;
+	else if (LADSPA_IS_HINT_DEFAULT_0(h))
+		return 0.0;
+	else if (LADSPA_IS_HINT_DEFAULT_1(h))
+		return 1.0;
+	else if (LADSPA_IS_HINT_DEFAULT_100(h))
+		return 100.0;
+	else if (LADSPA_IS_HINT_DEFAULT_440(h))
+		return 440.0;
+	else
+		return min;
+}
+
 MachineInfo* LadspaMachine::getInfo()
 {
 	m_info.defaultName = m_desc->Name;
@@ -96,41 +131,37 @@ MachineInfo* LadspaMachine::getInfo()
 
 			double min = phint->LowerBound;
 			double max = phint->UpperBound;
-			if (LADSPA_IS_HINT_SAMPLE_RATE(h))
-			{
-				min *= 44100.0;
-				max *= 44100.0;
-			}
-		
-			double def = min;
-			if (LADSPA_IS_HINT_HAS_DEFAULT(h))
-			{
-				if (LADSPA_IS_HINT_DEFAULT_MINIMUM(h))
-					def = min;
-				else if (LADSPA_IS_HINT_DEFAULT_LOW(h))
-					def = min * 0.75 + max * 0.25;
-				else if (LADSPA_IS_HINT_DEFAULT_MIDDLE(h))
-					def = (min + max) * 0.5;
-				else if (LADSPA_IS_HINT_DEFAULT_HIGH(h))
-					def = min * 0.25 + max * 0.75;
-				else if (LADSPA_IS_HINT_DEFAULT_MAXIMUM(h))
-					def = max;
-				else if (LADSPA_IS_HINT_DEFAULT_0(h))
-					def = 0.0;
-				else if (LADSPA_IS_HINT_DEFAULT_1(h))
-					def = 1.0;
-				else if (LADSPA_IS_HINT_DEFAULT_100(h))
-					def = 100.0;
-				else if (LADSPA_IS_HINT_DEFAULT_440(h))
-					def = 440.0;
-			}
+			double def = calcDefValue(min, max, h);
 
 			ParamTag tag = 0x10000 + port;
 
 			ParamScale::e scale = ParamScale::linear;
 			if (LADSPA_IS_HINT_LOGARITHMIC(h)) scale = ParamScale::logarithmic;
 
-			if (LADSPA_IS_HINT_INTEGER(h))
+			if (LADSPA_IS_HINT_SAMPLE_RATE(h))
+			{
+				DebugPrint() << min << max << def;
+
+				using namespace TimeUnit;
+				m_timeParams.push_back(TimeParamInfo());
+				TimeParamInfo& pi = m_timeParams.back();
+				pi.p.name = pname;
+				pi.p.tag = tag;
+
+				pi.min.set(min, fracfreq);
+				pi.max.set(max, fracfreq);
+
+				bool defInHz = LADSPA_IS_HINT_HAS_DEFAULT(h) && (
+					LADSPA_IS_HINT_DEFAULT_1(h) || LADSPA_IS_HINT_DEFAULT_100(h) || LADSPA_IS_HINT_DEFAULT_440(h)
+				);
+				pi.def.set(def, defInHz ? hertz : fracfreq);
+
+				pi.internalUnit = hertz;
+				pi.displayUnits = hertz | notenum;
+				pi.defaultDisplayUnit = hertz;
+				m_paramPtrs.push_back(&pi.p);
+			}
+			else if (LADSPA_IS_HINT_INTEGER(h))
 			{
 				m_intParams.push_back(IntParamInfo());
 				IntParamInfo& pi = m_intParams.back();
