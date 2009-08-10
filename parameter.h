@@ -26,7 +26,7 @@ namespace Parameter
 		QString getName() { return m_name; }
 		virtual ParamTag getTag() = 0;
 
-		void setName(const QString& name) { m_name = name; }
+		void setName(const char* name) { m_name = decodeApiString(name); }
 
 		// "Stuff" = the mapping from tags to parameters, and the initial value changes
 		virtual void initParamStuff(Machine* mac) = 0;

@@ -173,7 +173,7 @@ Parameter::Enum::Enum(const Ptr<Machine>& mac, const EnumParamInfo* info)
 		QStringList items;
 		for (const char** item = info->items; *item; ++item)
 		{
-			items << *item;
+			items << decodeApiString(*item);
 		}
 		setItems(items);
 	}

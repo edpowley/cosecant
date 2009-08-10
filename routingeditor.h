@@ -45,6 +45,8 @@ namespace RoutingEditor
 		void onMachineRemovePin(const Ptr<Pin>& pin);
 	};
 
+	/////////////////////////////////////////////////////////////////////////
+
 	class NewConnectionItem;
 
 	class PinItem : public QObject, public QGraphicsPathItem
@@ -75,6 +77,8 @@ namespace RoutingEditor
 	signals:
 		void signalMove();
 	};
+
+	/////////////////////////////////////////////////////////////////////////
 
 	class ConnectionLineItem : public QObject, public QGraphicsItemGroup
 	{

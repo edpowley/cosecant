@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "common.h"
 #include "machine.h"
+
 #include "routing.h"
 #include "sequence.h"
 #include "song.h"
@@ -34,7 +35,7 @@ void Machine::init()
 {
 	initInfo();
 
-	m_name = m_info->defaultName;
+	m_name = decodeApiString(m_info->defaultName);
 	m_colorhint = static_cast<MachineTypeHint::e>(m_info->typeHint);
 
 	initParams(&m_info->params);
