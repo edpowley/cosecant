@@ -21,6 +21,7 @@ Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
 	ui.setupUi(this);
 
 	populateAudioDeviceCombos();
+	populatePaths();
 	populateLanguageCombo();
 
 	ui.checkGraphicsViewAA->setChecked(MyGraphicsView::s_prefAntiAlias());
@@ -53,6 +54,7 @@ bool Dlg_Settings::apply()
 		return false;
 	}
 
+	applyPathSettings();
 	applyLanguageSettings();
 
 	MyGraphicsView::s_prefAntiAlias.set(ui.checkGraphicsViewAA->isChecked());
@@ -267,5 +269,116 @@ void Dlg_Settings::applyLanguageSettings()
 		msg.setInformativeText(translator.translate("Dlg_Settings", msgtext));
 
 		msg.exec();
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+void Dlg_Settings::populatePaths()
+{
+	QHash< QString, Ptr<PrefsDirList> > dirlists = PrefsFile::get()->getDirLists();
+	if (dirlists.contains("builtin/native"))
+	{
+		populatePaths(dirlists.value("builtin/native"));
+	}
+
+	for (QHash< QString, Ptr<PrefsDirList> >::const_iterator iter = dirlists.begin();
+		iter != dirlists.end(); ++iter)
+	{
+		if (iter.key() != "builtin/native")
+			populatePaths(iter.value());
+	}
+}
+
+void Dlg_Settings::populatePaths(const Ptr<PrefsDirList>& dirs)
+{
+	QTreeWidgetItem* parent = new QTreeWidgetItem(ui.treePaths,
+		QStringList() << dirs->getName() << dirs->getId());
+	parent->setData(0, itemIsPath, false);
+	parent->setData(0, childrenHaveChanged, false);
+	parent->setExpanded(true);
+
+	foreach(const QString& dir, dirs->getDirs())
+	{
+		QTreeWidgetItem* item = new QTreeWidgetItem(parent,
+			QStringList() << QDir::toNativeSeparators(dir) << dirs->getId());
+		item->setData(0, itemIsPath, true);
+	}
+}
+
+void Dlg_Settings::on_treePaths_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+{
+	ui.buttonPathAdd->setEnabled(true);
+
+	bool ispath = current->data(0, itemIsPath).toBool();
+	ui.buttonPathEdit->setEnabled(ispath);
+	ui.buttonPathRemove->setEnabled(ispath);
+
+	if (ispath)
+		ui.editPath->setText(current->text(0));
+}
+
+void Dlg_Settings::on_buttonPathAdd_clicked()
+{
+	if (ui.editPath->text().isEmpty()) return;
+
+	QTreeWidgetItem* parent = ui.treePaths->currentItem();
+	if (parent->parent()) parent = parent->parent();
+	QTreeWidgetItem* item = new QTreeWidgetItem(parent,
+		QStringList() << ui.editPath->text() << parent->text(1));
+	item->setData(0, itemIsPath, true);
+	parent->setData(0, childrenHaveChanged, true);
+}
+
+void Dlg_Settings::on_buttonPathEdit_clicked()
+{
+	if (ui.editPath->text().isEmpty()) return;
+
+	QTreeWidgetItem* item = ui.treePaths->currentItem();
+	QTreeWidgetItem* parent = item->parent();
+	item->setText(0, ui.editPath->text());
+	parent->setData(0, childrenHaveChanged, true);
+}
+
+void Dlg_Settings::on_buttonPathRemove_clicked()
+{
+	QTreeWidgetItem* item = ui.treePaths->currentItem();
+	QTreeWidgetItem* parent = item->parent();
+	delete ui.treePaths->currentItem();
+	parent->setData(0, childrenHaveChanged, true);
+}
+
+void Dlg_Settings::on_buttonPathBrowse_clicked()
+{
+	QString s = QFileDialog::getExistingDirectory(this, tr("Choose a directory"),
+		QDir::fromNativeSeparators(ui.editPath->text()) );
+	if (!s.isEmpty()) ui.editPath->setText(QDir::toNativeSeparators(s));
+}
+
+void Dlg_Settings::applyPathSettings()
+{
+	bool changed = false;
+
+	for (int i=0; i<ui.treePaths->topLevelItemCount(); ++i)
+	{
+		QTreeWidgetItem* parent = ui.treePaths->topLevelItem(i);
+		if (parent->data(0, childrenHaveChanged).toBool())
+		{
+			changed = true;
+
+			Ptr<PrefsDirList> dirlist = PrefsFile::get()->getDirList(parent->text(1), QString());
+			QStringList dirs;
+			for (int j=0; j<parent->childCount(); ++j)
+			{
+				dirs << parent->child(j)->text(0);
+			}
+			dirlist->setDirs(dirs);
+		}
+	}
+
+	if (changed)
+	{
+		QMessageBox::information(this, QString(),
+			tr("Changes to plugin folder settings will take effect the next time Cosecant is started.") );
 	}
 }

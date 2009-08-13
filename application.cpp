@@ -19,11 +19,17 @@ SingletonPtr<Application> Application::s_singleton;
 Application& Application::initSingleton(int& argc, char** argv)
 {
 	s_singleton.set(new Application(argc, argv));
+	get().init();
 	return get();
 }
 
 Application::Application(int& argc, char** argv)
-: QApplication(argc, argv)
+:	QApplication(argc, argv),
+	m_scriptEngine(NULL), m_scriptDebugger(NULL), m_mainWindow(NULL), m_splashScreen(NULL)
+{
+}
+
+void Application::init()
 {
 	qInstallMsgHandler(&Application::textMessageHandler);
 
@@ -42,39 +48,57 @@ Application::Application(int& argc, char** argv)
 	Qt::WindowFlags splashflags = 0; // don't stay on top in debug build
 #endif
 
-	QSplashScreen* splash = new QSplashScreen(splashpic, splashflags);
-	splash->setAttribute(Qt::WA_DeleteOnClose);
-	splash->show();
+	m_splashScreen = new QSplashScreen(splashpic, splashflags);
+	m_splashScreen->setAttribute(Qt::WA_DeleteOnClose);
+	m_splashScreen->show();
 	processEvents();
 
 	setupI18n();
 
 	initHtmlEntityMap();
 
-	splash->showMessage(tr("Scanning builtin machines"));
+	pushStatusMsg(tr("Scanning builtin machines"));
 	initBuiltinMachineFactories();
+	popStatusMsg();
 
-	splash->showMessage(tr("Scanning machines"));
-	DllMachine::Factory::scan(QCoreApplication::applicationDirPath() + "/gear");
+	pushStatusMsg(tr("Scanning machine plugins"));
+	{
+		QStringList dirs = PrefsFile::get()
+			->getDirList("builtin/native", tr("Native plugins"))
+			->getDirs();
+		dirs.prepend(QCoreApplication::applicationDirPath() + "/gear");
 
-	splash->showMessage(tr("Creating song"));
+		foreach(const QString& dir, dirs)
+		{
+			pushStatusMsg(tr("Scanning %1").arg(dir));
+			DllMachine::Factory::scan(dir);
+			popStatusMsg();
+		}
+	}
+	popStatusMsg();
+
+	pushStatusMsg(tr("Creating song"));
 	Song::initSingleton();
 	SeqPlay::initSingleton(Song::get().m_sequence);
+	popStatusMsg();
 
-	splash->showMessage(tr("Initialising theme"));
+	pushStatusMsg(tr("Initialising theme"));
 	Theme::initSingleton();
+	popStatusMsg();
 
-	splash->showMessage(tr("Initialising script engine"));
+	pushStatusMsg(tr("Initialising script engine"));
 	setupScriptEngine();
 	connect( m_scriptDebugger, SIGNAL(evaluationSuspended()), this, SLOT(onScriptSuspended()) );
 	connect( m_scriptDebugger, SIGNAL(evaluationResumed()),   this, SLOT(onScriptResumed()) );
+	popStatusMsg();
 
-	splash->showMessage(tr("Opening audio device"));
+	pushStatusMsg(tr("Opening audio device"));
 	setupAudio();
+	popStatusMsg();
 
-	splash->showMessage(tr("Getting ready to rok"));
 	m_mainWindow = new CosecantMainWindow;
-	splash->finish(m_mainWindow);
+	m_splashScreen->finish(m_mainWindow);
+	m_splashScreen = NULL;
 	m_mainWindow->showMaximized();
 
 	connect( this, SIGNAL(aboutToQuit()), this, SLOT(onAboutToQuit()) );
@@ -187,4 +211,33 @@ void Application::textMessageHandler(QtMsgType type, const char *msg)
 	str.append(msg);
 	str.append("\n");
 	OutputDebugStringA(str.toAscii());
+}
+
+void Application::pushStatusMsg(const QString& msg)
+{
+	qDebug() << "Status +" << msg;
+	m_statusStack.append(msg);
+	if (m_splashScreen) writeStatusStackToSplashScreen();
+}
+
+void Application::popStatusMsg()
+{
+	if (m_statusStack.isEmpty()) return;
+	qDebug() << "Status -" << m_statusStack.last();
+	m_statusStack.removeLast();
+	if (m_splashScreen) writeStatusStackToSplashScreen();
+}
+
+void Application::writeStatusStackToSplashScreen()
+{
+	if (!m_splashScreen) return;
+
+	QString msg, indent;
+	foreach(const QString& line, m_statusStack)
+	{
+		msg += indent + line + "\n";
+		indent += "   ";
+	}
+
+	m_splashScreen->showMessage(msg);
 }

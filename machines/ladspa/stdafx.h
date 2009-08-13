@@ -23,5 +23,6 @@
 
 #include "../../cosecant_api.h"
 using namespace CosecantAPI;
+using namespace CosecantHelper;
 
 #include "ladspa_sdk/src/ladspa.h"

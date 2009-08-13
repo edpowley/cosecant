@@ -4,8 +4,15 @@
 #include "stdafx.h"
 #include "ladspa_machine.h"
 
+std::ostream& operator<<(std::ostream& stream, const std::wstring& ws)
+{
+	return stream << toUtf8(ws);
+}
+
 void scanDll(MiFactoryList* list, const std::wstring& filename)
 {
+	StatusMessage status(StatusMessageBuilder() << "Scanning " << filename);
+
 	LadspaDll dll;
 	try
 	{
@@ -37,22 +44,42 @@ void scanDll(MiFactoryList* list, const std::wstring& filename)
 	}
 }
 
-void CosecantPlugin::enumerateFactories(MiFactoryList* list)
+struct ScanDirData
 {
-	std::wstring basepath = L"C:\\Users\\Ed\\Documents\\ladspa_plugins";
-	if (basepath[basepath.length()-1] != '\\') basepath += L"\\";
+	MiFactoryList* list;
+};
+
+void scanDir(void* user, const PathChar* pathsz)
+{
+	StatusMessage status(StatusMessageBuilder() << "Scanning " << toUtf8(pathsz));
+
+	ScanDirData* data = reinterpret_cast<ScanDirData*>(user);
+
+	std::wstring path = pathsz;
+	if (path[path.length()-1] != '\\') path += L"\\";
 
 	WIN32_FIND_DATA finddata;
-	HANDLE hfind = FindFirstFile((basepath + L"*.dll").c_str(), &finddata);
+	HANDLE hfind = FindFirstFile( (path + L"*.dll").c_str(), &finddata );
 	if (hfind != INVALID_HANDLE_VALUE)
 	{
 		do
 		{
-			scanDll(list, basepath + finddata.cFileName);
+			scanDll(data->list, path + finddata.cFileName);
 		}
 		while (FindNextFile(hfind, &finddata));
 		FindClose(hfind);
 	}
+}
+
+void CosecantPlugin::enumerateFactories(MiFactoryList* list)
+{
+	StatusMessage status(StatusMessageBuilder() << "Scanning LADSPA plugins");
+
+	ScanDirData data;
+	data.list = list;
+	g_host->iteratePaths("btdsys/ladspa", "LADSPA plugins", scanDir, &data);
+
+	g_host->popStatus();
 }
 
 Mi* CosecantPlugin::createMachine(const void* facUser, unsigned int facUserSize, HostMachine* hm)

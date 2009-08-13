@@ -13,6 +13,10 @@
 #include <sstream>
 #include <vector>
 
+#ifdef COSECANT_OS_WIN32
+#	define COSECANT_PATHS_ARE_WIDE_STRINGS
+#endif
+
 // Your plugin must NOT define COSECANT_API_HOST
 #ifdef COSECANT_API_HOST
 #	include "hostapi.h"
@@ -26,6 +30,12 @@ namespace CosecantAPI
 	const unsigned int version = 1000;
 
 	const unsigned int maxFramesPerBuffer = 1024;
+
+#	ifdef COSECANT_PATHS_ARE_WIDE_STRINGS
+		typedef wchar_t PathChar;
+#	else
+		typedef char PathChar;
+#	endif
 
 	class Mi;
 	class MiNote;
@@ -276,52 +286,96 @@ namespace CosecantAPI
 	
 	////////////////////////////////////////////////////////////////////
 
-	/** Callbacks provided by the host. Use these functions via the global g_host variable. */
+	/** \struct HostFunctions
+	Callbacks provided by the host. Use these functions via the global g_host variable.
+	*/
+	/** \fn unsigned int (*HostFunctions::getHostVersion)()
+	Get the plugin API version of the host.
+	\sa version
+	*/
+	/** \fn void (*HostFunctions::debugPrint)(const char* msg)
+	Write a string to the host's debug output. The CosecantHelper::DebugPrint class provides a convenient
+	wrapper for this function.
+	*/
+	/** \fn void (*HostFunctions::registerMiFactory)(MiFactoryList* list, const char* id, const char* desc, void* user, unsigned int userSize)
+	Register a machine provided by your plugin. Call this in your implementation of
+	CosecantPlugin::enumerateFactories.
+	\param list the argument to CosecantPlugin::enumerateFactories
+	\param id a unique machine identifier, e.g. "btdsys/awesomesynth"
+	\param desc a human-readable machine name, e.g. "BTDSys AwesomeSynth"
+	\param user a pointer to data that will be passed to your CosecantPlugin::createMachine function.
+		Note that the data is copied, and in general the actual pointer you pass here will be different
+		from the pointer passed back to you. If you do not need any data, this can be \p NULL.
+	\param userSize the length, in bytes, of the data pointed to by \p user. If \p user points to a string,
+		remember to allow for the null terminator. Pass \p 0 if and only if user is \p NULL.
+	*/
+	/** \fn const TimeInfo* (*HostFunctions::getTimeInfo)(HostMachine*)
+	Get the TimeInfo structure associated with this machine.
+	*/
+	/** \fn void (*HostFunctions::registerScriptFunction)(HostMachine*, const char* name, int id)
+	Register a function that can be called from your machine's script. A function named \p name will be
+	added to your main script object's \p cscFunctions member; calling this function will call your
+	Mi::callScriptFunction to be called.
+	\param name the name of the function. This must be a valid QtScript identifier.
+	\param id the integer identifier passed to Mi::callScriptFunction
+	*/
+	/** \fn cbool (*HostFunctions::lockMutex)(HostMachine*)
+	Lock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
+	\returns \p ctrue if the mutex was locked, \p cfalse if the lock timed out.
+	*/
+	/** \fn cbool (*HostFunctions::unlockMutex)(HostMachine*)
+	Unlock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
+	\returns \p ctrue
+	*/
+	/** \fn const ScriptValue* (*HostFunctions::ScriptValue_getArrayElement)(const ScriptValue* sv, unsigned int index)
+	Get the array element at the specified index. Note that you take ownership of the return value,
+	so it is your responsibility to call ScriptValue_destroy() when you are finished with it.
+	\param sv the array
+	\param index the index into the array
+	\returns the index'th element of sv. If there is no such element, an invalid value is returned.
+	*/
+	/** \fn ScriptValue* (*HostFunctions::ScriptValue_createArray)(unsigned int length)
+	Create a new QtScript Array object.
+	\param length the initial length (number of elements) of the array. Note that the array can be expanded
+		by inserting elements beyond its current length. If you do not know the array length in advance, it
+		is acceptable to pass 0 here.
+	\returns a pointer to the new object, which you own.
+	*/
+	/** \fn void (*HostFunctions::ScriptValue_setArrayElement)(ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership)
+	Set the array element at the specified index. \p value is copied and the copy is inserted into the array,
+	so you may safely destroy \p value after calling this function. In fact, the \p takeOwnership parameter
+	allows this function to destroy \p value so you don't have to.
+	\param arr an array, previously created with ScriptValue_createArray()
+	\param index the index into the array
+	\param value the new value of the index'th element of arr
+	\param takeOwnership if \p ctrue, this function will destroy \p value before returning.
+	*/
 	struct HostFunctions
 	{
-		/** Get the plugin API version of the host.
-			\sa version */
 		unsigned int (*getHostVersion)();
 
-		/** Write a string to the host's debug output. The DebugPrint class provides a convenient wrapper
-			for this function. */
 		void (*debugPrint)(const char* msg);
+		void (*pushStatus)(const char* msg);
+		void (*popStatus)();
+
+		int (*toUtf8)(char* buf, int bufsize, const wchar_t* str);
 		
-		/** Register a machine provided by your plugin. Call this in your implementation of
-			CosecantPlugin::enumerateFactories.
-			\param list the argument to CosecantPlugin::enumerateFactories
-			\param id a unique machine identifier, e.g. "btdsys/awesomesynth"
-			\param desc a human-readable machine name, e.g. "BTDSys AwesomeSynth"
-			\param user a pointer to data that will be passed to your CosecantPlugin::createMachine function.
-				Note that the data is copied, and in general the actual pointer you pass here will be different
-				from the pointer passed back to you. If you do not need any data, this can be \p NULL.
-			\param userSize the length, in bytes, of the data pointed to by \p user. If \p user points to a string,
-				remember to allow for the null terminator. Pass \p 0 if and only if user is \p NULL.
-			*/
 		void (*registerMiFactory)(MiFactoryList* list,
 			const char* id, const char* desc, void* user, unsigned int userSize);
 
-		/** Get the TimeInfo structure associated with this machine. */
 		const TimeInfo* (*getTimeInfo)(HostMachine*);
 		
-		/** Register a function that can be called from your machine's script. A function named \p name will be
-			added to your main script object's \p cscFunctions member; calling this function will call your
-			Mi::callScriptFunction to be called.
-			\param name the name of the function. This must be a valid QtScript identifier.
-			\param id the integer identifier passed to Mi::callScriptFunction
-			*/
 		void (*registerScriptFunction)(HostMachine*, const char* name, int id);
 		
-		/** Lock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
-			\returns \p ctrue if the mutex was locked, \p cfalse if the lock timed out. */
 		cbool (*lockMutex)(HostMachine*);
-
-		/** Unlock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
-			\returns \p ctrue
-		*/
 		cbool (*unlockMutex)(HostMachine*);
 
 		void (*addParamChangeEvent)(PinBuffer* buf, int time, double value);
+
+		void (*iteratePaths)(
+			const char* id, const char* name,
+			void (*callback)(void* user, const PathChar* path),
+			void* user);
 
 		cbool (*ScriptValue_isNull)(const ScriptValue*);
 		cbool (*ScriptValue_isValid)(const ScriptValue*);
@@ -336,11 +390,6 @@ namespace CosecantAPI
 		cbool (*ScriptValue_isArray)(const ScriptValue*);
 		unsigned int (*ScriptValue_getArrayLength)(const ScriptValue*);
 
-		/** Get the array element at the specified index. Note that you take ownership of the return value,
-			so it is your responsibility to call ScriptValue_destroy() when you are finished with it.
-			\param sv the array
-			\param index the index into the array
-			\returns the index'th element of sv. If there is no such element, an invalid value is returned. */
 		const ScriptValue* (*ScriptValue_getArrayElement)(const ScriptValue* sv, unsigned int index);
 
 		Mi* (*ScriptValue_toMi)(const ScriptValue*);
@@ -353,20 +402,7 @@ namespace CosecantAPI
 		ScriptValue* (*ScriptValue_createString)(const char* v);
 		void (*ScriptValue_destroy)(const ScriptValue*);
 
-		/** Create a new QtScript Array object.
-			\param length the initial length (number of elements) of the array. Note that the array can be expanded
-				by inserting elements beyond its current length. If you do not know the array length in advance, it
-				is acceptable to pass 0 here.
-			\returns a pointer to the new object, which you own. */
 		ScriptValue* (*ScriptValue_createArray)(unsigned int length);
-
-		/** Set the array element at the specified index. \p value is copied and the copy is inserted into the array,
-			so you may safely destroy \p value after calling this function. In fact, the \p takeOwnership parameter
-			allows this function to destroy \p value so you don't have to.
-			\param arr an array, previously created with ScriptValue_createArray()
-			\param index the index into the array
-			\param value the new value of the index'th element of arr
-			\param takeOwnership if \p ctrue, this function will destroy \p value before returning. */
 		void (*ScriptValue_setArrayElement)(
 			ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership);
 	};
@@ -434,151 +470,10 @@ namespace CosecantAPI
 		HostMachine* m_hm;
 	};
 
-	////////////////////////////////////////////////////////////////////////////
-
-	/** A convenience wrapper for HostFunctions::debugPrint. An instance of this class behaves much like an STL
-		output stream. Note that nothing is actually printed until the instance is destroyed.
-
-		Example usage:
-		\code
-DebugPrint() << "The value of x is" << x;
-		\endcode
-	*/
-	class DebugPrint
-	{
-	public:
-		DebugPrint() : m_space(true) {}
-		~DebugPrint() { g_host->debugPrint(m_ss.str().c_str()); }
-		
-		/** Get whether a space is added between printed items. \sa setSpace */
-		bool getSpace() { return m_space; }
-
-		/** Set whether a space is added between printed items. The default is \p true. For example:
-			\code
-int answer = 42;
-{
-	DebugPrint d;
-	d.setSpace(true);
-	d << "The answer is" << answer; // prints "The answer is 42"
-}
-{
-	DebugPrint d;
-	d.setSpace(false);
-	d << "The answer is" << answer; // prints "The answer is42"
-}
-			\endcode
-		*/
-		void setSpace(bool space) { m_space = space; }
-		
-		/** Write an item to the stream. The item can be any type supported by \p std::ostringstream,
-			and you can add support for your own types in the same way. */
-		template<typename T> DebugPrint& operator<<(const T& v)
-		{
-			m_ss << v;
-			if (m_space) m_ss << ' ';
-			return *this;
-		}
-		
-	protected:
-		std::ostringstream m_ss;
-		bool m_space;
-	};
-	
-	/**	A RAII locker for a machine's mutex. This saves you the effort of remembering to unlock the mutex. Simply
-		create an instance of this class when you want to lock the mutex, and the mutex will be unlocked once that
-		instance falls out of scope.
-		\code
-{
-	MutexLock lock(m_hm);
-	// Now the mutex is locked
-	doSomething();
-}
-// Now the mutex is unlocked
-		\endcode
-		
-		Note that the mutex is recursive: it is safe to lock the mutex if it is already locked by this thread. */
-	class MutexLock
-	{
-	public:
-		/** This exception is thrown if the mutex lock in the constructor times out. */
-		class Timeout : public std::exception {};
-		
-		/** The constructor. If the lock times out (because some other thread keeps the mutex locked for too
-			long), an exception of class Timeout is thrown. Make sure that this eventuality will not put your machine
-			into an inconsistent state. */
-		MutexLock(HostMachine* hm) : m_hm(hm)
-		{
-			m_locked = (g_host->lockMutex(m_hm) != cfalse);
-			if (!m_locked) throw Timeout();
-		}
-		
-		~MutexLock() { if (m_locked) g_host->unlockMutex(m_hm); }
-	
-	protected:
-		HostMachine* m_hm;
-		bool m_locked;
-	};
-
 #endif
-
-	class Blob
-	{
-	public:
-		Blob() : m_dataHead(0) {}
-		Blob(const void* data, unsigned int dataSize) : m_dataHead(0) { push(data, dataSize); }
-
-		void* getData() { return &m_data[m_dataHead]; }
-		unsigned int getDataSize() { return m_data.size() - m_dataHead; }
-
-		void push(const void* data, unsigned int dataSize)
-		{
-			const char* p = reinterpret_cast<const char*>(data);
-			for (unsigned int i=0; i<dataSize; i++,p++)
-				m_data.push_back(*p);
-		}
-
-		template<typename T> void push(const T& data) { push(&data, sizeof(T)); }
-
-		template<typename C> void pushString(const std::basic_string<C>& str)
-		{
-			push<unsigned int>(str.length());
-			push(str.c_str(), str.length() * sizeof(C));
-		}
-
-		unsigned int pull(void* data, unsigned int dataSize)
-		{
-			char* p = reinterpret_cast<char*>(data);
-			unsigned int i;
-			for (i=0; i<dataSize && m_dataHead < m_data.size(); i++,p++,m_dataHead++)
-				*p = m_data[m_dataHead];
-			return i;
-		}
-
-		class BlobEmpty : public std::exception {};
-
-		template<typename T> T pull()
-		{
-			T t;
-			if (pull(&t, sizeof(T)) != sizeof(T))
-				throw BlobEmpty();
-			return t;
-		}
-
-		template<typename C> std::basic_string<C> pullString()
-		{
-			unsigned int len; len = pull<unsigned int>();
-			std::basic_string<C> str;
-			str.reserve(len);
-			for (unsigned int i=0; i<len; i++)
-				str.append(1, pull<C>());
-			return str;
-		}
-
-	protected:
-		std::vector<char> m_data;
-		unsigned int m_dataHead;
-	};
 };
+
+#include "cosecant_api_helpers.h"
 
 #ifdef COSECANT_OS_WIN32
 #	define COSECANT_EXPORT(RETURN_TYPE) extern "C" __declspec(dllexport) RETURN_TYPE

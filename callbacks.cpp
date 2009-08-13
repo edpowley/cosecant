@@ -32,6 +32,21 @@ static void debugPrint(const char* msg)
 	qDebug(msg);
 }
 
+static void pushStatus(const char* msg)
+{
+	Application::get().pushStatusMsg(decodeApiString(msg));
+}
+
+static void popStatus()
+{
+	Application::get().popStatusMsg();
+}
+
+static int toUtf8(char* buf, int bufsize, const wchar_t* str)
+{
+	return returnString(QString::fromWCharArray(str), buf, bufsize);
+}
+
 static void registerMiFactory(MiFactoryList* list,
 							  const char* id, const char* desc, void* user, unsigned int userSize)
 {
@@ -63,6 +78,26 @@ static void addParamChangeEvent(PinBuffer* buf, int time, double value)
 {
 	WorkBuffer::ParamControl* p = dynamic_cast<WorkBuffer::ParamControl*>(buf->hostbuf);
 	if (p) p->m_data.insert(std::make_pair(time, value));
+}
+
+static void iteratePaths(const char* id, const char* name,
+						 void (*callback)(void* user, const PathChar* path), void* user)
+{
+	Ptr<PrefsDirList> dirs = PrefsFile::get()->getDirList(id, decodeApiString(name));
+	foreach(const QString& dir, dirs->getDirs())
+	{
+#		ifdef COSECANT_PATHS_ARE_WIDE_STRINGS
+		{
+			std::wstring pathstr = QDir::toNativeSeparators(dir).toStdWString();
+			callback(user, pathstr.c_str());
+		}
+#		else
+		{
+			QByteArray pathstr = QDir::toNativeSeparators(dir).toUtf8();
+			callback(user, pathstr.constData());
+		}
+#		endif
+	}
 }
 
 static cbool ScriptValue_isNull(const ScriptValue* v)
@@ -181,12 +216,16 @@ static HostFunctions g_hostFuncs =
 {
 	getHostVersion,
 	debugPrint,
+	pushStatus,
+	popStatus,
+	toUtf8,
 	registerMiFactory,
 	getTimeInfo,
 	registerScriptFunction,
 	lockMutex,
 	unlockMutex,
 	addParamChangeEvent,
+	iteratePaths,
 	ScriptValue_isNull,
 	ScriptValue_isValid,
 	ScriptValue_isNumber,

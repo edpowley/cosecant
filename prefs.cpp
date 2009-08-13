@@ -147,7 +147,10 @@ PrefsFile::PrefsFile() : m_database(NULL)
 	}
 
 	sqlDo(m_database, sqlite3_exec(m_database,
-		"CREATE TABLE IF NOT EXISTS prefs (key UNIQUE ON CONFLICT REPLACE, value)",
+		"CREATE TABLE IF NOT EXISTS prefs (key PRIMARY KEY ON CONFLICT REPLACE, value)",
+		NULL, NULL, NULL));
+	sqlDo(m_database, sqlite3_exec(m_database,
+		"CREATE TABLE IF NOT EXISTS dirs (key, value)",
 		NULL, NULL, NULL));
 }
 
@@ -184,4 +187,67 @@ void PrefsFile::writeValue(const QString& id, PrefsVar_Base* var)
 	sqlDo(m_database, sqlite3_step(stmt));
 
 	sqlDo(m_database, sqlite3_finalize(stmt));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Ptr<PrefsDirList> PrefsFile::getDirList(const QString& id, const QString& name)
+{
+	if (!m_dirLists.contains(id))
+		m_dirLists.insert(id, new PrefsDirList(this, id, name));
+
+	return m_dirLists.value(id);
+}
+
+QStringList PrefsFile::getDirs(const QString& key)
+{
+	QStringList ret;
+
+	sqlite3_stmt* stmt = NULL;
+	const char sql[] = "SELECT value FROM dirs WHERE key == ?1";
+	sqlDo(m_database, sqlite3_prepare_v2(m_database, sql, sizeof(sql), &stmt, NULL));
+
+	sqlDo(m_database, sqlite3_bind_text(stmt, 1, key.toUtf8().constData(), -1, SQLITE_TRANSIENT));
+
+	while (sqlDo(m_database, sqlite3_step(stmt)) == SQLITE_ROW)
+	{
+		ret << QString::fromUtf8(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+	}
+
+	sqlDo(m_database, sqlite3_finalize(stmt));
+
+	return ret;
+}
+
+PrefsDirList::PrefsDirList(const Ptr<PrefsFile>& prefsFile, const QString& id, const QString& name)
+: m_prefsFile(prefsFile), m_id(id), m_name(name)
+{
+	m_dirs = m_prefsFile->getDirs(id);
+}
+
+void PrefsFile::setDirs(const QString& key, const QStringList& dirs)
+{
+	sqlite3_stmt* stmt = NULL;
+	const char sql[] = "DELETE FROM dirs WHERE key == ?1";
+	sqlDo(m_database, sqlite3_prepare_v2(m_database, sql, sizeof(sql), &stmt, NULL));
+	sqlDo(m_database, sqlite3_bind_text(stmt, 1, key.toUtf8().constData(), -1, SQLITE_TRANSIENT));
+	sqlDo(m_database, sqlite3_step(stmt));
+	sqlDo(m_database, sqlite3_finalize(stmt));
+
+	foreach(const QString& dir, dirs)
+	{
+		sqlite3_stmt* stmt = NULL;
+		const char sql[] = "INSERT INTO dirs (key, value) VALUES (?1, ?2)";
+		sqlDo(m_database, sqlite3_prepare_v2(m_database, sql, sizeof(sql), &stmt, NULL));
+		sqlDo(m_database, sqlite3_bind_text(stmt, 1, key.toUtf8().constData(), -1, SQLITE_TRANSIENT));
+		sqlDo(m_database, sqlite3_bind_text(stmt, 2, dir.toUtf8().constData(), -1, SQLITE_TRANSIENT));
+		sqlDo(m_database, sqlite3_step(stmt));
+		sqlDo(m_database, sqlite3_finalize(stmt));
+	}
+}
+
+void PrefsDirList::setDirs(const QStringList& dirs)
+{
+	m_dirs = dirs;
+	m_prefsFile->setDirs(m_id, dirs);
 }

@@ -89,6 +89,30 @@ protected:
 	virtual int sqlBind(sqlite3_stmt* stmt, int index);
 };
 
+//////////////////////////////////////////////////////////////////////////////////
+
+class PrefsDirList : public Object
+{
+	friend class PrefsFile;
+
+protected:
+	PrefsDirList(const Ptr<PrefsFile>& prefsFile, const QString& id, const QString& name);
+
+public:
+	QString getId() { return m_id; }
+	QString getName() { return m_name; }
+	QStringList getDirs() { return m_dirs; }
+
+	void setDirs(const QStringList& dirs);
+
+protected:
+	Ptr<PrefsFile> m_prefsFile;
+	QString m_id, m_name;
+	QStringList m_dirs;
+};
+
+//////////////////////////////////////////////////////////////////////////////////
+
 class PrefsFile : public Object
 {
 protected:
@@ -112,6 +136,13 @@ public:
 	void readValue(const QString& id, PrefsVar_Base* var);
 	void writeValue(const QString& id, PrefsVar_Base* var);
 
+	Ptr<PrefsDirList> getDirList(const QString& id, const QString& name);
+	QHash< QString, Ptr<PrefsDirList> > getDirLists() { return m_dirLists; }
+	QStringList getDirs(const QString& key);
+	void setDirs(const QString& key, const QStringList& dirs);
+
 protected:
 	sqlite3* m_database;
+
+	QHash< QString, Ptr<PrefsDirList> > m_dirLists;
 };

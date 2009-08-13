@@ -9,6 +9,7 @@ class Application : public QApplication
 
 protected:
 	Application(int& argc, char** argv);
+	void init();
 	static SingletonPtr<Application> s_singleton;
 
 public:
@@ -24,6 +25,9 @@ public:
 
 	static PrefsVar_String s_prefLanguage;
 
+	void pushStatusMsg(const QString& msg);
+	void popStatusMsg();
+
 protected slots:
 	void onAboutToQuit();
 
@@ -34,6 +38,10 @@ protected:
 	QScriptEngine* m_scriptEngine;
 	QScriptEngineDebugger* m_scriptDebugger;
 	CosecantMainWindow* m_mainWindow;
+	QSplashScreen* m_splashScreen;
+
+	QStringList m_statusStack;
+	void writeStatusStackToSplashScreen();
 
 	void setupI18n();
 	void setupAudio();
