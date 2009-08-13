@@ -15,6 +15,7 @@ function PatternEditor(machine, pattern)
 	this.alignment = Qt.AlignLeft | Qt.AlignTop;
 	
 	var numrows = this.cscFunctions.getNumRows(this.m_pattern);
+	var subdiv = this.cscFunctions.getSubdiv(this.m_pattern);
 	var numtracks = this.cscFunctions.getNumTracks();
 	
 	this.m_cells = new Array(numrows);
@@ -30,10 +31,45 @@ function PatternEditor(machine, pattern)
 			this.m_scene.addItem(cell);
 			cell.setPos((t+1) * this.m_fontWidth * 7, (r+1) * this.m_fontHeight);
 		}
+		
+		if (r % subdiv == 0)
+		{
+			label = new QGraphicsSimpleTextItem();
+			label.setText((r/subdiv).toString());
+			label.setFont(this.m_font);
+			label.setPos(0, (r+1) * this.m_fontHeight);
+			this.m_scene.addItem(label);
+		}
 	}
+	
+	this.m_cursor = new Cursor(this);
+	this.m_scene.addItem(this.m_cursor);
 }
 
 PatternEditor.prototype = new QGraphicsView();
+
+////////////////////////////////////////////////////////////////////
+
+function Cursor(pe)
+{
+	QGraphicsRectItem.call(this, 0, 0, pe.m_fontWidth, pe.m_fontHeight);
+	this.m_pe = pe;
+	this.m_track = 0;
+	this.m_column = 0;
+	this.m_row = 0;
+	this.updatePos();
+}
+
+Cursor.prototype = new QGraphicsRectItem();
+
+Cursor.prototype.updatePos = function()
+{
+	var x = 7 + this.m_track*7 + this.m_column;
+	var y = this.m_row + 1;
+	this.setPos(x * this.m_pe.m_fontWidth, y * this.m_pe.m_fontHeight);
+}
+
+////////////////////////////////////////////////////////////////////
 
 function Cell(pe, row, track)
 {
@@ -83,7 +119,7 @@ Cell.prototype.updateFromMachine = function()
 		veltext = "?!";
 	
 	this.setText(notetext + " " + veltext);
-}	
+}
 
 PatternEditor.prototype.setCell = function(row, track, note, vel)
 {

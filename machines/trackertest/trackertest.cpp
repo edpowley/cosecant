@@ -9,6 +9,7 @@ using namespace CosecantAPI;
 enum ScriptFunctions
 {
 	sf_getNumRows,
+	sf_getSubdiv,
 	sf_getNumTracks,
 	sf_getCell,
 	sf_setCell,
@@ -46,6 +47,7 @@ TrackerTest::TrackerTest(HostMachine* hm) : Mi(hm), m_nTracks(4)
 void TrackerTest::init()
 {
 	g_host->registerScriptFunction(m_hm, "getNumRows",		sf_getNumRows);
+	g_host->registerScriptFunction(m_hm, "getSubdiv",		sf_getSubdiv);
 	g_host->registerScriptFunction(m_hm, "getNumTracks",	sf_getNumTracks);
 	g_host->registerScriptFunction(m_hm, "getCell",			sf_getCell);
 	g_host->registerScriptFunction(m_hm, "setCell",			sf_setCell);
@@ -62,6 +64,16 @@ ScriptValue* TrackerTest::callScriptFunction(int id, const ScriptValue** args, i
 			if (!pat) return NULL;
 
 			return g_host->ScriptValue_createInt(pat->getNumRows());
+		}
+		break;
+
+	case sf_getSubdiv:
+		{
+			if (numargs != 1) return NULL;
+			Pattern* pat = dynamic_cast<Pattern*>(g_host->ScriptValue_toMiPattern(args[0]));
+			if (!pat) return NULL;
+
+			return g_host->ScriptValue_createInt(pat->getSubdiv());
 		}
 		break;
 
