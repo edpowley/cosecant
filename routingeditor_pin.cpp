@@ -21,6 +21,8 @@ PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
 {
 	m_mouseMode = none;
 
+	setToolTip(pin->m_name);
+
 	prepareGeometryChange();
 
 	QPainterPath path;
