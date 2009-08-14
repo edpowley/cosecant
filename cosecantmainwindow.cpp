@@ -148,3 +148,19 @@ void CosecantMainWindow::on_actionTransportRecord_toggled(bool checked)
 
 	if (checked) ui.actionTransportPlay->setChecked(true);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+void CosecantMainWindow::on_actionFileSave_triggered()
+{
+	qDebug() << "save";
+
+	try
+	{
+		Song::get().save("aaaaa_testsong.zip");
+	}
+	catch (const SongSaveError& err)
+	{
+		QMessageBox::critical(this, QString(), err.msg());
+	}
+}

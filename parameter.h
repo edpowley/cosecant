@@ -16,7 +16,7 @@ namespace Parameter
 		CosecantAPI::TimeUnit::e timeUnit;
 	};
 
-	class Base : public Object
+	class Base : public ObjectWithUuid
 	{
 		Q_OBJECT
 
@@ -39,6 +39,8 @@ namespace Parameter
 		void setParamPin(const Ptr<ParamPin>& pin);
 		void unsetParamPin() { setParamPin(NULL); }
 
+		virtual QDomElement save(QDomDocument& doc);
+
 	signals:
 		void signalAddParamPin();
 		void signalRemoveParamPin();
@@ -53,7 +55,7 @@ namespace Parameter
 	{
 	public:
 		Group(const Ptr<Machine>& mac, const ParamGroupInfo* info);
-		virtual ParamTag getTag() { return 0; }
+		virtual ParamTag getTag() { return 0xFFFFFFFF; }
 
 		virtual void initParamStuff(Machine* mac);
 
@@ -61,6 +63,8 @@ namespace Parameter
 		void populateParamEditorGrid(QGridLayout* grid);
 
 		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
+
+		virtual QDomElement save(QDomDocument& doc);
 
 	protected:
 		QList< Ptr<Base> > m_params;
@@ -94,6 +98,8 @@ namespace Parameter
 		void change(double newval);
 
 		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
+
+		virtual QDomElement save(QDomDocument& doc);
 
 	signals:
 		void valueChanged(double v);
@@ -140,6 +146,8 @@ namespace Parameter
 		virtual double sanitise(double v);
 
 		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
+
+		virtual QDomElement save(QDomDocument& doc);
 
 	protected:
 		TimeUnit::e m_internalUnit, m_displayUnit;

@@ -19,12 +19,12 @@ MachineInfo* Gain::getInfo()
 		info.outPins = outpins;
 
 		static RealParamInfo paraGain;
-		paraGain.p.tag = COSECANT_TAG('gain');
+		paraGain.p.tag = ptGain;
 		paraGain.p.name = "Gain";
 		paraGain.min = 0; paraGain.max = 2; paraGain.def = 1;
 		
 		static RealParamInfo paraPan;
-		paraPan.p.tag = COSECANT_TAG('pan ');
+		paraPan.p.tag = ptPan;
 		paraPan.p.name = "Pan";
 		paraPan.min = 0; paraPan.max = 2; paraPan.def = 1;
 
@@ -41,10 +41,10 @@ void Gain::changeParam(ParamTag tag, double value)
 {
 	switch (tag)
 	{
-	case COSECANT_TAG('gain'):
+	case ptGain:
 		m_gain = static_cast<float>(value);
 		break;
-	case COSECANT_TAG('pan '):
+	case ptPan:
 		m_pan = static_cast<float>(value);
 		break;
 	}

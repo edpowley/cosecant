@@ -4,15 +4,8 @@
 #include "stdafx.h"
 #include "ladspa_machine.h"
 
-std::ostream& operator<<(std::ostream& stream, const std::wstring& ws)
-{
-	return stream << toUtf8(ws);
-}
-
 void scanDll(MiFactoryList* list, const std::wstring& filename)
 {
-	StatusMessage status(StatusMessageBuilder() << "Scanning " << filename);
-
 	LadspaDll dll;
 	try
 	{
@@ -160,7 +153,7 @@ MachineInfo* LadspaMachine::getInfo()
 			double max = phint->UpperBound;
 			double def = calcDefValue(min, max, h);
 
-			ParamTag tag = 0x10000 + port;
+			ParamTag tag = ptPluginFirst + port;
 
 			ParamScale::e scale = ParamScale::linear;
 			if (LADSPA_IS_HINT_LOGARITHMIC(h)) scale = ParamScale::logarithmic;

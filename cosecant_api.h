@@ -51,12 +51,6 @@ namespace CosecantAPI
 
 	typedef unsigned long ParamTag;
 
-#	if defined(COSECANT_OS_WIN32)
-#		define COSECANT_TAG(x) (x)
-#	else
-#		error "COSECANT_TAG not defined"
-#	endif
-
 	//////////////////////////////////////////////////////////////////////////////////
 
 	typedef unsigned char cbool;

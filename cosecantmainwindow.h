@@ -29,6 +29,8 @@ protected slots:
 	void on_actionTransportRecord_toggled(bool checked);
 	void on_actionTransportStop_triggered();
 
+	void on_actionFileSave_triggered();
+
 private:
 	static CosecantMainWindow* s_singleton;
 

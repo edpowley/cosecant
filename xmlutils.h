@@ -1,5 +1,7 @@
 #pragma once
 
+#include "cosecant_api.h"
+
 ERROR_CLASS(XmlError);
 ERROR_CLASS_2(XmlOpenError, XmlError);
 ERROR_CLASS_2(MissingAttributeError, XmlError);
@@ -65,20 +67,29 @@ template<> inline QColor getAttribute<QColor>(const QDomElement& el, const QStri
 
 ////////////////////////////////////////////////////////////////////////
 
-template<typename T> void setAttribute(QDomElement& el, const QString& name, const T& x)
-{
-	el.setAttribute(name, QString("%1").arg(x));
-}
+template<typename NumType> void setAttribute(QDomElement& el, const QString& name, const NumType& x)
+{	el.setAttribute(name, QString::number(x));   }
 
 template<> inline void setAttribute<QString>(QDomElement& el, const QString& name, const QString& x)
-{
-	el.setAttribute(name, x);
-}
+{	el.setAttribute(name, x);   }
+
+template<> inline void setAttribute<double>(QDomElement& el, const QString& name, const double& x)
+{	el.setAttribute(name, QString::number(x, 'g', 20));   }
+
+template<> inline void setAttribute<float>(QDomElement& el, const QString& name, const float& x)
+{	el.setAttribute(name, QString::number(x, 'g', 20));   }
+
+template<> inline void setAttribute<bool>(QDomElement& el, const QString& name, const bool& x)
+{	el.setAttribute(name, x ? "true" : "false");   }
 
 template<> inline void setAttribute<QColor>(QDomElement& el, const QString& name, const QColor& x)
-{
-	el.setAttribute(name, x.name());
-}
+{	el.setAttribute(name, x.name());   }
+
+template<> inline void setAttribute<Uuid>(QDomElement& el, const QString& name, const Uuid& x)
+{	setAttribute(el, name, x.str());   }
+
+template<> inline void setAttribute<QPointF>(QDomElement& el, const QString& name, const QPointF& x)
+{	el.setAttribute(name, QString("%1;%2").arg(x.x(), 0, 'g', 20).arg(x.y(), 0, 'g', 20));   }
 
 /////////////////////////////////////////////////////////////////////////
 

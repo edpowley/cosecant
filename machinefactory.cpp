@@ -25,6 +25,7 @@ Ptr<MachineFactory> MachineFactory::get(const QString &id)
 Ptr<Machine> MachineFactory::createMachine()
 {
 	Ptr<Machine> machine = createMachineImpl();
+	machine->m_id = m_id;
 	machine->init();
 
 	return machine;

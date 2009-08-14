@@ -5,6 +5,7 @@
 namespace Sequence { class Seq; };
 
 ERROR_CLASS(SongLoadError);
+ERROR_CLASS(SongSaveError);
 
 class SongLoadContext
 {

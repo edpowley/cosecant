@@ -6,6 +6,8 @@
 class SineTest : public Mi
 {
 public:
+	enum { ptFreq, ptVol, };
+
 	SineTest(HostMachine* hm) : Mi(hm), m_phase(0), m_amp(0.2)
 	{
 		setFreq(440.0 / 44100.0);
@@ -20,11 +22,11 @@ public:
 	{
 		switch (tag)
 		{
-		case COSECANT_TAG('freq'):
+		case ptFreq:
 			setFreq(value);
 			break;
 
-		case COSECANT_TAG('volu'):
+		case ptVol:
 			m_amp = value;
 			break;
 		}
@@ -53,7 +55,7 @@ public:
 
 			using namespace TimeUnit;
 			static TimeParamInfo paraFreq;
-			paraFreq.p.tag = COSECANT_TAG('freq');
+			paraFreq.p.tag = ptFreq;
 			paraFreq.p.name = "Frequency";
 			paraFreq.min.set(20, hertz); paraFreq.max.set(2000, hertz); paraFreq.def.set(440, hertz);
 			paraFreq.internalUnit = fracfreq;
@@ -61,7 +63,7 @@ public:
 			paraFreq.defaultDisplayUnit = hertz;
 
 			static RealParamInfo paraVol;
-			paraVol.p.tag = COSECANT_TAG('volu');
+			paraVol.p.tag = ptVol;
 			paraVol.p.name = "Volume";
 			paraVol.min = 0; paraVol.max = 1; paraVol.def = 0.5;
 

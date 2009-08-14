@@ -11,6 +11,8 @@ public:
 class Gain : public BuzzyMi
 {
 public:
+	enum { ptGain, ptPan };
+
 	Gain(HostMachine* hm) : BuzzyMi(hm), m_gain(1), m_pan(1) {}
 
 	MachineInfo* getInfo();

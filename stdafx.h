@@ -44,5 +44,9 @@
 // sqlite
 #include "sqlite/sqlite3.h"
 
+// zlib / minizip
+#include "zip.h"
+#include "unzip.h"
+
 // Mine
 #define COSECANT_API_HOST

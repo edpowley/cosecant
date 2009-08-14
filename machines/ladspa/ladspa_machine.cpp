@@ -66,7 +66,7 @@ LadspaMachine::LadspaMachine(HostMachine* hm, const std::wstring& dllname, int i
 
 		if (LADSPA_IS_PORT_INPUT(pdesc) && LADSPA_IS_PORT_CONTROL(pdesc))
 		{
-			m_paramBuffers[0x10000 + port] = bufAddr;
+			m_paramBuffers[ptPluginFirst + port] = bufAddr;
 		}
 		else if (LADSPA_IS_PORT_INPUT(pdesc))
 		{

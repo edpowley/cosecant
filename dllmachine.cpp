@@ -27,7 +27,7 @@ MacDll::MacDll(const QString& path) : Dll(path)
 //////////////////////////////////////////////////////////////////////////////////
 
 Factory::Factory(const QString& dllpath, const QString& id, const QString& desc, void* user, unsigned int userSize)
-: m_dllpath(dllpath), m_id(id), m_desc(desc)
+: MachineFactory(id), m_dllpath(dllpath), m_id(id), m_desc(desc)
 {
 	if (user && userSize > 0)
 	{

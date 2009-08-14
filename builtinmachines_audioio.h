@@ -14,10 +14,14 @@ class AudioInOut : public BuiltinMachine
 	Q_OBJECT
 
 public:
+	enum
+	{
+		ptChannel,
+	};
+
 	virtual void changeParam(ParamTag tag, double value)
 	{
-		qDebug() << "changeParam" << tag << value;
-		if (tag == COSECANT_TAG('chan'))
+		if (tag == ptChannel)
 		{
 			int c = static_cast<int>(value) - 1;
 			m_leftChannel  = c*2;
@@ -40,7 +44,7 @@ protected:
 		static bool initialised = false;
 		if (!initialised)
 		{
-			info.p.tag = COSECANT_TAG('chan');
+			info.p.tag = ptChannel;
 			info.p.name = "Channel";
 			static const char* items[] = {"None", "Channel 1/2", NULL};
 			info.items = items;
@@ -63,7 +67,7 @@ protected:
 	void populateChannelParam(int nChans, boost::function<QString(int)> getName)
 	{
 		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(
-			m_paramMap.value(COSECANT_TAG('chan')).c_ptr() );
+			m_paramMap.value(ptChannel).c_ptr() );
 		param->setItems(getChannelParamItems(nChans, getName));
 	}
 };

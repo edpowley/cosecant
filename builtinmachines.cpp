@@ -39,7 +39,9 @@ namespace Builtin
 
 void initBuiltinMachineFactories()
 {
-	MachineFactory::add("builtin/aout",		new BuiltinMachineFactory<Builtin::AudioOut>("Audio Out"));
-	MachineFactory::add("builtin/ain",		new BuiltinMachineFactory<Builtin::AudioIn>("Audio In"));
-	MachineFactory::add("builtin/dummy",	new BuiltinMachineFactory<Builtin::Dummy>("Dummy"));
+#	define INIT_FACTORY(type, id, desc)  MachineFactory::add(id, new BuiltinMachineFactory<type>(id, desc));
+	INIT_FACTORY(Builtin::AudioOut,		"builtin/aout",		"Audio Out");
+	INIT_FACTORY(Builtin::AudioIn,		"builtin/ain",		"Audio In");
+	INIT_FACTORY(Builtin::Dummy,		"builtin/dummy",	"Dummy");
+#	undef INIT_FACTORY
 }

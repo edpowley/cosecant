@@ -6,6 +6,8 @@
 class Lfo : public Mi
 {
 public:
+	enum { ptSpeed, ptStep, ptMin, ptMax, };
+
 	MachineInfo* getInfo()
 	{
 		static MachineInfo info;
@@ -18,7 +20,7 @@ public:
 
 			using namespace TimeUnit;
 			static TimeParamInfo paraFreq;
-			paraFreq.p.tag = COSECANT_TAG('sped');
+			paraFreq.p.tag = ptSpeed;
 			paraFreq.p.name = "Speed";
 			paraFreq.min.set(2, samples); paraFreq.max.set(10, seconds); paraFreq.def.set(1, seconds);
 			paraFreq.internalUnit = samples;
@@ -26,16 +28,16 @@ public:
 			paraFreq.defaultDisplayUnit = seconds;
 
 			static IntParamInfo paraStep;
-			paraStep.p.tag = COSECANT_TAG('step');
+			paraStep.p.tag = ptStep;
 			paraStep.p.name = "Send step";
 			paraStep.min = 1; paraStep.max = 256; paraStep.def = 16;
 
 			static RealParamInfo paraMin, paraMax;
-			paraMin.p.tag = COSECANT_TAG('rmin');
+			paraMin.p.tag = ptMin;
 			paraMin.p.name = "Minimum";
 			paraMin.p.flags = ParamFlags::noMinMax;
 			paraMin.def = 0;
-			paraMax.p.tag = COSECANT_TAG('rmax');
+			paraMax.p.tag = ptMax;
 			paraMax.p.name = "Maximum";
 			paraMax.p.flags = ParamFlags::noMinMax;
 			paraMax.def = 1;
@@ -68,16 +70,16 @@ public:
 	{
 		switch (tag)
 		{
-		case COSECANT_TAG('sped'):
+		case ptSpeed:
 			setPeriod(value);
 			break;
-		case COSECANT_TAG('step'):
+		case ptStep:
 			m_sendphasemax = (int)value;
 			break;
-		case COSECANT_TAG('rmin'):
+		case ptMin:
 			m_min = value;
 			break;
-		case COSECANT_TAG('rmax'):
+		case ptMax:
 			m_max = value;
 			break;
 		}

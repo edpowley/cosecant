@@ -44,7 +44,7 @@ public:
 	QList< Ptr<Connection> > m_connections;
 
 	void load(class SongLoadContext& ctx, const QDomElement& el);
-	void save(const QDomElement& el);
+	virtual QDomElement save(QDomDocument& doc);
 
 signals:
 	void signalPosChanged();
@@ -61,6 +61,8 @@ public:
 
 	Parameter::Scalar* getParam() { return m_param; }
 	TimeUnit::e getTimeUnit() { return m_timeUnit; }
+
+	virtual QDomElement save(QDomDocument& doc);
 
 protected:
 	Parameter::Scalar* m_param;
@@ -82,7 +84,7 @@ public:
 	Ptr<Pin> getPin1() { return m_pin1; }
 	Ptr<Pin> getPin2() { return m_pin2; }
 
-	void save(const QDomElement& el);
+	QDomElement save(QDomDocument& doc);
 
 	Ptr<DelayLine::Base> m_feedbackDelayLine;
 
@@ -169,7 +171,7 @@ public:
 	std::map<void*, void*> m_noteIdMap;
 
 //	virtual void load(class SongLoadContext& ctx, const QDomElement& el);
-	void save(const QDomElement& el);
+	QDomElement save(QDomDocument& doc);
 
 	Ptr<Sequence::Pattern> createPattern(double length);
 	Ptr<Sequence::Pattern> createPattern(class SongLoadContext& ctx, const QDomElement& el);
@@ -193,6 +195,7 @@ protected:
 	MachineInfo* m_info;
 	virtual void initInfo() = 0;
 
+	QString m_id;
 	QString m_name;
 	CosecantAPI::MachineTypeHint::e m_colorhint;
 
@@ -210,6 +213,8 @@ public:
 	static Ptr<MachineFactory> get(const QString& id);
 	ERROR_CLASS(BadIdError);
 
+	MachineFactory(const QString& id) : m_id(id) {}
+
 	Ptr<Machine> createMachine();
 	virtual QString getDesc() = 0;
 
@@ -217,4 +222,6 @@ public:
 
 protected:
 	virtual Ptr<Machine> createMachineImpl() = 0;
+
+	QString m_id;
 };

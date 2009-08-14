@@ -56,7 +56,7 @@ public:
 
 	std::vector< Ptr<Machine> > m_machines;
 
-	void save(const QDomElement& el);
+	QDomElement save(QDomDocument& doc);
 
 	class ChangeBatch
 	{

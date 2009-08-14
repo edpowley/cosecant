@@ -28,6 +28,8 @@ protected:
 class LadspaMachine : public Mi
 {
 public:
+	enum { ptPluginFirst = 0x10000, };
+
 	LadspaMachine(HostMachine* hm, const std::wstring& dllname, int index);
 	~LadspaMachine();
 

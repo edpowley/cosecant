@@ -6,6 +6,8 @@
 class SimpleSynth : public Mi
 {
 public:
+	enum { ptEnvA, ptEnvR, };
+
 	MachineInfo* getInfo();
 
 	static const int c_polyphony = 16;
@@ -58,14 +60,14 @@ MachineInfo* SimpleSynth::getInfo()
 		using namespace TimeUnit;
 		static TimeParamInfo paraAttack, paraRelease;
 
-		paraAttack.p.tag = COSECANT_TAG('enva');
+		paraAttack.p.tag = ptEnvA;
 		paraAttack.p.name = "Attack";
 		paraAttack.min.set(1, samples); paraAttack.max.set(10, seconds); paraAttack.def.set(0.2, seconds);
 		paraAttack.internalUnit = samples;
 		paraAttack.displayUnits = seconds | samples | beats;
 		paraAttack.defaultDisplayUnit = seconds;
 
-		paraRelease.p.tag = COSECANT_TAG('envr');
+		paraRelease.p.tag = ptEnvR;
 		paraRelease.p.name = "Release";
 		paraRelease.min.set(1, samples); paraRelease.max.set(10, seconds); paraRelease.def.set(1, seconds);
 		paraRelease.internalUnit = samples;
@@ -177,10 +179,10 @@ void SimpleSynth::changeParam(ParamTag tag, double value)
 {
 	switch (tag)
 	{
-	case COSECANT_TAG('enva'):
+	case ptEnvA:
 		m_envAttackStep = 1.0 / value;
 		break;
-	case COSECANT_TAG('envr'):
+	case ptEnvR:
 		m_envReleaseStep = 1.0 / value;
 		break;
 	}

@@ -11,7 +11,7 @@ template<class MachineClass>
 class BuiltinMachineFactory : public MachineFactory
 {
 public:
-	BuiltinMachineFactory(const QString& desc) : m_desc(desc) {}
+	BuiltinMachineFactory(const QString& id, const QString& desc) : MachineFactory(id), m_desc(desc) {}
 
 	virtual QString getDesc() { return m_desc; }
 
