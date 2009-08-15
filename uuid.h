@@ -14,6 +14,7 @@ public:
 	bool operator< (const Uuid& other) const { return compare(other) <  0; }
 
 	QString str() const;
+	uint qHash() const;
 
 	ERROR_CLASS(Error);
 
@@ -26,3 +27,4 @@ protected:
 	int compare(const Uuid& other) const;
 };
 
+inline uint qHash(const Uuid& uuid) { return uuid.qHash(); }

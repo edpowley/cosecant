@@ -10,13 +10,11 @@ ERROR_CLASS(SongSaveError);
 class SongLoadContext
 {
 public:
+	QDomDocument m_doc;
+
 	template<typename T> T* getObject(const Uuid& uuid)
 	{
-		std::map<Uuid, ObjectWithUuid*>::const_iterator iter = m_uuidMap.find(uuid);
-		if (iter != m_uuidMap.end())
-			return dynamic_cast<T*>(iter->second);
-		else
-			return NULL;
+		return dynamic_cast<T*>(m_uuidMap.value(uuid, NULL));
 	}
 
 	template<typename T> T* getObjectOrThrow(const Uuid& uuid)
@@ -25,23 +23,23 @@ public:
 		if (ret)
 			return ret;
 		else
-			throw SongLoadError(QString("Object '%1' not found").arg(uuid.str()));
+			throw SongLoadError(QString("Object '%1' is missing or of the wrong type").arg(uuid.str()));
 	}
 
 	void setObject(const Uuid& uuid, ObjectWithUuid* object)
 	{
-		std::map<Uuid, ObjectWithUuid*>::const_iterator iter = m_uuidMap.find(uuid);
-		if (iter == m_uuidMap.end())
-			m_uuidMap.insert(std::make_pair(uuid, object));
-		else
-			THROW_ERROR(SongLoadError, QString("Object with id %1 already exists").arg(uuid.str()));
+		if (m_uuidMap.contains(uuid))
+			throw SongLoadError(QString("Object '%1' already exists").arg(uuid.str()));
+		m_uuidMap.insert(uuid, object);
 	}
 
-	std::list<QString> m_nonFatalErrors;
+	void warn(const QString& msg) { m_warnings << msg; }
 
 protected:
 	// We're playing with these things in objects' ctors, so smart ptrs would be a dumb idea
-	std::map<Uuid, ObjectWithUuid*> m_uuidMap;
+	QHash<Uuid, ObjectWithUuid*> m_uuidMap;
+
+	QStringList m_warnings;
 };
 
 class Song : public QObject
@@ -60,7 +58,7 @@ public:
 	Ptr<Sequence::Seq> m_sequence;
 	QUndoStack m_undo;
 
-	bool load(const QString& filepath);
+	void load(const QString& filepath);
 	void save(const QString& filepath);
 
 	void doOpen();

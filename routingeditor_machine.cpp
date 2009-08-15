@@ -340,7 +340,6 @@ public:
 		m_pin = new ParamPin(m_param, timeUnit);
 		m_pin->setPos(2.0f);
 		m_pin->setSide(Pin::top);
-		m_pin->m_name = Editor::tr("Parameter '%1'").arg(m_param->getName());
 	}
 
 	virtual void redo()

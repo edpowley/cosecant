@@ -6,6 +6,8 @@
 
 ////////////////////////////////////////////////////////////////////////
 
+class SongLoadContext;
+
 namespace Parameter { class Base; class Group; class Scalar; };
 
 class Machine;
@@ -43,7 +45,7 @@ public:
 
 	QList< Ptr<Connection> > m_connections;
 
-	void load(class SongLoadContext& ctx, const QDomElement& el);
+	virtual void load(SongLoadContext& ctx, const QDomElement& el);
 	virtual QDomElement save(QDomDocument& doc);
 
 signals:
@@ -76,8 +78,6 @@ class Connection : public ObjectWithUuid
 public:
 	Connection(const Ptr<Pin>& pin1, const Ptr<Pin>& pin2, bool feedback)
 		: m_pin1(pin1), m_pin2(pin2), m_feedback(feedback) {}
-
-	Connection(SongLoadContext& ctx, const QDomElement& el);
 
 	bool m_feedback;
 
@@ -170,11 +170,10 @@ public:
 
 	std::map<void*, void*> m_noteIdMap;
 
-//	virtual void load(class SongLoadContext& ctx, const QDomElement& el);
+	virtual void load(SongLoadContext& ctx, const QDomElement& el);
 	QDomElement save(QDomDocument& doc);
 
 	Ptr<Sequence::Pattern> createPattern(double length);
-	Ptr<Sequence::Pattern> createPattern(class SongLoadContext& ctx, const QDomElement& el);
 	std::vector< Ptr<Sequence::Pattern> > m_patterns;
 	void addPattern(const Ptr<Sequence::Pattern>& pat);
 	void removePattern(const Ptr<Sequence::Pattern>& pat);
@@ -202,6 +201,8 @@ protected:
 	QScriptValue m_scriptObject, m_scriptFunctionObject;
 
 	virtual Ptr<Sequence::Pattern> createPatternImpl(double length) { return NULL; }
+
+	void loadPins(SongLoadContext& ctx, Pin::Direction direction, const QList<QDomElement>& els);
 };
 
 //////////////////////////////////////////////////////////////////////////

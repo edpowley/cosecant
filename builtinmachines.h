@@ -7,6 +7,38 @@ class BuiltinMachine : public Machine
 public:
 };
 
+//////////////////////////////////////////////////////////////////////
+
+namespace Builtin
+{
+	class Dummy : public Machine
+	{
+	public:
+		Dummy()
+		{
+			m_dead = true;
+			m_deadWhy = QCoreApplication::translate("RoutingEditor::Editor",
+				"This is a placeholder for a machine which you do not have installed." );
+		}
+
+		virtual void changeParam(ParamTag tag, double value) {}
+		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) {}
+
+	protected:
+		virtual void initInfo()
+		{
+			static MachineInfo info;
+			info.defaultName = "Dummy";
+			m_info = &info;
+		}
+	
+		virtual void initImpl() {}
+	};
+
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 template<class MachineClass>
 class BuiltinMachineFactory : public MachineFactory
 {

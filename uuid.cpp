@@ -76,6 +76,18 @@ QString Uuid::str() const
 	return s;
 }
 
+uint Uuid::qHash() const
+{
+	uint h = 0;
+	for (int i=0; i<c_dataBytes; i++)
+	{
+		uint shiftbytes = i % sizeof(uint);
+		h += (uint)m_data[i] << (shiftbytes * 8);
+	}
+
+	return h;
+}
+
 int Uuid::compare(const Uuid& other) const
 {
 	for (int i=0; i<c_dataBytes; i++)

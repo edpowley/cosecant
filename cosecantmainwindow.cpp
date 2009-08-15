@@ -151,6 +151,20 @@ void CosecantMainWindow::on_actionTransportRecord_toggled(bool checked)
 
 //////////////////////////////////////////////////////////////////////////////
 
+void CosecantMainWindow::on_actionFileOpen_triggered()
+{
+	qDebug() << "open";
+
+	try
+	{
+		Song::get().load("aaaaa_testsong.zip");
+	}
+	catch (const SongLoadError& err)
+	{
+		QMessageBox::critical(this, QString(), err.msg());
+	}
+}
+
 void CosecantMainWindow::on_actionFileSave_triggered()
 {
 	qDebug() << "save";

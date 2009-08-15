@@ -142,6 +142,7 @@ void Machine::initParams(ParamGroupInfo* group)
 ParamPin::ParamPin(Parameter::Scalar* param, TimeUnit::e timeUnit)
 : Pin(param->getMachine(), in, SignalType::paramControl), m_param(param), m_timeUnit(timeUnit)
 {
+	m_name = tr("Parameter '%1'").arg(m_param->getName());
 }
 
 //////////////////////////////////////////////////////////////////////////

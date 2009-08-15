@@ -9,11 +9,52 @@
 extern zlib_filefunc_def g_zipFileFuncs; // zipfilefuncs.cpp
 static const int Z_STORE = 0;
 
+class SongSaveFile
+{
+public:
+	SongSaveFile(const QString& path)
+	{
+		m_p = zipOpen2(path.toUtf8(), APPEND_STATUS_CREATE, NULL, &g_zipFileFuncs);
+		if (!m_p) throw SongSaveError(Song::tr("Unable to open file '%1' for writing").arg(path));
+	}
+
+	~SongSaveFile()
+	{
+		if (m_p) zipClose(m_p, NULL);
+	}
+
+	void writeFile(const QString& name, const QByteArray& bytes, bool compress = true)
+	{
+		int err;
+		err = zipOpenNewFileInZip(m_p,
+			name.toAscii(),
+			NULL, // zipfi
+			NULL, 0, // extrafield_local
+			NULL, 0, // extrafield_global
+			NULL, // comment
+			compress ? Z_DEFLATED : 0,
+			Z_DEFAULT_COMPRESSION
+		);
+		if (err != Z_OK)
+			throw SongSaveError(QString("Error code %1 in zipOpenNewFileInZip").arg(err));
+
+		err = zipWriteInFileInZip(m_p, bytes.constData(), bytes.size());
+		if (err != Z_OK)
+			throw SongSaveError(QString("Error code %1 in zipWriteInFileInZip").arg(err));
+
+		err = zipCloseFileInZip(m_p);
+		if (err != Z_OK)
+			throw SongSaveError(QString("Error code %1 in zipCloseFileInZip").arg(err));
+	}
+
+protected:
+	zipFile m_p;
+
+};
+
 void Song::save(const QString& filepath)
 {
-	zipFile zf = zipOpen2(filepath.toUtf8(), APPEND_STATUS_CREATE, NULL, &g_zipFileFuncs);
-	if (!zf)
-		throw SongSaveError(tr("Unable to open file '%1' for writing").arg(filepath));
+	SongSaveFile f(filepath);
 
 	QDomDocument doc;
 	QDomElement root = doc.createElement("song");
@@ -23,12 +64,7 @@ void Song::save(const QString& filepath)
 
 	root.appendChild(m_routing->save(doc));
 
-	zipOpenNewFileInZip(zf, "song.xml", NULL, NULL, 0, NULL, 0, NULL, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
-	QByteArray buf = doc.toByteArray();
-	zipWriteInFileInZip(zf, buf.constData(), buf.size());
-	zipCloseFileInZip(zf);
-
-	zipClose(zf, NULL);
+	f.writeFile("song.xml", doc.toByteArray());
 }
 
 QDomElement Routing::save(QDomDocument& doc)
@@ -105,8 +141,9 @@ QDomElement Pin::save(QDomDocument& doc)
 QDomElement ParamPin::save(QDomDocument& doc)
 {
 	QDomElement el = Pin::save(doc);
+	el.setTagName("parampin");
 	setAttribute(el, "param", getParam()->m_objectUuid);
-	setAttribute(el, "paramtimeunit", getTimeUnit());
+	setAttribute(el, "timeunit", getTimeUnit());
 
 	return el;
 }

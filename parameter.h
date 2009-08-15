@@ -21,7 +21,7 @@ namespace Parameter
 		Q_OBJECT
 
 	public:
-		Base(const Ptr<Machine>& mac) : m_mac(mac) {}
+		Base(const Ptr<Machine>& mac) : m_mac(mac), m_paramPin(NULL) {}
 		Ptr<Machine> getMachine() { return m_mac; }
 		QString getName() { return m_name; }
 		virtual ParamTag getTag() = 0;
@@ -39,6 +39,7 @@ namespace Parameter
 		void setParamPin(const Ptr<ParamPin>& pin);
 		void unsetParamPin() { setParamPin(NULL); }
 
+		virtual void load(SongLoadContext& ctx, const QDomElement& el);
 		virtual QDomElement save(QDomDocument& doc);
 
 	signals:
@@ -46,9 +47,9 @@ namespace Parameter
 		void signalRemoveParamPin();
 
 	protected:
-		Ptr<Machine> m_mac;
+		Machine* m_mac;
 		QString m_name;
-		Ptr<ParamPin> m_paramPin;
+		ParamPin* m_paramPin;
 	};
 
 	class Group : public Base
@@ -99,6 +100,7 @@ namespace Parameter
 
 		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
 
+		virtual void load(SongLoadContext& ctx, const QDomElement& el);
 		virtual QDomElement save(QDomDocument& doc);
 
 	signals:
@@ -147,6 +149,7 @@ namespace Parameter
 
 		virtual QMenu* populateParamPinMenu(QMenu* menu, QMap<QAction*, ParamPinSpec>& actions);
 
+		virtual void load(SongLoadContext& ctx, const QDomElement& el);
 		virtual QDomElement save(QDomDocument& doc);
 
 	protected:

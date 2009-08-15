@@ -3,6 +3,8 @@
 #include "machine.h"
 #include "signal.h"
 
+class SongLoadContext;
+
 class Routing : public ObjectWithUuid
 {
 	Q_OBJECT
@@ -12,7 +14,6 @@ class Routing : public ObjectWithUuid
 
 public:
 	Routing();
-	Routing(class SongLoadContext& ctx, const QDomElement& el);
 
 signals:
 	// m_signalTopologyChange fires when the topology (machines, pins, connections) of the routing changes
@@ -28,9 +29,6 @@ signals:
 	void signalRemoveConnection(const Ptr<Connection>& conn);
 
 public:
-	size_t getNumMachines() { return m_machines.size(); }
-	Ptr<Machine> getMachine(size_t index) { return m_machines[index]; }
-
 	void addMachine(const Ptr<Machine>& machine);
 	void removeMachine(const Ptr<Machine>& machine);
 
@@ -56,6 +54,7 @@ public:
 
 	std::vector< Ptr<Machine> > m_machines;
 
+	void load(SongLoadContext& ctx, const QDomElement& el);
 	QDomElement save(QDomDocument& doc);
 
 	class ChangeBatch

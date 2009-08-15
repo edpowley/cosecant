@@ -5,7 +5,6 @@
 class PatternEditor;
 class NotebookWindow;
 class Machine;
-class SongLoadContext;
 
 namespace Sequence
 {
@@ -64,7 +63,6 @@ namespace Sequence
 
 		Ptr<Pattern> m_pattern;
 
-		Clip(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
 	protected:
@@ -85,7 +83,6 @@ namespace Sequence
 
 		const Clips& getClips() { return m_clips; }
 
-		Track(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
 		double getHeight() { return m_height; }
@@ -149,7 +146,6 @@ namespace Sequence
 		QList< Ptr<Sequence::Track> > m_tracks;
 		QMap<int, Ptr<MasterTrackClip> > m_masterTrack; // key = start time in beats
 
-//		Seq(class SongLoadContext& ctx, const QDomElement& el);
 		void save(const QDomElement& el);
 
 		double m_loopStart, m_loopEnd;
