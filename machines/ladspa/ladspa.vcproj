@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\initinfo.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ladspa.cpp"
 				>
 			</File>

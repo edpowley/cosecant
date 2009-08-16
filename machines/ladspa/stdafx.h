@@ -20,6 +20,7 @@
 #include <list>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include "../../cosecant_api.h"
 using namespace CosecantAPI;

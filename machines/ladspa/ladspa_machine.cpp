@@ -38,50 +38,32 @@ const LADSPA_Descriptor* LadspaDll::callDescriptorFunc(unsigned long index)
 //////////////////////////////////////////////////////////////////////////////////
 
 LadspaMachine::LadspaMachine(HostMachine* hm, const std::wstring& dllname, int index)
-: Mi(hm), m_handle(NULL)
+: Mi(hm), m_index(index), m_handle(NULL), m_infoIsInited(false)
 {
 	m_dll.init(dllname.c_str());
 	// If it throws an exception, let it propagate out
+}
 
-	m_desc = m_dll.callDescriptorFunc(index);
-	if (!m_desc)
-		throw LadspaError("ladspa_descriptor returned NULL");
+void LadspaMachine::init()
+{
+	if (!m_infoIsInited) initInfo();
 
 	m_handle = m_desc->instantiate(m_desc, 44100);
 	if (!m_handle)
 		throw LadspaError("instantiate returned NULL");
 
-	m_portBuffers.resize(m_desc->PortCount);
-
 	for (unsigned long port=0; port < m_desc->PortCount; port++)
 	{
-		LADSPA_PortDescriptor pdesc = m_desc->PortDescriptors[port];
-
-		if (LADSPA_IS_PORT_CONTROL(pdesc))
-			m_portBuffers[port].resize(1, 0.0f);
-		else if (LADSPA_IS_PORT_AUDIO(pdesc))
-			m_portBuffers[port].resize(maxFramesPerBuffer, 0.0f);
-
-		float* bufAddr = &m_portBuffers[port][0];
-
-		if (LADSPA_IS_PORT_INPUT(pdesc) && LADSPA_IS_PORT_CONTROL(pdesc))
-		{
-			m_paramBuffers[ptPluginFirst + port] = bufAddr;
-		}
-		else if (LADSPA_IS_PORT_INPUT(pdesc))
-		{
-			m_inPinBuffers.push_back(bufAddr);
-		}
-		else if (LADSPA_IS_PORT_OUTPUT(pdesc))
-		{
-			m_outPinBuffers.push_back(bufAddr);
-			m_outPinIsControl.push_back(!!LADSPA_IS_PORT_CONTROL(pdesc));
-		}
-
-		m_desc->connect_port(m_handle, port, bufAddr);
+		m_desc->connect_port(m_handle, port, &m_portBuffers[port].front());
 	}
 
 	if (m_desc->activate) m_desc->activate(m_handle);
+}
+
+MachineInfo* LadspaMachine::getInfo()
+{
+	if (!m_infoIsInited) initInfo();
+	return &m_info;
 }
 
 LadspaMachine::~LadspaMachine()
@@ -99,9 +81,21 @@ void LadspaMachine::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, 
 	// Copy input buffers
 	for (size_t i=0; i<m_inPinBuffers.size(); i++)
 	{
-		for (int j=0; j<lastframe-firstframe; j++)
+		const PinBufInfo& pbi = m_inPinBuffers[i];
+		if (pbi.bufR) // stereo
 		{
-			m_inPinBuffers[i][j] = inpins[i].f[firstframe+j];
+			for (int j=0; j<lastframe-firstframe; j++)
+			{
+				(*pbi.bufL)[j] = inpins[i].f[(firstframe+j)*2];
+				(*pbi.bufR)[j] = inpins[i].f[(firstframe+j)*2+1];
+			}
+		}
+		else // mono
+		{
+			for (int j=0; j<lastframe-firstframe; j++)
+			{
+				(*pbi.bufL)[j] = inpins[i].f[firstframe+j];
+			}
 		}
 	}
 
@@ -111,15 +105,27 @@ void LadspaMachine::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, 
 	// Copy output buffers
 	for (size_t i=0; i<m_outPinBuffers.size(); i++)
 	{
-		if (m_outPinIsControl[i])
+		const PinBufInfo& pbi = m_outPinBuffers[i];
+		if (pbi.isControl)
 		{
-			g_host->addParamChangeEvent(&outpins[i], firstframe, m_outPinBuffers[i][0]);
+			g_host->addParamChangeEvent(&outpins[i], firstframe, pbi.bufL->front());
 		}
 		else
 		{
-			for (int j=0; j<lastframe-firstframe; j++)
+			if (pbi.bufR) // stereo
 			{
-				outpins[i].f[firstframe+j] = m_outPinBuffers[i][j];
+				for (int j=0; j<lastframe-firstframe; j++)
+				{
+					outpins[i].f[(firstframe+j)*2  ] = (*pbi.bufL)[j];
+					outpins[i].f[(firstframe+j)*2+1] = (*pbi.bufR)[j];
+				}
+			}
+			else // mono
+			{
+				for (int j=0; j<lastframe-firstframe; j++)
+				{
+					outpins[i].f[firstframe+j] = (*pbi.bufL)[j];
+				}
 			}
 		}
 	}
@@ -127,7 +133,7 @@ void LadspaMachine::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, 
 
 void LadspaMachine::changeParam(ParamTag tag, double value)
 {
-	std::map<ParamTag, float*>::iterator iter = m_paramBuffers.find(tag);
+	std::map<ParamTag, Buffer*>::iterator iter = m_paramBuffers.find(tag);
 	if (iter != m_paramBuffers.end())
-		iter->second[0] = (float)value;
+		iter->second->front() = (float)value;
 }

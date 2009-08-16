@@ -13,7 +13,7 @@
 #include "callbacks.h"
 
 Machine::Machine()
-: m_pos(0,0), m_halfsize(50,25), m_name("Unnamed"), m_parameditor(NULL),
+: m_pos(0,0), m_halfsize(40,25), m_name("Unnamed"), m_parameditor(NULL),
 m_routing(NULL), m_perfCount(0),
 m_dead(false), m_mi(NULL), m_scriptObject(QScriptValue::NullValue)
 {

@@ -35,11 +35,13 @@ public:
 
 	MachineInfo* getInfo();
 
+	void init();
 	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 	void changeParam(ParamTag tag, double value);
 
 protected:
 	LadspaDll m_dll;
+	int m_index;
 	const LADSPA_Descriptor* m_desc;
 	LADSPA_Handle m_handle;
 	
@@ -51,8 +53,23 @@ protected:
 	std::list<PinInfo> m_pins;
 	std::vector<PinInfo*> m_inPinPtrs, m_outPinPtrs;
 
-	std::vector< std::vector<float> > m_portBuffers;
-	std::map<ParamTag, float*> m_paramBuffers;
-	std::vector<float*> m_inPinBuffers, m_outPinBuffers;
-	std::vector<bool> m_outPinIsControl;
+	void initInfo();
+	bool m_infoIsInited;
+	void addParam(unsigned long port);
+	bool portIsFirstOfStereoPair(unsigned long port);
+	bool portIsFirstOfStereoPair_ByName(const std::string& lname, const std::string& rname,
+										const std::string& lstr, const std::string& rstr);
+
+	typedef std::vector<float> Buffer;
+	std::vector<Buffer> m_portBuffers;
+	std::map<ParamTag, Buffer*> m_paramBuffers;
+	
+	struct PinBufInfo
+	{
+		Buffer *bufL, *bufR; // bufR == NULL means it's mono
+		bool isControl;
+		PinBufInfo(Buffer* l, Buffer* r, bool c) : bufL(l), bufR(r), isControl(c) {}
+	};
+
+	std::vector<PinBufInfo> m_inPinBuffers, m_outPinBuffers;
 };
