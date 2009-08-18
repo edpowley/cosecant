@@ -178,7 +178,7 @@ public:
 	void addPattern(const Ptr<Sequence::Pattern>& pat);
 	void removePattern(const Ptr<Sequence::Pattern>& pat);
 
-	QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
+	virtual QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
 
 	void addScriptFunction(const QString& name, int id);
 	virtual QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id)

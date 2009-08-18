@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\headedview.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\htmlentity.cpp"
 				>
 			</File>
@@ -317,6 +321,18 @@
 			</File>
 			<File
 				RelativePath=".\song_save.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spattern.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spatterneditor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\spatternmachine.cpp"
 				>
 			</File>
 			<File
@@ -1014,6 +1030,32 @@
 				>
 			</File>
 			<File
+				RelativePath=".\headedview.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -fstdafx.h -fcommon.h &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot; -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_SCRIPT_LIB -DQT_SVG_LIB -DQT_THREAD_SUPPORT -DQT_XML_LIB -DUNICODE -DWIN32 -I&quot;$(QTDIR)\include\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtScript\.&quot; -I&quot;$(QTDIR)\include\QtScriptTools\.&quot; -I&quot;$(QTDIR)\include\QtSvg\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;.\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\GeneratedFiles\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\contrib\minizip\.&quot;  &quot;-fstdafx.h&quot; &quot;-f..\..\headedview.h&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -fstdafx.h -fcommon.h &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot; -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SCRIPT_LIB -DQT_SVG_LIB -DQT_THREAD_SUPPORT -DQT_XML_LIB -DUNICODE -DWIN32 -I&quot;$(QTDIR)\include\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtScript\.&quot; -I&quot;$(QTDIR)\include\QtScriptTools\.&quot; -I&quot;$(QTDIR)\include\QtSvg\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;.\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\GeneratedFiles\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\contrib\minizip\.&quot;  &quot;-fstdafx.h&quot; &quot;-f..\..\headedview.h&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\hostapi.h"
 				>
 			</File>
@@ -1380,6 +1422,40 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\spattern.h"
+				>
+			</File>
+			<File
+				RelativePath=".\spatterneditor.h"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -fstdafx.h -fcommon.h &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot; -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DQT_SCRIPT_LIB -DQT_SVG_LIB -DQT_THREAD_SUPPORT -DQT_XML_LIB -DUNICODE -DWIN32 -I&quot;$(QTDIR)\include\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtScript\.&quot; -I&quot;$(QTDIR)\include\QtScriptTools\.&quot; -I&quot;$(QTDIR)\include\QtSvg\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;.\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\GeneratedFiles\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\contrib\minizip\.&quot;  &quot;-fstdafx.h&quot; &quot;-f..\..\spatterneditor.h&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Moc&apos;ing $(InputFileName)..."
+						CommandLine="&quot;$(QTDIR)\bin\moc.exe&quot; -fstdafx.h -fcommon.h &quot;$(InputPath)&quot; -o &quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot; -DQT_CORE_LIB -DQT_GUI_LIB -DQT_SCRIPT_LIB -DQT_SVG_LIB -DQT_THREAD_SUPPORT -DQT_XML_LIB -DUNICODE -DWIN32 -I&quot;$(QTDIR)\include\.&quot; -I&quot;$(QTDIR)\include\QtCore\.&quot; -I&quot;$(QTDIR)\include\QtGui\.&quot; -I&quot;$(QTDIR)\include\QtScript\.&quot; -I&quot;$(QTDIR)\include\QtScriptTools\.&quot; -I&quot;$(QTDIR)\include\QtSvg\.&quot; -I&quot;$(QTDIR)\include\QtXml\.&quot; -I&quot;.\.&quot; -I&quot;.\GeneratedFiles\$(ConfigurationName)\.&quot; -I&quot;.\GeneratedFiles\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\.&quot; -I&quot;C:\Users\Ed\Documents\prog\zlib-1.2.3\contrib\minizip\.&quot;  &quot;-fstdafx.h&quot; &quot;-f..\..\spatterneditor.h&quot;&#x0D;&#x0A;"
+						AdditionalDependencies="&quot;$(QTDIR)\bin\moc.exe&quot;;$(InputPath)"
+						Outputs="&quot;.\GeneratedFiles\$(ConfigurationName)\moc_$(InputName).cpp&quot;"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\spatternmachine.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -1680,6 +1756,25 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GeneratedFiles\Release\moc_cosecantmainwindow.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_cosecantmainwindow.cpp"
 				>
 				<FileConfiguration
@@ -1690,9 +1785,16 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_cosecantmainwindow.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_dlg_about.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1708,18 +1810,6 @@
 				>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\GeneratedFiles\Release\moc_dlg_about.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1752,10 +1842,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_dlg_settings.cpp"
+				RelativePath=".\GeneratedFiles\Debug\moc_dlg_settings.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1764,10 +1854,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_dlg_settings.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_dlg_settings.cpp"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1800,7 +1890,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_machine.cpp"
+				RelativePath=".\GeneratedFiles\Debug\moc_headedview.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1819,7 +1909,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_machine.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_headedview.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1830,6 +1920,30 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_machine.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Debug\moc_machine.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1862,11 +1976,18 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_mygraphicsview.cpp"
+				RelativePath=".\GeneratedFiles\Debug\moc_mygraphicsview.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -1874,10 +1995,17 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_mygraphicsview.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_mygraphicsview.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1910,10 +2038,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_parameditor.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_parameditor.cpp"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1922,10 +2050,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_parameditor.cpp"
+				RelativePath=".\GeneratedFiles\Debug\moc_parameditor.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -2006,10 +2134,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_routingeditor.cpp"
+				RelativePath=".\GeneratedFiles\Debug\moc_routingeditor.cpp"
 				>
 				<FileConfiguration
-					Name="Debug|Win32"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -2018,10 +2146,10 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Debug\moc_routingeditor.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_routingeditor.cpp"
 				>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -2054,6 +2182,25 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GeneratedFiles\Release\moc_sequence.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\GeneratedFiles\Debug\moc_sequence.cpp"
 				>
 				<FileConfiguration
@@ -2064,10 +2211,24 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\GeneratedFiles\Release\moc_sequence.cpp"
+				RelativePath=".\GeneratedFiles\Release\moc_sequenceeditor.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
@@ -2088,13 +2249,8 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\GeneratedFiles\Release\moc_sequenceeditor.cpp"
-				>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -2119,6 +2275,44 @@
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Release\moc_spatterneditor.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GeneratedFiles\Debug\moc_spatterneditor.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

@@ -88,6 +88,8 @@ void CosecantMainWindow::addTab(MWTab* tab)
 		addToolBar(toolbar);
 		toolbar->hide();
 	}
+
+	m_tabWidget->setCurrentWidget(widget);
 }
 
 void CosecantMainWindow::onTabChanged(int index)

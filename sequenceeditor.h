@@ -2,6 +2,7 @@
 
 #include "sequence.h"
 #include "mygraphicsview.h"
+#include "headedview.h"
 #include "mwtab.h"
 
 namespace SequenceEditor
@@ -116,7 +117,7 @@ namespace SequenceEditor
 
 	////////////////////////////////////////////////////////////////////////////
 
-	class Editor : public QSplitter, public MWTab
+	class Editor : public HeadedView, public MWTab
 	{
 		Q_OBJECT
 
@@ -126,8 +127,6 @@ namespace SequenceEditor
 		const Ptr<Sequence::Seq>& getSeq() { return m_seq; }
 
 		qreal getBodyWidth();
-
-		static const int c_rulerHeight = 50;
 
 		void setZoom(double pixelsPerSecond);
 
@@ -156,7 +155,6 @@ namespace SequenceEditor
 		QToolBar* m_toolbar;
 		QAction *m_actionToolMove, *m_actionToolCreatePattern;
 
-		MyGraphicsView *m_headView, *m_bodyView, *m_rulerView;
 		QGraphicsScene m_headScene, m_bodyScene, m_rulerScene;
 
 		void createTrackItems();

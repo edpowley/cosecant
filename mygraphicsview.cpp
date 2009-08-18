@@ -37,6 +37,12 @@ void MyGraphicsView::setup()
 	setRenderHints(h);
 }
 
+void MyGraphicsView::resizeEvent(QResizeEvent* ev)
+{
+	QGraphicsView::resizeEvent(ev);
+	signalResize(ev->oldSize(), ev->size());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void GraphicsSimpleTextItemWithBG::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)

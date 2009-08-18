@@ -12,12 +12,17 @@ public:
 	MyGraphicsView(QWidget* parent = 0);
 	MyGraphicsView(QGraphicsScene* scene, QWidget* parent = 0);
 
+signals:
+	void signalResize(const QSize& oldsize, const QSize& newsize);
+
 protected slots:
 	void onPrefsChange();
 
 protected:
 	void ctorCommon();
 	void setup();
+
+	void resizeEvent(QResizeEvent* ev);
 };
 
 class GraphicsSimpleTextItemWithBG : public QGraphicsSimpleTextItem
