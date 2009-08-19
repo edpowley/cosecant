@@ -14,6 +14,9 @@ HeadedView::HeadedView(QWidget* parent)
 	m_rulerView = new MyGraphicsView(this);
 	m_bodyView = new MyGraphicsView(this);
 
+	m_headView->setFocusPolicy(Qt::NoFocus);
+	m_rulerView->setFocusPolicy(Qt::NoFocus);
+
 	m_lhead = new QVBoxLayout(whead);
 	m_lhead->setContentsMargins(0,0,0,0);
 	m_lhead->addSpacing(c_rulerHeight + m_lhead->spacing());

@@ -56,6 +56,7 @@ MachineInfo* SimpleSynth::getInfo()
 	{
 		info.defaultName = "Synth";
 		info.typeHint = MachineTypeHint::generator;
+		info.flags = MachineFlags::hasNoteTrigger;
 
 		using namespace TimeUnit;
 		static TimeParamInfo paraAttack, paraRelease;

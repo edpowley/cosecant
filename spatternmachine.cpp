@@ -41,11 +41,11 @@ void SpatternMachine::initImpl()
 
 Ptr<Sequence::Pattern> SpatternMachine::createPatternImpl(double length)
 {
-	return new Spattern(this, length);
+	return new Spattern::Pattern(this, length);
 }
 
 QWidget* SpatternMachine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern)
 {
-	Spattern* spatt = dynamic_cast<Spattern*>(pattern.c_ptr());
+	Spattern::Pattern* spatt = dynamic_cast<Spattern::Pattern*>(pattern.c_ptr());
 	return new SpatternEditor::Editor(spatt);
 }

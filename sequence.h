@@ -5,6 +5,7 @@
 class PatternEditor;
 class NotebookWindow;
 class Machine;
+class SongLoadContext;
 
 namespace Sequence
 {
@@ -35,6 +36,9 @@ namespace Sequence
 		virtual void play(Track* track, double startpos) = 0;
 		virtual void stop(Track* track) = 0;
 
+		virtual void load(SongLoadContext& ctx, const QDomElement& el);
+		virtual QDomElement save(QDomDocument& doc);
+
 	signals:
 		void signalAdd();
 		void signalRemove();
@@ -51,6 +55,8 @@ namespace Sequence
 		double m_length;
 	};
 
+	//////////////////////////////////////////////////////////////////////////////////
+
 	class Clip : public Object
 	{
 	public:
@@ -63,11 +69,11 @@ namespace Sequence
 
 		Ptr<Pattern> m_pattern;
 
-		void save(const QDomElement& el);
-
-	protected:
-		Clip(double starttime);
+		void load(SongLoadContext& ctx, const QDomElement& el);
+		QDomElement save(QDomDocument& doc);
 	};
+
+	/////////////////////////////////////////////////////////////////////////////
 
 	class Track : public ObjectWithUuid
 	{
@@ -83,9 +89,10 @@ namespace Sequence
 
 		const Clips& getClips() { return m_clips; }
 
-		void save(const QDomElement& el);
-
 		double getHeight() { return m_height; }
+
+		void load(SongLoadContext& ctx, const QDomElement& el);
+		QDomElement save(QDomDocument& doc);
 
 	signals:
 		void signalAddClip(const Ptr<Sequence::Clip>& clip);
@@ -99,6 +106,8 @@ namespace Sequence
 
 		Clips m_clips;
 	};
+
+	/////////////////////////////////////////////////////////////////////////////
 
 	class MasterTrackClip : public Object
 	{
@@ -116,6 +125,8 @@ namespace Sequence
 		CosecantAPI::TimeInfo m_timeinfo;		
 		int m_firstBeat, m_lengthInBeats;
 	};
+
+	//////////////////////////////////////////////////////////////////////////////
 
 	class Seq : public ObjectWithUuid
 	{
@@ -146,8 +157,6 @@ namespace Sequence
 		QList< Ptr<Sequence::Track> > m_tracks;
 		QMap<int, Ptr<MasterTrackClip> > m_masterTrack; // key = start time in beats
 
-		void save(const QDomElement& el);
-
 		double m_loopStart, m_loopEnd;
 
 		void showEditor(NotebookWindow* win);
@@ -155,6 +164,9 @@ namespace Sequence
 		double getLengthInSeconds() { return 400.0; }
 		double beatToSecond(double b);
 		double secondToBeat(double s);
+
+		void load(SongLoadContext& ctx, const QDomElement& el);
+		QDomElement save(QDomDocument& doc);
 
 	signals:
 		// Have to specify Sequence::Track (instead of just Track) here, as Qt isn't smart enough to figure

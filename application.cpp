@@ -11,6 +11,7 @@
 #include "prefs.h"
 #include "seqplay.h"
 #include "version.h"
+#include "keyjazz.h"
 
 PrefsVar_String Application::s_prefLanguage("app/language", "system_locale");
 
@@ -27,6 +28,22 @@ Application::Application(int& argc, char** argv)
 :	QApplication(argc, argv),
 	m_scriptEngine(NULL), m_scriptDebugger(NULL), m_mainWindow(NULL), m_splashScreen(NULL)
 {
+}
+
+bool Application::notify(QObject* receiver, QEvent* ev)
+{
+	if (ev->type() >= QEvent::User)
+	{
+		// Propagate custom events to parents
+		for (; receiver; receiver = receiver->parent())
+		{
+			QApplication::notify(receiver, ev);
+			if (ev->isAccepted()) return true;
+		}
+		return false;
+	}
+	else
+		return QApplication::notify(receiver, ev);
 }
 
 void Application::init()
@@ -56,6 +73,7 @@ void Application::init()
 	setupI18n();
 
 	initHtmlEntityMap();
+	KeyJazz::initSingleton();
 
 	pushStatusMsg(tr("Scanning builtin machines"));
 	initBuiltinMachineFactories();

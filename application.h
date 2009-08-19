@@ -28,6 +28,8 @@ public:
 	void pushStatusMsg(const QString& msg);
 	void popStatusMsg();
 
+	bool notify(QObject* receiver, QEvent* ev);
+
 protected slots:
 	void onAboutToQuit();
 

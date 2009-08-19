@@ -78,12 +78,6 @@ Clip::Clip(const Clip& other)
 {
 }
 
-Clip::Clip(double starttime)
-: m_startTime(starttime)
-{
-	m_begin = m_end = 0.0;
-}
-
 ////////////////////////////////////////////////////////////////////////////
 
 Track::Track()
