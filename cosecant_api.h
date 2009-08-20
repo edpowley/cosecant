@@ -38,7 +38,6 @@ namespace CosecantAPI
 #	endif
 
 	class Mi;
-	class MiNote;
 	class MiPattern;
 
 #	ifndef COSECANT_API_HOST
@@ -47,6 +46,7 @@ namespace CosecantAPI
 		class ScriptValue;
 		class SequenceTrack;
 		class HostPinBuffer;
+		class EventStreamIter;
 #	endif
 
 	typedef unsigned long ParamTag;
@@ -61,7 +61,6 @@ namespace CosecantAPI
 	{
 		enum e
 		{
-			hasNoteTrigger			= 1 << 0,
 			createSequenceTrack		= 1 << 1,
 			hasCustomPatterns		= 1 << 2,
 		};
@@ -148,6 +147,31 @@ namespace CosecantAPI
 
 	//////////////////////////////////////////////////////////////////////////
 
+	struct StreamEvent_Note
+	{
+		void* id;
+		double note;
+		double vel;
+	};
+
+	namespace StreamEventType
+	{
+		enum e { noteOn, noteOff, };
+		typedef unsigned char i;
+	};
+
+	struct StreamEvent
+	{
+		StreamEventType::i type;
+		int time;
+		union
+		{
+			StreamEvent_Note note;
+		};
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+
 	namespace ParamType
 	{
 		enum e
@@ -213,10 +237,24 @@ namespace CosecantAPI
 
 	///////////////////////////////////////////////////////////////////////////////
 
+	namespace PinFlags
+	{
+		enum
+		{
+			breakOnEvent = 1 << 0,
+		};
+		typedef unsigned int i;
+	};
+
 	struct PinInfo
 	{
 		const char* name;
 		SignalType::i type;
+		PinFlags::i flags;
+
+		PinInfo() : name(NULL), type(SignalType::monoAudio), flags(0) {}
+		PinInfo(const char* name_, SignalType::e type_, PinFlags::i flags_ = 0)
+			: name(name_), type(type_), flags(flags_) {}
 	};
 
 	struct MachineInfo
@@ -267,8 +305,6 @@ namespace CosecantAPI
 		
 		void (*Mi_changeParam)(Mi* m, ParamTag tag, double value);
 		void (*Mi_work)(Mi* m, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
-		MiNote* (*Mi_noteOn)(Mi* m, double pitch, double velocity);
-		void (*MiNote_off)(MiNote* n);
 		
 		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
 		
@@ -366,6 +402,18 @@ namespace CosecantAPI
 
 		void (*addParamChangeEvent)(PinBuffer* buf, int time, double value);
 
+		EventStreamIter* (*EventStream_begin)(PinBuffer* buf);
+		EventStreamIter* (*EventStream_end)(PinBuffer* buf);
+		EventStreamIter* (*EventStream_find)(PinBuffer* buf, int key);
+		EventStreamIter* (*EventStream_lowerBound)(PinBuffer* buf, int key);
+		EventStreamIter* (*EventStream_upperBound)(PinBuffer* buf, int key);
+		EventStreamIter* (*EventStreamIter_copy)(EventStreamIter* iter);
+		void (*EventStreamIter_destroy)(EventStreamIter* iter);
+		void (*EventStreamIter_inc)(EventStreamIter* iter);
+		void (*EventStreamIter_dec)(EventStreamIter* iter);
+		int (*EventStreamIter_deref)(EventStreamIter* iter, StreamEvent* ev, unsigned int evSize);
+		cbool (*EventStreamIter_equal)(EventStreamIter* a, EventStreamIter* b);
+
 		void (*iteratePaths)(
 			const char* id, const char* name,
 			void (*callback)(void* user, const PathChar* path),
@@ -409,12 +457,6 @@ namespace CosecantAPI
 
 #ifndef COSECANT_API_NO_CLASSES
 
-	class MiNote
-	{
-	public:
-		virtual void noteOff() = 0;
-	};
-
 	/** The base class for your machine's patterns. */
 	class MiPattern
 	{
@@ -444,7 +486,6 @@ namespace CosecantAPI
 
 		virtual void changeParam(ParamTag tag, double value) = 0;
 		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
-		virtual MiNote* noteOn(double pitch, double velocity) { return NULL; }
 
 		/** Your machine's script can call this.
 			\param id the integer function id, as passed to HostFunctions::registerScriptFunction

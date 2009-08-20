@@ -210,6 +210,11 @@ QDomElement Sequence::Seq::save(QDomDocument& doc)
 	QDomElement el = doc.createElement("sequence");
 	setAttribute(el, "uuid", m_objectUuid);
 
+	foreach(const Ptr<Sequence::MasterTrackClip>& mtc, m_masterTrack)
+	{
+		el.appendChild(mtc->save(doc));
+	}
+
 	foreach(const Ptr<Sequence::Track>& track, m_tracks)
 	{
 		el.appendChild(track->save(doc));
@@ -240,6 +245,21 @@ QDomElement Sequence::Clip::save(QDomDocument& doc)
 	setAttribute(el, "begin", m_begin);
 	setAttribute(el, "end", m_end);
 	setAttribute(el, "pattern", m_pattern->m_objectUuid);
+
+	return el;
+}
+
+QDomElement Sequence::MasterTrackClip::save(QDomDocument& doc)
+{
+	QDomElement el = doc.createElement("masterclip");
+	setAttribute(el, "start", m_firstBeat);
+	setAttribute(el, "length", m_lengthInBeats);
+
+	setAttribute(el, "beatspersecond",		m_timeinfo.beatsPerSecond);
+	setAttribute(el, "beatsperbar",			m_timeinfo.beatsPerBar);
+	setAttribute(el, "beatsperwholenote",	m_timeinfo.beatsPerWholeNote);
+	setAttribute(el, "smallgridstep",		m_timeinfo.barsPerSmallGrid);
+	setAttribute(el, "largegridstep",		m_timeinfo.smallGridsPerLargeGrid);
 
 	return el;
 }

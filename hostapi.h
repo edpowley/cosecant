@@ -31,4 +31,6 @@ namespace CosecantAPI
 	typedef Sequence::Track SequenceTrack;
 
 	typedef WorkBuffer::Base HostPinBuffer;
+
+	class EventStreamIter; // defined in callbacks.cpp
 };

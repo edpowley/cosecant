@@ -121,6 +121,9 @@ namespace Sequence
 		int getFirstBeat() { return m_firstBeat; }
 		void setFirstBeat(int fb) { m_firstBeat = fb; }
 
+		void load(SongLoadContext& ctx, const QDomElement& el);
+		QDomElement save(QDomDocument& doc);
+
 	protected:
 		CosecantAPI::TimeInfo m_timeinfo;		
 		int m_firstBeat, m_lengthInBeats;
@@ -156,6 +159,7 @@ namespace Sequence
 
 		QList< Ptr<Sequence::Track> > m_tracks;
 		QMap<int, Ptr<MasterTrackClip> > m_masterTrack; // key = start time in beats
+		void addMasterTrackClip(const Ptr<MasterTrackClip>& mtc);
 
 		double m_loopStart, m_loopEnd;
 

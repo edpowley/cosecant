@@ -10,11 +10,11 @@ MachineInfo* Gain::getInfo()
 		info.defaultName = "Gain";
 		info.typeHint = MachineTypeHint::effect;
 
-		static PinInfo inpin = { "Input", SignalType::stereoAudio };
+		static PinInfo inpin("Input", SignalType::stereoAudio);
 		static const PinInfo* inpins[] = { &inpin, NULL };
 		info.inPins = inpins;
 
-		static PinInfo outpin = { "Output", SignalType::stereoAudio };
+		static PinInfo outpin("Output", SignalType::stereoAudio);
 		static const PinInfo* outpins[] = { &outpin, NULL };
 		info.outPins = outpins;
 

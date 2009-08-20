@@ -45,7 +45,7 @@ public:
 			static const ParamInfo* params[] = { &paraFreq.p, &paraStep.p, &paraMin.p, &paraMax.p, NULL };
 			info.params.params = params;
 
-			static PinInfo outPin = { "Output", SignalType::paramControl };
+			static PinInfo outPin("Output", SignalType::paramControl);
 			static const PinInfo* outPins[] = { &outPin, NULL };
 			info.outPins = outPins;
 

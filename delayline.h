@@ -3,38 +3,43 @@
 #include "cosecant_api.h"
 using namespace CosecantAPI;
 
-#include "sequenceevent.h"
-
-namespace WorkBuffer { class Base; class ParamControl; class SequenceEvents; };
+//namespace WorkBuffer { class Base; class ParamControl; class EventStream; };
 
 namespace DelayLine
 {
 	class Base : public ObjectWithUuid
 	{
 	public:
-		Base(int length) : m_length(length), m_readHead(0), m_writeHead(0) {}
+		Base(int length) : m_length(length) {}
 
 		int getLength() { return m_length; }
 		void setLength(int length) { m_length = length; reallocate(); }
+
+		virtual void read (WorkBuffer::Base* buf, int firstframe, int lastframe) = 0;
+		virtual void write(WorkBuffer::Base* buf, int firstframe, int lastframe) = 0;
+
+	protected:
+		virtual void reallocate() = 0;
+		int m_length;
+	};
+
+	class Circular : public Base
+	{
+	public:
+		Circular(int length) : Base(length), m_readHead(0), m_writeHead(0) {}
+
+	protected:
+		int m_readHead, m_writeHead;
 
 		void setReadHead(int h)  { m_readHead  = truemod(h, m_length); }
 		void setWriteHead(int h) { m_writeHead = truemod(h, m_length); }
 		int getReadHead()  { return m_readHead;  }
 		int getWriteHead() { return m_writeHead; }
 
-		virtual void read (WorkBuffer::Base* buf, int firstframe, int lastframe) = 0;
-		virtual void write(WorkBuffer::Base* buf, int firstframe, int lastframe) = 0;
-
 		inline void advance(int& head, int step) { head = (head + step) % m_length; }
-
-	protected:
-		virtual void reallocate() = 0;
-
-		int m_length;
-		int m_readHead, m_writeHead;
 	};
 
-	class Audio : public Base
+	class Audio : public Circular
 	{
 	public:
 		Audio(int length, unsigned int nChannels);
@@ -48,11 +53,12 @@ namespace DelayLine
 		virtual void reallocate();
 	};
 
-	template<class TBuffer, class TMap> class EventMap : public Base
+	class ParamControl : public Base
 	{
 	public:
-		EventMap(int length) : Base(length) {}
-		TMap m_data;
+		ParamControl(int length) : Base(length) {}
+		typedef QList< QPair<int, double> > Data;
+		Data m_data;
 
 		virtual void read (WorkBuffer::Base* buf, int firstframe, int lastframe);
 		virtual void write(WorkBuffer::Base* buf, int firstframe, int lastframe);
@@ -61,15 +67,17 @@ namespace DelayLine
 		virtual void reallocate() { m_data.clear(); }
 	};
 
-	class ParamControl : public EventMap< WorkBuffer::ParamControl, std::map<int, double> >
+	class EventStream : public Base
 	{
 	public:
-		ParamControl(int length) : EventMap(length) {}
-	};
+		EventStream(int length) : Base(length) {}
+		typedef QList< QPair<int, StreamEvent> > Data;
+		Data m_data;
 
-	class SequenceEvents : public EventMap< WorkBuffer::SequenceEvents, std::multimap<int, Ptr<SequenceEvent::Base> > >
-	{
-	public:
-		SequenceEvents(int length) : EventMap(length) {}
+		virtual void read (WorkBuffer::Base* buf, int firstframe, int lastframe);
+		virtual void write(WorkBuffer::Base* buf, int firstframe, int lastframe);
+
+	protected:
+		virtual void reallocate() { m_data.clear(); }
 	};
 };

@@ -20,13 +20,15 @@ class Pin : public ObjectWithUuid
 public:
 	enum Direction {in, out};
 
-	Pin(Machine* machine, Direction direction, SignalType::e type)
-		: m_machine(machine), m_direction(direction), m_type(type) {}
+	Pin(Machine* machine, Direction direction, SignalType::e type, PinFlags::i flags = 0)
+		: m_machine(machine), m_direction(direction), m_type(type), m_flags(flags) {}
 
 	// Not a smart ptr: the circular references would give me a headache
 	Machine* m_machine;
 
 	Direction m_direction;
+
+	PinFlags::i getFlags() { return m_flags; }
 
 	enum Side {top, right, bottom, left};
 	float getPos() { return m_pos; }
@@ -54,6 +56,7 @@ signals:
 protected:
 	Side m_side;
 	float m_pos;
+	unsigned int m_flags;
 };
 
 class ParamPin : public Pin
@@ -146,7 +149,6 @@ public:
 
 public:
 	std::vector< Ptr<Pin> > m_inpins, m_outpins;
-	Ptr<Pin> m_noteTriggerPin;
 
 	Ptr<Parameter::Group> m_params;
 	QHash< ParamTag, Ptr<Parameter::Base> > m_paramMap;
@@ -167,8 +169,6 @@ public:
 
 	virtual void changeParam(ParamTag tag, double value) = 0;
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
-
-	std::map<void*, void*> m_noteIdMap;
 
 	virtual void load(SongLoadContext& ctx, const QDomElement& el);
 	QDomElement save(QDomDocument& doc);

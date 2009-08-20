@@ -32,12 +32,6 @@ namespace PluginFuncImpl
 	void Mi_work(Mi* m, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{ m->work(inpins, outpins, firstframe, lastframe); }
 
-	MiNote* Mi_noteOn(Mi* m, double pitch, double velocity)
-	{ return m->noteOn(pitch, velocity); }
-
-	void MiNote_off(MiNote* n)
-	{ n->noteOff(); }
-	
 	ScriptValue* Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
 	{ return m->callScriptFunction(id, args, numargs); }
 	
@@ -62,8 +56,6 @@ static CosecantAPI::PluginFunctions g_pluginFuncs = {
 	PluginFuncImpl::Mi_init,
 	PluginFuncImpl::Mi_changeParam,
 	PluginFuncImpl::Mi_work,
-	PluginFuncImpl::Mi_noteOn,
-	PluginFuncImpl::MiNote_off,
 	PluginFuncImpl::Mi_callScriptFunction,
 	PluginFuncImpl::Mi_createPattern,
 	PluginFuncImpl::MiPattern_destroy,

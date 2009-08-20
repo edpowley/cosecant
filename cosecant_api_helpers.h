@@ -203,4 +203,35 @@ namespace CosecantHelper
 		std::vector<char> m_data;
 		unsigned int m_dataHead;
 	};
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+/*	class EventStreamIterator
+	{
+	public:
+		EventStreamIterator() : m_iter(NULL) {}
+		EventStreamIterator(const EventStreamIterator& other)
+			: m_iter(g_host->EventStreamIter_copy(other.m_iter)) {}
+
+		~EventStreamIterator() { if (m_iter) g_host->EventStreamIter_destroy(m_iter); }
+
+		EventStreamIterator& operator++()
+		{ g_host->EventStreamIter_inc(m_iter); return *this; }
+
+		EventStreamIterator& operator--()
+		{ g_host->EventStreamIter_dec(m_iter); return *this; }
+
+		int key() { return g_host->EventStreamIter_deref(m_iter, NULL, 0); }
+		const StreamEvent& value()
+		{ g_host->EventStreamIter_deref(m_iter, &m_value, sizeof(m_value)); return m_value; }
+
+
+
+	protected:
+		EventStreamIterator(EventStreamIter* iter) : m_iter(iter) {}
+
+		EventStreamIter* m_iter;
+		StreamEvent m_value;
+	};
+*/
 };

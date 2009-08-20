@@ -5,7 +5,7 @@ using namespace DelayLine;
 #include "workbuffer.h"
 
 Audio::Audio(int length, unsigned int nChannels)
-: Base(length), m_nChannels(nChannels)
+: Circular(length), m_nChannels(nChannels)
 {
 	reallocate();
 }
@@ -49,63 +49,62 @@ void Audio::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-template<class TBuffer, class TMap>
-void EventMap<TBuffer, TMap>::read(WorkBuffer::Base* bufb, int firstframe, int lastframe)
+void ParamControl::read(WorkBuffer::Base* bufb, int firstframe, int lastframe)
 {
-	if (m_readHead + (lastframe - firstframe) > m_length)
-	{
-		int middleframe = firstframe + (m_length - m_readHead);
-		read(bufb, firstframe, middleframe);
-		read(bufb, middleframe, lastframe);
-	}
-	else
-	{
-		TBuffer* buf = dynamic_cast<TBuffer*>(bufb);
-		TMap::const_iterator begin = m_data.lower_bound(m_readHead);
-		TMap::const_iterator end   = m_data.lower_bound(m_readHead + (lastframe - firstframe));
-		for (TMap::const_iterator iter = begin; iter != end; ++iter)
-		{
-			buf->m_data.insert(std::make_pair(iter->first - m_readHead + firstframe, iter->second));
-		}
+	WorkBuffer::ParamControl* buf = dynamic_cast<WorkBuffer::ParamControl*>(bufb);
 
-		advance(m_readHead, lastframe - firstframe);
+	Data::iterator iter = m_data.begin();
+	
+	// Consume some elements
+	while (iter != m_data.end() && iter->first < lastframe-firstframe)
+	{
+		buf->m_data.insert(std::make_pair(iter->first + firstframe, iter->second));
+	}
+
+	// Adjust timestamps of the rest
+	for (; iter != m_data.end(); ++iter)
+	{
+		iter->first -= lastframe-firstframe;
 	}
 }
 
-template<class TBuffer, class TMap>
-void EventMap<TBuffer, TMap>::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
+void ParamControl::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
 {
-	if (m_writeHead + (lastframe - firstframe) > m_length)
+	WorkBuffer::ParamControl* buf = dynamic_cast<WorkBuffer::ParamControl*>(bufb);
+
+	for (std::map<int,double>::const_iterator iter = buf->m_data.begin(); iter != buf->m_data.end(); ++iter)
 	{
-		int middleframe = firstframe + (m_length - m_writeHead);
-		write(bufb, firstframe, middleframe);
-		write(bufb, middleframe, lastframe);
-	}
-	else
-	{
-		TBuffer* buf = dynamic_cast<TBuffer*>(bufb);
-
-		m_data.erase(
-			m_data.lower_bound(m_writeHead),
-			m_data.lower_bound(m_writeHead + (lastframe - firstframe)));
-
-		TMap::const_iterator begin = buf->m_data.lower_bound(firstframe);
-		TMap::const_iterator end   = buf->m_data.lower_bound(lastframe);
-
-		for (TMap::const_iterator iter = begin; iter != end; ++iter)
-		{
-			m_data.insert(std::make_pair(iter->first - firstframe + m_writeHead, iter->second));
-		}
-
-		advance(m_writeHead, lastframe - firstframe);
+		m_data.append(qMakePair(iter->first - firstframe + m_length, iter->second));
 	}
 }
 
-// Instantiations, so that the linker can find these functions
-#define EVENTMAP_INSTANTIATE(...)												\
-	template void EventMap< __VA_ARGS__ >::read(WorkBuffer::Base*, int, int);	\
-	template void EventMap< __VA_ARGS__ >::write(WorkBuffer::Base*, int, int);	\
-// end define
+//////////////////////////////////////////////////////////////////////////////////////
 
-EVENTMAP_INSTANTIATE(WorkBuffer::ParamControl, std::map<int, double>)
-EVENTMAP_INSTANTIATE(WorkBuffer::SequenceEvents, WorkBuffer::SequenceEvents::EventMap)
+void EventStream::read(WorkBuffer::Base* bufb, int firstframe, int lastframe)
+{
+	WorkBuffer::EventStream* buf = dynamic_cast<WorkBuffer::EventStream*>(bufb);
+
+	Data::iterator iter = m_data.begin();
+	
+	// Consume some elements
+	while (iter != m_data.end() && iter->first < lastframe-firstframe)
+	{
+		buf->m_data.insert(iter->first + firstframe, iter->second);
+	}
+
+	// Adjust timestamps of the rest
+	for (; iter != m_data.end(); ++iter)
+	{
+		iter->first -= lastframe-firstframe;
+	}
+}
+
+void EventStream::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
+{
+	WorkBuffer::EventStream* buf = dynamic_cast<WorkBuffer::EventStream*>(bufb);
+
+	for (QMultiMap<int,StreamEvent>::const_iterator iter = buf->m_data.begin(); iter != buf->m_data.end(); ++iter)
+	{
+		m_data.append(qMakePair(iter.key() - firstframe + m_length, iter.value()));
+	}
+}

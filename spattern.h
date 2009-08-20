@@ -3,6 +3,7 @@
 #include "sequence.h"
 
 class SpatternMachine;
+class SpatternPlayer;
 
 namespace Spattern
 {
@@ -26,6 +27,8 @@ namespace Spattern
 	class Pattern : public Sequence::Pattern
 	{
 		Q_OBJECT
+		
+		friend SpatternPlayer;
 
 	public:
 		Pattern(SpatternMachine* mac, double length);

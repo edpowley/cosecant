@@ -64,6 +64,17 @@ MasterTrackClip::MasterTrackClip()
 	m_lengthInBeats = -1;
 }
 
+void Seq::addMasterTrackClip(const Ptr<MasterTrackClip>& mtc)
+{
+	int fb = mtc->getFirstBeat();
+	m_masterTrack.insert(fb, mtc);
+
+	// TODO: do this properly (recalc subsequent start times)
+	double starttime = beatToSecond(fb);
+	m_mtcStartTimes.insert(mtc, starttime);
+	m_mtcStartTimes2.insert(starttime, mtc);
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 Clip::Clip(double starttime, const Ptr<Sequence::Pattern>& pattern)

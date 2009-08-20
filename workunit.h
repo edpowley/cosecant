@@ -59,7 +59,6 @@ namespace WorkUnit
 		Ptr<Machine> m_machine;
 		std::vector< Ptr<Pin> > m_inpins, m_outpins;
 		std::vector< Ptr<Sequence::Track> > m_seqTracks;
-		Ptr<Pin> m_noteTriggerPin;
 
 		struct ParamPinBuf
 		{
@@ -71,13 +70,6 @@ namespace WorkUnit
 			std::map<int, double>::const_iterator iter, enditer;
 		};
 		std::vector<ParamPinBuf> m_paramPinBufs;
-
-		struct NotePinBuf
-		{
-			Ptr<WorkBuffer::SequenceEvents> buf;
-			WorkBuffer::SequenceEvents::EventMap::const_iterator iter, enditer;
-		};
-		NotePinBuf m_notePinBuf;
 
 		void updatePinBuffers(PinBuffer*& pinBuffers,
 							  const std::vector< Ptr<WorkBuffer::Base> >& workBuffers);

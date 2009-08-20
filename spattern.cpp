@@ -12,10 +12,12 @@ Pattern::Pattern(SpatternMachine* mac, double length)
 
 void Pattern::play(Sequence::Track* track, double startpos)
 {
+	m_mac->playPattern(track, this, startpos);
 }
 
 void Pattern::stop(Sequence::Track* track)
 {
+	m_mac->stopPattern(track, this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

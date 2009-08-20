@@ -11,7 +11,7 @@ FactoriesInitialiser::FactoriesInitialiser()
 	s_factories[SignalType::monoAudio]		= new Factory<MonoAudio>("monoAudio");
 	s_factories[SignalType::stereoAudio]	= new Factory<StereoAudio>("stereoAudio");
 	s_factories[SignalType::paramControl]	= new Factory<ParamControl>("paramControl");
-	s_factories[SignalType::noteTrigger]	= new Factory<SequenceEvents>("noteTrigger");
+	s_factories[SignalType::noteTrigger]	= new Factory<EventStream>("noteTrigger");
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -143,31 +143,53 @@ void ParamControl::mix(Base* other, int firstframe, int lastframe)
 	}
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-
-void SequenceEvents::clear(int firstframe, int lastframe)
+void ParamControl::getEventBreakPoints(std::set<int>& bp)
 {
-	m_data.erase(m_data.lower_bound(firstframe), m_data.lower_bound(lastframe));
+	for (std::map<int,double>::const_iterator iter = m_data.begin(); iter != m_data.end(); ++iter)
+	{
+		bp.insert(iter->first);
+	}
 }
 
-void SequenceEvents::clearAll()
+////////////////////////////////////////////////////////////////////////////////////////
+
+void EventStream::clear(int firstframe, int lastframe)
+{
+	EventMap::iterator iter = m_data.lowerBound(firstframe);
+	while (iter != m_data.end() && iter.key() < lastframe)
+		iter = m_data.erase(iter);
+}
+
+void EventStream::clearAll()
 {
 	m_data.clear();
 }
 
-void SequenceEvents::copy(Base* other, int firstframe, int lastframe)
+void EventStream::copy(Base* other, int firstframe, int lastframe)
 {
-	if (SequenceEvents* p = dynamic_cast<SequenceEvents*>(other))
+	if (EventStream* p = dynamic_cast<EventStream*>(other))
 	{
 		clear(firstframe, lastframe);
 		mix(p, firstframe, lastframe);
 	}
 }
 
-void SequenceEvents::mix(Base* other, int firstframe, int lastframe)
+void EventStream::mix(Base* other, int firstframe, int lastframe)
 {
-	if (SequenceEvents* p = dynamic_cast<SequenceEvents*>(other))
+	if (EventStream* p = dynamic_cast<EventStream*>(other))
 	{
-		m_data.insert(p->m_data.lower_bound(firstframe), p->m_data.lower_bound(lastframe));
+		for (EventMap::const_iterator iter = p->m_data.lowerBound(firstframe);
+			iter != p->m_data.end() && iter.key() < lastframe; ++iter)
+		{
+			m_data.insert(iter.key(), iter.value());
+		}
+	}
+}
+
+void EventStream::getEventBreakPoints(std::set<int>& bp)
+{
+	for (QMultiMap<int,StreamEvent>::const_iterator iter = m_data.begin(); iter != m_data.end(); ++iter)
+	{
+		bp.insert(iter.key());
 	}
 }

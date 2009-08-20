@@ -2,7 +2,6 @@
 
 #include "audioio.h"
 #include "delayline.h"
-#include "sequenceevent.h"
 
 namespace WorkBuffer
 {
@@ -26,6 +25,8 @@ namespace WorkBuffer
 		virtual void mix (WorkBuffer::Base* other, int firstframe, int lastframe) = 0;
 
 		virtual void preProcess() {}
+
+		virtual void getEventBreakPoints(std::set<int>& bp) {}
 	};
 
 	///////////////////////////////////////////////////////////////////////////
@@ -88,6 +89,7 @@ namespace WorkBuffer
 		virtual void clear(int firstframe, int lastframe);
 		virtual void copy(WorkBuffer::Base* other, int firstframe, int lastframe);
 		virtual void mix (WorkBuffer::Base* other, int firstframe, int lastframe);
+		virtual void getEventBreakPoints(std::set<int>& bp);
 
 		std::map<int, double> m_data;
 		double m_lastValue;
@@ -95,26 +97,27 @@ namespace WorkBuffer
 
 	//////////////////////////////////////////////////////////////////////////
 
-	class SequenceEvents : public Base
+	class EventStream : public Base
 	{
 	public:
 		static const unsigned int s_flags = needsPreProcess;
 		virtual unsigned int getFlags() const { return s_flags; }
 
-		SequenceEvents() {}
+		EventStream() {}
 
 		virtual PinBuffer getPinBuffer()
 		{ PinBuffer pb; pb.hostbuf = this; return pb; }
 
-		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::SequenceEvents(length); }
+		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::EventStream(length); }
 
 		virtual void preProcess() { clearAll(); }
 		virtual void clearAll();
 		virtual void clear(int firstframe, int lastframe);
 		virtual void copy(WorkBuffer::Base* other, int firstframe, int lastframe);
 		virtual void mix (WorkBuffer::Base* other, int firstframe, int lastframe);
+		virtual void getEventBreakPoints(std::set<int>& bp);
 
-		typedef std::multimap<int, Ptr<SequenceEvent::Base> > EventMap;
+		typedef QMultiMap<int, StreamEvent> EventMap;
 
 		EventMap m_data;
 	};

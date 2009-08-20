@@ -70,7 +70,7 @@ public:
 			static const ParamInfo* params[] = { &paraFreq.p, &paraVol.p, NULL };
 			info.params.params = params;
 
-			static PinInfo outPin = { "Output", SignalType::stereoAudio };
+			static PinInfo outPin("Output", SignalType::stereoAudio);
 			static const PinInfo* outPins[] = { &outPin, NULL };
 			info.outPins = outPins;
 

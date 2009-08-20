@@ -30,7 +30,7 @@ MachineInfo* TrackerTest::getInfo()
 					| MachineFlags::hasCustomPatterns;
 		info.script = g_script;
 
-		static PinInfo pinNoteOut = { "Note", SignalType::noteTrigger };
+		static PinInfo pinNoteOut("Note", SignalType::noteTrigger);
 		static const PinInfo* outPins[] = { &pinNoteOut, NULL };
 		info.outPins = outPins;
 

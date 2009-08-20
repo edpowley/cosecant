@@ -80,6 +80,99 @@ static void addParamChangeEvent(PinBuffer* buf, int time, double value)
 	if (p) p->m_data.insert(std::make_pair(time, value));
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+
+namespace CosecantAPI
+{
+	class EventStreamIter
+	{
+	public:
+		QMultiMap<int, StreamEvent>* map;
+		QMultiMap<int, StreamEvent>::const_iterator i;
+
+		EventStreamIter(QMultiMap<int, StreamEvent>* map_) : map(map_) {}
+	};
+};
+
+static EventStreamIter* createEventStreamIter(PinBuffer* buf)
+{
+	if (WorkBuffer::EventStream* es = dynamic_cast<WorkBuffer::EventStream*>(buf->hostbuf))
+		return new EventStreamIter(&es->m_data);
+	else
+		return NULL;
+}
+
+static EventStreamIter* EventStream_begin(PinBuffer* buf)
+{
+	EventStreamIter* i = createEventStreamIter(buf);
+	if (i) i->i = i->map->begin();
+	return i;
+}
+
+static EventStreamIter* EventStream_end(PinBuffer* buf)
+{
+	EventStreamIter* i = createEventStreamIter(buf);
+	if (i) i->i = i->map->end();
+	return i;
+}
+
+static EventStreamIter* EventStream_find(PinBuffer* buf, int key)
+{
+	EventStreamIter* i = createEventStreamIter(buf);
+	if (i) i->i = i->map->find(key);
+	return i;
+}
+
+static EventStreamIter* EventStream_lowerBound(PinBuffer* buf, int key)
+{
+	EventStreamIter* i = createEventStreamIter(buf);
+	if (i) i->i = i->map->lowerBound(key);
+	return i;
+}
+
+static EventStreamIter* EventStream_upperBound(PinBuffer* buf, int key)
+{
+	EventStreamIter* i = createEventStreamIter(buf);
+	if (i) i->i = i->map->upperBound(key);
+	return i;
+}
+
+static EventStreamIter* EventStreamIter_copy(EventStreamIter* iter)
+{
+	if (!iter) return NULL;
+	return new EventStreamIter(*iter);
+}
+
+static void EventStreamIter_destroy(EventStreamIter* iter)
+{
+	if (iter) delete iter;
+}
+
+static void EventStreamIter_inc(EventStreamIter* iter)
+{
+	if (iter)
+		++ iter->i;
+}
+
+static void EventStreamIter_dec(EventStreamIter* iter)
+{
+	if (iter)
+		-- iter->i;
+}
+
+static int EventStreamIter_deref(EventStreamIter* iter, StreamEvent* ev, unsigned int evSize)
+{
+	if (!iter) return -1;
+	if (ev && evSize)
+		memcpy(ev, &iter->i.value(), min(evSize, sizeof(StreamEvent)));
+	return iter->i.key();
+}
+
+static cbool EventStreamIter_equal(EventStreamIter* a, EventStreamIter* b)
+{
+	return (a && b && a->i == b->i) ? ctrue : cfalse;
+}
+
 static void iteratePaths(const char* id, const char* name,
 						 void (*callback)(void* user, const PathChar* path), void* user)
 {
@@ -225,6 +318,17 @@ static HostFunctions g_hostFuncs =
 	lockMutex,
 	unlockMutex,
 	addParamChangeEvent,
+	EventStream_begin,
+	EventStream_end,
+	EventStream_find,
+	EventStream_lowerBound,
+	EventStream_upperBound,
+	EventStreamIter_copy,
+	EventStreamIter_destroy,
+	EventStreamIter_inc,
+	EventStreamIter_dec,
+	EventStreamIter_deref,
+	EventStreamIter_equal,
 	iteratePaths,
 	ScriptValue_isNull,
 	ScriptValue_isValid,

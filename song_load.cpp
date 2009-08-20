@@ -237,6 +237,14 @@ void Sequence::Seq::load(SongLoadContext& ctx, const QDomElement& el)
 {
 	m_objectUuid = getAttribute<Uuid>(el, "uuid"); ctx.setObject(m_objectUuid, this);
 
+	m_masterTrack.clear();
+	foreach(const QDomElement& mtcel, getChildElements(el, "masterclip"))
+	{
+		Ptr<MasterTrackClip> mtc = new MasterTrackClip;
+		mtc->load(ctx, mtcel);
+		addMasterTrackClip(mtc);
+	}
+
 	foreach(const QDomElement& tel, getChildElements(el, "track"))
 	{
 		Ptr<Machine> machine = ctx.getObjectOrThrow<Machine>(getAttribute<Uuid>(tel, "machine"));
@@ -259,6 +267,18 @@ void Sequence::Track::load(SongLoadContext& ctx, const QDomElement& el)
 		clip->m_end = getAttribute<double>(cel, "end");
 		addClip(clip);
 	}
+}
+
+void Sequence::MasterTrackClip::load(SongLoadContext& ctx, const QDomElement& el)
+{
+	m_firstBeat = getAttribute<int>(el, "start");
+	m_lengthInBeats = getAttribute<int>(el, "length");
+
+	m_timeinfo.beatsPerSecond			= getAttribute<double>(el, "beatspersecond");
+	m_timeinfo.beatsPerBar				= getAttribute<int>(el, "beatsperbar");
+	m_timeinfo.beatsPerWholeNote		= getAttribute<int>(el, "beatsperwholenote");
+	m_timeinfo.barsPerSmallGrid			= getAttribute<int>(el, "smallgridstep");
+	m_timeinfo.smallGridsPerLargeGrid	= getAttribute<int>(el, "largegridstep");
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

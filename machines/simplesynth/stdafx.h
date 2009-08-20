@@ -12,6 +12,7 @@
 #include <math.h>
 
 #include <vector>
+#include <map>
 
 #include "../../cosecant_api.h"
 using namespace CosecantAPI;

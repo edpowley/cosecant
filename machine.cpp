@@ -43,16 +43,6 @@ void Machine::init()
 	initPins(Pin::in,  m_info->inPins);
 	initPins(Pin::out, m_info->outPins);
 
-	if (m_info->flags & MachineFlags::hasNoteTrigger)
-	{
-		Ptr<Pin> pin = new Pin(this, Pin::in, SignalType::noteTrigger);
-		pin->setSide(Pin::top);
-		pin->setPos(0.5f);
-		pin->m_name = "Note trigger";
-		m_inpins.push_back(pin);
-		m_noteTriggerPin = pin;
-	}
-
 	if (m_info->script)
 	{
 		QScriptEngine* se = Application::get().getScriptEngine();
@@ -140,7 +130,8 @@ void Machine::initParams(ParamGroupInfo* group)
 }
 
 ParamPin::ParamPin(Parameter::Scalar* param, TimeUnit::e timeUnit)
-: Pin(param->getMachine(), in, SignalType::paramControl), m_param(param), m_timeUnit(timeUnit)
+:	Pin(param->getMachine(), in, SignalType::paramControl, PinFlags::breakOnEvent),
+	m_param(param), m_timeUnit(timeUnit)
 {
 	m_name = tr("Parameter '%1'").arg(m_param->getName());
 }
@@ -209,7 +200,7 @@ void Machine::initPins(Pin::Direction direction, const PinInfo** pins)
 	int pinnum = 0;
 	for (const PinInfo** i = pins; *i; ++i)
 	{
-		Ptr<Pin> pin = new Pin(this, direction, static_cast<SignalType::e>((*i)->type));
+		Ptr<Pin> pin = new Pin(this, direction, static_cast<SignalType::e>((*i)->type), (*i)->flags);
 		pin->setSide(side);
 		pin->setPos(pinnum);
 		pin->m_name = (*i)->name;

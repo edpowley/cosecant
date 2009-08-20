@@ -53,7 +53,7 @@ void Base::go(int numframes)
 
 WorkMachine::WorkMachine(WorkQueue* q, const Ptr<Machine>& machine)
 :	Base(q), m_machine(machine), m_inPinBuffer(NULL), m_outPinBuffer(NULL),
-	m_inpins(machine->m_inpins), m_outpins(machine->m_outpins), m_noteTriggerPin(machine->m_noteTriggerPin)
+	m_inpins(machine->m_inpins), m_outpins(machine->m_outpins)
 {
 	BOOST_FOREACH(Ptr<Sequence::Track>& track, Song::get().m_sequence->m_tracks)
 	{
@@ -116,10 +116,6 @@ void WorkMachine::updatePinBuffers()
 
 			m_paramPinBufs.push_back(ppb);
 		}
-		else if (m_inpins[pin] == m_noteTriggerPin)
-		{
-			m_notePinBuf.buf = dynamic_cast<WorkBuffer::SequenceEvents*>(m_inWorkBuffer[pin].c_ptr());
-		}
 	}
 }
 
@@ -164,15 +160,11 @@ void WorkMachine::work(int firstframe, int lastframe)
 			}
 		}
 
-		if (m_notePinBuf.buf)
+		for (size_t pin=0; pin<m_inpins.size(); pin++)
 		{
-			m_notePinBuf.iter = m_notePinBuf.buf->m_data.lower_bound(firstframe);
-			m_notePinBuf.enditer = m_notePinBuf.buf->m_data.lower_bound(lastframe);
-
-			for (WorkBuffer::SequenceEvents::EventMap::const_iterator ni = m_notePinBuf.iter;
-				ni != m_notePinBuf.enditer; ++ni)
+			if (m_inpins[pin]->getFlags() & PinFlags::breakOnEvent)
 			{
-				breakpoints.insert(ni->first);
+				m_inWorkBuffer[pin]->getEventBreakPoints(breakpoints);
 			}
 		}
 

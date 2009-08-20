@@ -10,15 +10,14 @@ public:
 
 	MachineInfo* getInfo();
 
-	static const int c_polyphony = 16;
-
 	SimpleSynth(HostMachine* hm);
 
 	class Note
 	{
 		friend class SimpleSynth;
 	public:
-		void init(SimpleSynth* mac);
+		Note(SimpleSynth* mac);
+
 		void noteOn(double note, double vel);
 		void noteOff();
 
@@ -30,18 +29,15 @@ public:
 
 		void setNote(double n);
 
-		enum {attack, sustain, release, finished} m_envStage;
+		enum {unstarted, attack, sustain, release, finished} m_envStage;
 		double m_envAmp;
 	};
-
-//	virtual void* noteOn(double note, double velocity);
-//	virtual void noteOff(void* note);
 
 	virtual void changeParam(ParamTag tag, double value);
 	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
 protected:
-	Note m_notes[c_polyphony];
+	std::map<void*, Note*> m_notes;
 	double m_envAttackStep, m_envReleaseStep;
 };
 
@@ -56,7 +52,6 @@ MachineInfo* SimpleSynth::getInfo()
 	{
 		info.defaultName = "Synth";
 		info.typeHint = MachineTypeHint::generator;
-		info.flags = MachineFlags::hasNoteTrigger;
 
 		using namespace TimeUnit;
 		static TimeParamInfo paraAttack, paraRelease;
@@ -78,7 +73,11 @@ MachineInfo* SimpleSynth::getInfo()
 		static const ParamInfo* params[] = { &paraAttack.p, &paraRelease.p, NULL };
 		info.params.params = params;
 
-		static PinInfo outPin = { "Output", SignalType::stereoAudio };
+		static PinInfo noteInPin("Note", SignalType::noteTrigger, PinFlags::breakOnEvent);
+		static const PinInfo* inPins[] = { &noteInPin, NULL };
+		info.inPins = inPins;
+
+		static PinInfo outPin("Output", SignalType::stereoAudio);
 		static const PinInfo* outPins[] = { &outPin, NULL };
 		info.outPins = outPins;
 
@@ -93,17 +92,12 @@ MachineInfo* SimpleSynth::getInfo()
 SimpleSynth::SimpleSynth(HostMachine* hm)
 : Mi(hm)
 {
-	for (int n=0; n<c_polyphony; n++)
-		m_notes[n].init(this);
-
 	m_envAttackStep = 0.1;
 	m_envReleaseStep = 0.1;
 }
 
-void SimpleSynth::Note::init(SimpleSynth* mac)
+SimpleSynth::Note::Note(SimpleSynth* mac) : m_mac(mac), m_envStage(unstarted)
 {
-	m_mac = mac;
-	m_envStage = finished;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -226,6 +220,37 @@ void SimpleSynth::Note::work(float* buffer, int numframes)
 
 void SimpleSynth::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
+	// Process note triggers
+	EventStreamIter* upper = g_host->EventStream_upperBound(inpins+0, firstframe);
+	for (EventStreamIter* iter = g_host->EventStream_lowerBound(inpins+0, firstframe);
+		!g_host->EventStreamIter_equal(iter, upper); g_host->EventStreamIter_inc(iter))
+	{
+		StreamEvent ev;
+		g_host->EventStreamIter_deref(iter, &ev, sizeof(ev));
+		switch (ev.type)
+		{
+		case StreamEventType::noteOn:
+			CosecantHelper::DebugPrint() << "note on" << ev.note.id << ev.note.note << ev.note.vel;
+			{
+				Note* note = new Note(this);
+				note->noteOn(ev.note.note, ev.note.vel);
+				m_notes.insert(std::make_pair(ev.note.id, note));
+			}
+			break;
+
+		case StreamEventType::noteOff:
+			CosecantHelper::DebugPrint() << "note off" << ev.note.id;
+			{
+				std::map<void*, Note*>::iterator iter = m_notes.find(ev.note.id);
+				if (iter != m_notes.end())
+					iter->second->noteOff();
+				else
+					CosecantHelper::DebugPrint() << "couldn't find note";
+			}
+			break;
+		}
+	}
+
 	// Clear output buffer
 	for (int i=firstframe*2; i<lastframe*2; i++)
 		outpins[0].f[i] = 0.0f;
@@ -233,10 +258,16 @@ void SimpleSynth::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, in
 	// Work each note in turn
 	float* workbuf = outpins[0].f + firstframe*2;
 	int workframes = lastframe - firstframe;
-	for (int i=0; i<c_polyphony; i++)
+	for (std::map<void*, Note*>::iterator iter = m_notes.begin(); iter != m_notes.end(); /* ++ inside loop */)
 	{
-		if (m_notes[i].m_envStage != Note::finished)
-			m_notes[i].work(workbuf, workframes);
+		iter->second->work(workbuf, workframes);
+		if (iter->second->m_envStage == Note::finished)
+		{
+			delete iter->second;
+			iter = m_notes.erase(iter);
+		}
+		else
+			++iter;
 	}
 }
 
