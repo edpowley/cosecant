@@ -81,7 +81,7 @@ class AudioOut : public AudioInOut
 public:
 	AudioOut() : AudioInOut() {}
 
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
 		int nChans = AudioIO::get().m_numOutputChannels;
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;
@@ -139,7 +139,7 @@ class AudioIn : public AudioInOut
 public:
 	AudioIn() : AudioInOut() {}
 
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
 		int nChans = AudioIO::get().m_numInputChannels;
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;

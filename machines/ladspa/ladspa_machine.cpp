@@ -76,7 +76,7 @@ LadspaMachine::~LadspaMachine()
 	}
 }
 
-void LadspaMachine::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void LadspaMachine::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	// Copy input buffers
 	for (size_t i=0; i<m_inPinBuffers.size(); i++)

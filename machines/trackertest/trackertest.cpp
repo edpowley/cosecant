@@ -114,7 +114,7 @@ void TrackerTest::changeParam(ParamTag tag, double value)
 {
 }
 
-void TrackerTest::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void TrackerTest::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	const TimeInfo* timeinfo = g_host->getTimeInfo(m_hm);
 	m_beatsPerFrame = timeinfo->beatsPerSecond / timeinfo->samplesPerSecond;

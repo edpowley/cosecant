@@ -22,7 +22,7 @@ namespace Builtin
 		}
 
 		virtual void changeParam(ParamTag tag, double value) {}
-		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) {}
+		virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) {}
 
 	protected:
 		virtual void initInfo()

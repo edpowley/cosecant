@@ -46,8 +46,11 @@ namespace PseudoMachine
 	public:
 		virtual void initInfo() { THROW_ERROR(Error, "This should never be called"); }
 		
-		virtual void changeParam(ParamTag tag, double value) { THROW_ERROR(Error, "This should never be called"); }
-		virtual void work(PinBuffer*, PinBuffer*, int, int) { THROW_ERROR(Error, "This should never be called"); }
+		virtual void changeParam(ParamTag tag, double value)
+		{ THROW_ERROR(Error, "This should never be called"); }
+
+		virtual void work(const PinBuffer*, PinBuffer*, int, int)
+		{ THROW_ERROR(Error, "This should never be called"); }
 
 	protected:
 		virtual void initImpl() { THROW_ERROR(Error, "This should never be called"); }

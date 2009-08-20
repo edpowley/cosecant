@@ -18,7 +18,7 @@ public:
 	MachineInfo* getInfo();
 
 	void changeParam(ParamTag tag, double value);
-	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
 protected:
 	float m_gain;
@@ -35,7 +35,7 @@ public:
 	MachineInfo* getInfo();
 
 	void changeParam(ParamTag tag, double value) {}
-	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 };
 
 class StereoToMonoMono : public BuzzyMi
@@ -46,6 +46,6 @@ public:
 	MachineInfo* getInfo();
 
 	void changeParam(ParamTag tag, double value) {}
-	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 };
 

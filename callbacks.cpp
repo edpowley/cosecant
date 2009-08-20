@@ -87,50 +87,50 @@ namespace CosecantAPI
 	class EventStreamIter
 	{
 	public:
-		QMultiMap<int, StreamEvent>* map;
+		const QMultiMap<int, StreamEvent>* map;
 		QMultiMap<int, StreamEvent>::const_iterator i;
 
-		EventStreamIter(QMultiMap<int, StreamEvent>* map_) : map(map_) {}
+		EventStreamIter(const QMultiMap<int, StreamEvent>* map_) : map(map_) {}
 	};
 };
 
-static EventStreamIter* createEventStreamIter(PinBuffer* buf)
+static EventStreamIter* createEventStreamIter(const PinBuffer* buf)
 {
-	if (WorkBuffer::EventStream* es = dynamic_cast<WorkBuffer::EventStream*>(buf->hostbuf))
+	if (const WorkBuffer::EventStream* es = dynamic_cast<const WorkBuffer::EventStream*>(buf->hostbuf))
 		return new EventStreamIter(&es->m_data);
 	else
 		return NULL;
 }
 
-static EventStreamIter* EventStream_begin(PinBuffer* buf)
+static EventStreamIter* EventStream_begin(const PinBuffer* buf)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->map->begin();
 	return i;
 }
 
-static EventStreamIter* EventStream_end(PinBuffer* buf)
+static EventStreamIter* EventStream_end(const PinBuffer* buf)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->map->end();
 	return i;
 }
 
-static EventStreamIter* EventStream_find(PinBuffer* buf, int key)
+static EventStreamIter* EventStream_find(const PinBuffer* buf, int key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->map->find(key);
 	return i;
 }
 
-static EventStreamIter* EventStream_lowerBound(PinBuffer* buf, int key)
+static EventStreamIter* EventStream_lowerBound(const PinBuffer* buf, int key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->map->lowerBound(key);
 	return i;
 }
 
-static EventStreamIter* EventStream_upperBound(PinBuffer* buf, int key)
+static EventStreamIter* EventStream_upperBound(const PinBuffer* buf, int key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->map->upperBound(key);

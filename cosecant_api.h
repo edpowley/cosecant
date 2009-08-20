@@ -304,7 +304,7 @@ namespace CosecantAPI
 		void (*Mi_init)(Mi* m);
 		
 		void (*Mi_changeParam)(Mi* m, ParamTag tag, double value);
-		void (*Mi_work)(Mi* m, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+		void (*Mi_work)(Mi* m, const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 		
 		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
 		
@@ -402,11 +402,11 @@ namespace CosecantAPI
 
 		void (*addParamChangeEvent)(PinBuffer* buf, int time, double value);
 
-		EventStreamIter* (*EventStream_begin)(PinBuffer* buf);
-		EventStreamIter* (*EventStream_end)(PinBuffer* buf);
-		EventStreamIter* (*EventStream_find)(PinBuffer* buf, int key);
-		EventStreamIter* (*EventStream_lowerBound)(PinBuffer* buf, int key);
-		EventStreamIter* (*EventStream_upperBound)(PinBuffer* buf, int key);
+		EventStreamIter* (*EventStream_begin)(const PinBuffer* buf);
+		EventStreamIter* (*EventStream_end)(const PinBuffer* buf);
+		EventStreamIter* (*EventStream_find)(const PinBuffer* buf, int key);
+		EventStreamIter* (*EventStream_lowerBound)(const PinBuffer* buf, int key);
+		EventStreamIter* (*EventStream_upperBound)(const PinBuffer* buf, int key);
 		EventStreamIter* (*EventStreamIter_copy)(EventStreamIter* iter);
 		void (*EventStreamIter_destroy)(EventStreamIter* iter);
 		void (*EventStreamIter_inc)(EventStreamIter* iter);
@@ -485,7 +485,7 @@ namespace CosecantAPI
 		virtual void init() {}
 
 		virtual void changeParam(ParamTag tag, double value) = 0;
-		virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
+		virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
 
 		/** Your machine's script can call this.
 			\param id the integer function id, as passed to HostFunctions::registerScriptFunction

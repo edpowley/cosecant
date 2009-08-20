@@ -28,7 +28,7 @@ public:
 	SpatternMachine();
 
 	virtual void changeParam(ParamTag tag, double value) {}
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
 	void playPattern(Sequence::Track* track, Spattern::Pattern* patt, double startpos);
 	void stopPattern(Sequence::Track* track, Spattern::Pattern* patt);

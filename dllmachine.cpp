@@ -110,7 +110,7 @@ void Mac::changeParam(ParamTag tag, double value)
 		m_dll->m_funcs->Mi_changeParam(m_mi, tag, value);
 }
 
-void Mac::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void Mac::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	if (m_dll->m_funcs->Mi_work)
 		m_dll->m_funcs->Mi_work(m_mi, inpins, outpins, firstframe, lastframe);

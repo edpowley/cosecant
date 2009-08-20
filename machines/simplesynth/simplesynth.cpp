@@ -34,7 +34,7 @@ public:
 	};
 
 	virtual void changeParam(ParamTag tag, double value);
-	virtual void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 
 protected:
 	std::map<void*, Note*> m_notes;
@@ -218,7 +218,7 @@ void SimpleSynth::Note::work(float* buffer, int numframes)
 	}
 }
 
-void SimpleSynth::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void SimpleSynth::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	// Process note triggers
 	EventStreamIter* upper = g_host->EventStream_upperBound(inpins+0, firstframe);

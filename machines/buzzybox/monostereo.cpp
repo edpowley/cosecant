@@ -25,7 +25,7 @@ MachineInfo* StereoToMonoMono::getInfo()
 	return &info;
 }
 
-void StereoToMonoMono::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void StereoToMonoMono::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	for (int i=firstframe; i<lastframe; i++)
 	{
@@ -60,7 +60,7 @@ MachineInfo* MonoMonoToStereo::getInfo()
 	return &info;
 }
 
-void MonoMonoToStereo::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void MonoMonoToStereo::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	for (int i=firstframe; i<lastframe; i++)
 	{

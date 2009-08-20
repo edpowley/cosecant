@@ -32,7 +32,7 @@ public:
 		}
 	}
 
-	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{
 		for (int i=firstframe; i<lastframe; i++)
 		{

@@ -36,7 +36,7 @@ public:
 	MachineInfo* getInfo();
 
 	void init();
-	void work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
 	void changeParam(ParamTag tag, double value);
 
 protected:

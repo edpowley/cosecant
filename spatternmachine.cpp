@@ -31,7 +31,7 @@ QDebug& operator<<(QDebug& dbg, const StreamEvent& ev)
 	return dbg;
 }
 
-void SpatternMachine::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void SpatternMachine::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	Ptr<WorkBuffer::EventStream> outbuf = dynamic_cast<WorkBuffer::EventStream*>(outpins[0].hostbuf);
 	const TimeInfo& timeinfo = SeqPlay::get().getTimeInfo();

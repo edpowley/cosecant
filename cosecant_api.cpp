@@ -29,7 +29,7 @@ namespace PluginFuncImpl
 	void Mi_changeParam(Mi* m, ParamTag tag, double value)
 	{ m->changeParam(tag, value); }
 
-	void Mi_work(Mi* m, PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	void Mi_work(Mi* m, const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 	{ m->work(inpins, outpins, firstframe, lastframe); }
 
 	ScriptValue* Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)

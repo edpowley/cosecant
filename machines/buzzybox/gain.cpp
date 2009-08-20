@@ -50,7 +50,7 @@ void Gain::changeParam(ParamTag tag, double value)
 	}
 }
 
-void Gain::work(PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void Gain::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
 	for (int i=firstframe; i<lastframe; i++)
 	{
