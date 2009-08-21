@@ -110,7 +110,7 @@ public:
 			info.params.params = params;
 
 			static PinInfo pin("To soundcard", SignalType::stereoAudio);
-			static const PinInfo* pins[] = { &pin, NULL };
+			static PinInfo* pins[] = { &pin, NULL };
 			info.inPins = pins;
 
 			initialised = true;
@@ -166,7 +166,7 @@ public:
 			info.params.params = params;
 
 			static PinInfo pin("From soundcard", SignalType::stereoAudio);
-			static const PinInfo* pins[] = { &pin, NULL };
+			static PinInfo* pins[] = { &pin, NULL };
 			info.outPins = pins;
 
 			initialised = true;

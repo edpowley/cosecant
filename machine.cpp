@@ -190,7 +190,7 @@ QWidget* Machine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& patter
 
 //////////////////////////////////////////////////////////////////////////
 
-void Machine::initPins(Pin::Direction direction, const PinInfo** pins)
+void Machine::initPins(Pin::Direction direction, const PinInfo* const* pins)
 {
 	if (!pins) return;
 
@@ -198,7 +198,7 @@ void Machine::initPins(Pin::Direction direction, const PinInfo** pins)
 	Pin::Side side = (direction == Pin::in) ? Pin::left : Pin::right;
 
 	int pinnum = 0;
-	for (const PinInfo** i = pins; *i; ++i)
+	for (const PinInfo* const* i = pins; *i; ++i)
 	{
 		Ptr<Pin> pin = new Pin(this, direction, static_cast<SignalType::e>((*i)->type), (*i)->flags);
 		pin->setSide(side);

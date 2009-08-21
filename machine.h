@@ -188,7 +188,7 @@ protected:
 	CosecantAPI::Mi* m_mi;
 
 	virtual void initImpl() = 0;
-	void initPins(Pin::Direction direction, const PinInfo** pininfos);
+	void initPins(Pin::Direction direction, const PinInfo* const* pininfos);
 	void initParams(ParamGroupInfo* group);
 
 	MachineInfo* m_info;

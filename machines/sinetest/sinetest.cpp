@@ -67,11 +67,11 @@ public:
 			paraVol.p.name = "Volume";
 			paraVol.min = 0; paraVol.max = 1; paraVol.def = 0.5;
 
-			static const ParamInfo* params[] = { &paraFreq.p, &paraVol.p, NULL };
+			static ParamInfo* params[] = { &paraFreq.p, &paraVol.p, NULL };
 			info.params.params = params;
 
 			static PinInfo outPin("Output", SignalType::stereoAudio);
-			static const PinInfo* outPins[] = { &outPin, NULL };
+			static PinInfo* outPins[] = { &outPin, NULL };
 			info.outPins = outPins;
 
 			initialised = true;

@@ -1,9 +1,10 @@
 #pragma once
 
-/** A collection of convenience classes and functions. */
-namespace CosecantHelper
+namespace CosecantAPI
 {
-	using namespace CosecantAPI;
+/** A collection of convenience classes and functions. */
+namespace Helper
+{
 
 	/** Convert a wide character string to a UTF-8 encoded string. This is a convenience wrapper for
 		HostFunctions::toUtf8.
@@ -206,7 +207,7 @@ namespace CosecantHelper
 
 	///////////////////////////////////////////////////////////////////////////////////
 
-/*	class EventStreamIterator
+	class EventStreamIterator
 	{
 	public:
 		EventStreamIterator() : m_iter(NULL) {}
@@ -215,23 +216,44 @@ namespace CosecantHelper
 
 		~EventStreamIterator() { if (m_iter) g_host->EventStreamIter_destroy(m_iter); }
 
+		bool isValid() { return m_iter != NULL; }
+
 		EventStreamIterator& operator++()
 		{ g_host->EventStreamIter_inc(m_iter); return *this; }
 
 		EventStreamIterator& operator--()
 		{ g_host->EventStreamIter_dec(m_iter); return *this; }
 
+		bool operator==(const EventStreamIterator& other) const
+		{ return g_host->EventStreamIter_equal(m_iter, other.m_iter) != cfalse; }
+
+		bool operator!=(const EventStreamIterator& other) const
+		{ return g_host->EventStreamIter_equal(m_iter, other.m_iter) == cfalse; }
+
 		int key() { return g_host->EventStreamIter_deref(m_iter, NULL, 0); }
-		const StreamEvent& value()
-		{ g_host->EventStreamIter_deref(m_iter, &m_value, sizeof(m_value)); return m_value; }
+		StreamEvent value()
+		{ StreamEvent v; g_host->EventStreamIter_deref(m_iter, &v, sizeof(v)); return v; }
 
+		static EventStreamIterator begin(const PinBuffer* buf)
+		{ return EventStreamIterator(g_host->EventStream_begin(buf)); }
+		
+		static EventStreamIterator end(const PinBuffer* buf)
+		{ return EventStreamIterator(g_host->EventStream_end(buf)); }
 
+		static EventStreamIterator find(const PinBuffer* buf, int k)
+		{ return EventStreamIterator(g_host->EventStream_find(buf, k)); }
+
+		static EventStreamIterator lowerBound(const PinBuffer* buf, int k)
+		{ return EventStreamIterator(g_host->EventStream_lowerBound(buf, k)); }
+
+		static EventStreamIterator upperBound(const PinBuffer* buf, int k)
+		{ return EventStreamIterator(g_host->EventStream_upperBound(buf, k)); }
 
 	protected:
 		EventStreamIterator(EventStreamIter* iter) : m_iter(iter) {}
 
 		EventStreamIter* m_iter;
-		StreamEvent m_value;
 	};
-*/
-};
+
+}; // end namespace Helper
+}; // end namespace CosecantAPI

@@ -195,7 +195,7 @@ namespace CosecantAPI
 	struct ParamGroupInfo
 	{
 		ParamInfo p;
-		const ParamInfo** params;
+		const ParamInfo* const* params;
 
 		ParamGroupInfo() : p(ParamType::tGroup), params(NULL) {}
 	};
@@ -263,8 +263,8 @@ namespace CosecantAPI
 		MachineTypeHint::i typeHint;
 		MachineFlags::i flags;
 		ParamGroupInfo params;
-		const PinInfo** inPins;
-		const PinInfo** outPins;
+		const PinInfo* const* inPins;
+		const PinInfo* const* outPins;
 		const char* script;
 
 		MachineInfo() : defaultName(NULL), typeHint(MachineTypeHint::none), flags(0),

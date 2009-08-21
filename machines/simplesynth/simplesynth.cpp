@@ -220,17 +220,18 @@ void SimpleSynth::Note::work(float* buffer, int numframes)
 
 void SimpleSynth::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
 {
+	using namespace CosecantAPI::Helper;
+
 	// Process note triggers
-	EventStreamIter* upper = g_host->EventStream_upperBound(inpins+0, firstframe);
-	for (EventStreamIter* iter = g_host->EventStream_lowerBound(inpins+0, firstframe);
-		!g_host->EventStreamIter_equal(iter, upper); g_host->EventStreamIter_inc(iter))
+	EventStreamIterator upper = EventStreamIterator::upperBound(inpins+0, firstframe);
+	for (EventStreamIterator iter = EventStreamIterator::lowerBound(inpins+0, firstframe);
+		iter != upper; ++iter)
 	{
-		StreamEvent ev;
-		g_host->EventStreamIter_deref(iter, &ev, sizeof(ev));
+		StreamEvent ev = iter.value();
 		switch (ev.type)
 		{
 		case StreamEventType::noteOn:
-			CosecantHelper::DebugPrint() << "note on" << ev.note.id << ev.note.note << ev.note.vel;
+			DebugPrint() << "note on" << ev.note.id << ev.note.note << ev.note.vel;
 			{
 				Note* note = new Note(this);
 				note->noteOn(ev.note.note, ev.note.vel);
@@ -239,13 +240,13 @@ void SimpleSynth::work(const PinBuffer* inpins, PinBuffer* outpins, int firstfra
 			break;
 
 		case StreamEventType::noteOff:
-			CosecantHelper::DebugPrint() << "note off" << ev.note.id;
+			DebugPrint() << "note off" << ev.note.id;
 			{
-				std::map<void*, Note*>::iterator iter = m_notes.find(ev.note.id);
-				if (iter != m_notes.end())
-					iter->second->noteOff();
+				std::map<void*, Note*>::iterator noteiter = m_notes.find(ev.note.id);
+				if (noteiter != m_notes.end())
+					noteiter->second->noteOff();
 				else
-					CosecantHelper::DebugPrint() << "couldn't find note";
+					DebugPrint() << "couldn't find note";
 			}
 			break;
 		}

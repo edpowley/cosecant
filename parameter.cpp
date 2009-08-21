@@ -17,7 +17,7 @@ Parameter::Group::Group(const Ptr<Machine>& mac, const ParamGroupInfo* info)
 
 	if (info->params)
 	{
-		for (const ParamInfo** p = info->params; *p; ++p)
+		for (const ParamInfo* const* p = info->params; *p; ++p)
 		{
 			Ptr<Parameter::Base> newpar;
 
