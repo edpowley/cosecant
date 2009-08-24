@@ -132,7 +132,7 @@ namespace SequenceEditor
 
 		QWidget* getMWTabWidget() { return this; }
 		QString getTitle() { return tr("Sequence"); }
-		QToolBar* getToolBar() { return m_toolbar; }
+		QList<QAction*> getToolBarActions() { return m_toolBarActions; }
 
 		enum Tool { none, move, createPattern };
 		Tool getTool();
@@ -152,7 +152,7 @@ namespace SequenceEditor
 		Ptr<Sequence::Seq> m_seq;
 
 		void setupToolBar();
-		QToolBar* m_toolbar;
+		QList<QAction*> m_toolBarActions;
 		QAction *m_actionToolMove, *m_actionToolCreatePattern;
 
 		QGraphicsScene m_headScene, m_bodyScene, m_rulerScene;

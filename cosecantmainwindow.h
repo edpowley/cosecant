@@ -40,6 +40,9 @@ private:
 	QTabWidget* m_tabWidget;
 	QHash<QWidget*, MWTab*> m_widgetTabs;
 	MWTab* m_currentTab;
+
+	QDockWidget* m_paletteDock;
+	QLabel* m_paletteEmpty;
 };
 
 #endif // COSECANTMAINWINDOW_H

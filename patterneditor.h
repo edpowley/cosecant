@@ -12,8 +12,6 @@ public:
 	virtual QWidget* getMWTabWidget() { return m_widget; }
 	virtual QString getTitle();
 
-	virtual QToolBar* getToolBar() { return NULL; }
-
 protected:
 	Ptr<Sequence::Pattern> m_pattern;
 	QWidget* m_widget;

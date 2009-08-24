@@ -10,6 +10,7 @@ using namespace RoutingEditor;
 
 PrefsVar_Double Editor::s_prefPinSize("routingeditor/pinsize", 6);
 PrefsVar_Double Editor::s_prefConnBezierOffset("routingeditor/connbezieroffset", 50);
+MachineChooserWidget* Editor::s_palette = NULL;
 
 Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 : m_routing(routing), MyGraphicsView(parent), m_scene(this)
@@ -18,6 +19,9 @@ Editor::Editor(const Ptr<Routing>& routing, QWidget* parent)
 	setDragMode(RubberBandDrag);
 
 	m_scene.setSceneRect(0,0,1000,1000);
+
+	if (!s_palette)
+		s_palette = new MachineChooserWidget;
 
 	BOOST_FOREACH(const Ptr<Machine>& mac, m_routing->m_machines)
 	{

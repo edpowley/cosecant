@@ -7,7 +7,6 @@
 #include "seqplay.h"
 #include "routingeditor.h"
 #include "sequenceeditor.h"
-#include "machinechooserwidget.h"
 #include "dlg_settings.h"
 #include "dlg_about.h"
 
@@ -39,6 +38,18 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 
 	ui.actionUndoredo_placeholder->setVisible(false);
 
+	// Must do this _before_ adding any tabs
+	m_paletteDock = new QDockWidget(tr("Context palette"), this);
+	m_paletteDock->setAllowedAreas(Qt::AllDockWidgetAreas);
+	addDockWidget(Qt::LeftDockWidgetArea, m_paletteDock);
+	QAction* palettedockaction = m_paletteDock->toggleViewAction();
+	ui.menuWindow->addAction(palettedockaction);
+
+	m_paletteEmpty = new QLabel(tr("<empty>"), this);
+	m_paletteEmpty->setAlignment(Qt::AlignCenter);
+	m_paletteEmpty->setWordWrap(true);
+	m_paletteDock->setWidget(m_paletteEmpty);
+
 	m_tabWidget = new QTabWidget();
 	setCentralWidget(m_tabWidget);
 	m_tabWidget->setMovable(true);
@@ -62,13 +73,6 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	undodock->hide();
 	QAction* undodockaction = undodock->toggleViewAction();
 	ui.menuWindow->addAction(undodockaction);
-
-	QDockWidget* macdock = new QDockWidget(tr("Machines"), this);
-	macdock->setAllowedAreas(Qt::AllDockWidgetAreas);
-	macdock->setWidget(new MachineChooserWidget);
-	addDockWidget(Qt::LeftDockWidgetArea, macdock);
-	QAction* macdockaction = macdock->toggleViewAction();
-	ui.menuWindow->addAction(macdockaction);
 }
 
 CosecantMainWindow::~CosecantMainWindow()
@@ -82,13 +86,6 @@ void CosecantMainWindow::addTab(MWTab* tab)
 	m_tabWidget->addTab(widget, tab->getTitle());
 	m_widgetTabs.insert(widget, tab);
 	
-	QToolBar* toolbar = tab->getToolBar();
-	if (toolbar)
-	{
-		addToolBar(toolbar);
-		toolbar->hide();
-	}
-
 	m_tabWidget->setCurrentWidget(widget);
 }
 
@@ -96,16 +93,26 @@ void CosecantMainWindow::onTabChanged(int index)
 {
 	if (m_currentTab)
 	{
-		QToolBar* toolbar = m_currentTab->getToolBar();
-		if (toolbar) toolbar->hide();
 		m_currentTab = NULL;
 	}
 
 	MWTab* tab = m_widgetTabs.value( m_tabWidget->widget(index), NULL );
 	if (!tab) return;
 	
-	QToolBar* toolbar = tab->getToolBar();
-	if (toolbar) toolbar->show();
+	QWidget* palette = tab->getPalette();
+	if (!palette) palette = m_paletteEmpty;
+	m_paletteDock->setWidget(palette);
+	palette->show();
+
+	foreach(QAction* action, ui.contextToolBar->actions())
+	{
+		ui.contextToolBar->removeAction(action);
+	}
+
+	foreach(QAction* action, tab->getToolBarActions())
+	{
+		ui.contextToolBar->addAction(action);
+	}
 
 	m_currentTab = tab;
 }

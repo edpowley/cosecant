@@ -3,6 +3,7 @@
 #include "routing.h"
 #include "mygraphicsview.h"
 #include "mwtab.h"
+#include "machinechooserwidget.h"
 
 namespace RoutingEditor
 {
@@ -173,6 +174,7 @@ namespace RoutingEditor
 	public:
 		QWidget* getMWTabWidget() { return this; }
 		QString getTitle() { return tr("Routing"); }
+		QWidget* getPalette() { return s_palette; }
 
 		Editor(const Ptr<Routing>& routing, QWidget* parent);
 		Scene m_scene;
@@ -190,6 +192,8 @@ namespace RoutingEditor
 		std::map< Ptr<Machine>,		MachineItem*	> m_machineItemMap;
 		std::map< Ptr<Pin>,			PinItem*		> m_pinItemMap;
 		std::map< Ptr<Connection>,	ConnectionItem*	> m_connectionItemMap;
+
+		static MachineChooserWidget* s_palette; // shared between all routing editors
 
 	protected slots:
 		void onAddMachine(const Ptr<Machine>& mac);

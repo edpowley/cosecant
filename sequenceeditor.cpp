@@ -70,20 +70,19 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 
 void Editor::setupToolBar()
 {
-	m_toolbar = new QToolBar(tr("Sequence editor toolbar"));
 	QActionGroup* toolGroup = new QActionGroup(this);
 
 	m_actionToolMove
 		= new QAction(QIcon(":/CosecantMainWindow/images/seqed-move.png"), tr("Move"), this);
 	m_actionToolMove->setCheckable(true);
-	m_toolbar->addAction(m_actionToolMove);
+	m_toolBarActions.append(m_actionToolMove);
 	toolGroup->addAction(m_actionToolMove);
 	m_actionToolMove->setChecked(true);
 
 	m_actionToolCreatePattern
 		= new QAction(QIcon(":/CosecantMainWindow/images/seqed-create.png"), tr("Create pattern"), this);
 	m_actionToolCreatePattern->setCheckable(true);
-	m_toolbar->addAction(m_actionToolCreatePattern);
+	m_toolBarActions.append(m_actionToolCreatePattern);
 	toolGroup->addAction(m_actionToolCreatePattern);
 }
 

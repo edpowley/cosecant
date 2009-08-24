@@ -110,6 +110,17 @@
    <addaction name="actionTransportRecord"/>
    <addaction name="actionTransportStop"/>
   </widget>
+  <widget class="QToolBar" name="contextToolBar">
+   <property name="windowTitle">
+    <string>Context toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <action name="actionUndoredo_placeholder">
    <property name="text">
     <string notr="true">undoredo_placeholder</string>
