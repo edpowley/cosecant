@@ -33,8 +33,7 @@ public:
 		double m_envAmp;
 	};
 
-	virtual void changeParam(ParamTag tag, double value);
-	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	virtual void work(const WorkContext* ctx);
 
 protected:
 	std::map<void*, Note*> m_notes;
@@ -170,21 +169,6 @@ void SimpleSynth::Note::noteOff()
 
 //////////////////////////////////////////////////////////////////////////////////
 
-void SimpleSynth::changeParam(ParamTag tag, double value)
-{
-	switch (tag)
-	{
-	case ptEnvA:
-		m_envAttackStep = 1.0 / value;
-		break;
-	case ptEnvR:
-		m_envReleaseStep = 1.0 / value;
-		break;
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////
-
 void SimpleSynth::Note::work(float* buffer, int numframes)
 {
 	for (int i=0; i<numframes; i++)
@@ -218,13 +202,34 @@ void SimpleSynth::Note::work(float* buffer, int numframes)
 	}
 }
 
-void SimpleSynth::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void SimpleSynth::work(const WorkContext* ctx)
 {
 	using namespace CosecantAPI::Helper;
 
+	// Process global events
+	ESIter enditer = ESIter::upperBound(ctx->ev, ctx->firstframe);
+	for (ESIter iter = ESIter::lowerBound(ctx->ev, ctx->firstframe); iter != enditer; ++iter)
+	{
+		StreamEvent ev = iter.value();
+		switch (ev.type)
+		{
+		case StreamEventType::paramChange:
+			switch (ev.paramChange.tag)
+			{
+			case ptEnvA:
+				m_envAttackStep = 1.0 / ev.paramChange.value;
+				break;
+			case ptEnvR:
+				m_envReleaseStep = 1.0 / ev.paramChange.value;
+				break;
+			}
+			break;
+		}
+	}
+
 	// Process note triggers
-	EventStreamIterator upper = EventStreamIterator::upperBound(inpins+0, firstframe);
-	for (EventStreamIterator iter = EventStreamIterator::lowerBound(inpins+0, firstframe);
+	EventStreamIterator upper = EventStreamIterator::upperBound(ctx->in+0, ctx->firstframe);
+	for (EventStreamIterator iter = EventStreamIterator::lowerBound(ctx->in+0, ctx->firstframe);
 		iter != upper; ++iter)
 	{
 		StreamEvent ev = iter.value();
@@ -253,12 +258,12 @@ void SimpleSynth::work(const PinBuffer* inpins, PinBuffer* outpins, int firstfra
 	}
 
 	// Clear output buffer
-	for (int i=firstframe*2; i<lastframe*2; i++)
-		outpins[0].f[i] = 0.0f;
+	for (int i=ctx->firstframe*2; i<ctx->lastframe*2; i++)
+		ctx->out[0].f[i] = 0.0f;
 
 	// Work each note in turn
-	float* workbuf = outpins[0].f + firstframe*2;
-	int workframes = lastframe - firstframe;
+	float* workbuf = ctx->out[0].f + ctx->firstframe*2;
+	int workframes = ctx->lastframe - ctx->firstframe;
 	for (std::map<void*, Note*>::iterator iter = m_notes.begin(); iter != m_notes.end(); /* ++ inside loop */)
 	{
 		iter->second->work(workbuf, workframes);

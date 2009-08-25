@@ -167,8 +167,7 @@ public:
 
 	__int64 m_perfCount;
 
-	virtual void changeParam(ParamTag tag, double value) = 0;
-	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
+	virtual void work(const WorkContext* ctx) = 0;
 
 	virtual void load(SongLoadContext& ctx, const QDomElement& el);
 	QDomElement save(QDomDocument& doc);

@@ -104,16 +104,10 @@ void Mac::initImpl()
 		m_dll->m_funcs->Mi_init(m_mi);
 }
 
-void Mac::changeParam(ParamTag tag, double value)
-{
-	if (m_dll->m_funcs->Mi_changeParam)
-		m_dll->m_funcs->Mi_changeParam(m_mi, tag, value);
-}
-
-void Mac::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void Mac::work(const WorkContext* ctx)
 {
 	if (m_dll->m_funcs->Mi_work)
-		m_dll->m_funcs->Mi_work(m_mi, inpins, outpins, firstframe, lastframe);
+		m_dll->m_funcs->Mi_work(m_mi, ctx);
 }
 
 QScriptValue Mac::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id)

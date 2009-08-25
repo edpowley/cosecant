@@ -19,7 +19,14 @@ public:
 		ptChannel,
 	};
 
-	virtual void changeParam(ParamTag tag, double value)
+protected:
+	int m_leftChannel, m_rightChannel;
+
+	AudioInOut() : m_leftChannel(-1), m_rightChannel(-1)
+	{
+	}
+
+	void changeParam(ParamTag tag, double value)
 	{
 		if (tag == ptChannel)
 		{
@@ -27,13 +34,6 @@ public:
 			m_leftChannel  = c*2;
 			m_rightChannel = c*2+1;
 		}
-	}
-
-protected:
-	int m_leftChannel, m_rightChannel;
-
-	AudioInOut() : m_leftChannel(-1), m_rightChannel(-1)
-	{
 	}
 
 	virtual int getNumChannels() = 0;
@@ -81,18 +81,24 @@ class AudioOut : public AudioInOut
 public:
 	AudioOut() : AudioInOut() {}
 
-	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	virtual void work(const WorkContext* ctx)
 	{
+		foreach(const StreamEvent& ev, ctx->ev_host->m_data)
+		{
+			if (ev.type == StreamEventType::paramChange)
+				changeParam(ev.paramChange.tag, ev.paramChange.value);
+		}
+
 		int nChans = AudioIO::get().m_numOutputChannels;
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;
 		if (m_rightChannel < 0 || m_rightChannel >= nChans) return;
 
 		QMutexLocker lock(&AudioIO::get().m_outmutex);
 
-		for (int i=firstframe; i<lastframe; i++)
+		for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 		{
-			AudioIO::get().m_outbuf[i * nChans + m_leftChannel ] += inpins[0].f[i*2];
-			AudioIO::get().m_outbuf[i * nChans + m_rightChannel] += inpins[0].f[i*2+1];
+			AudioIO::get().m_outbuf[i * nChans + m_leftChannel ] += ctx->in[0].f[i*2];
+			AudioIO::get().m_outbuf[i * nChans + m_rightChannel] += ctx->in[0].f[i*2+1];
 		}
 	}
 
@@ -139,16 +145,22 @@ class AudioIn : public AudioInOut
 public:
 	AudioIn() : AudioInOut() {}
 
-	virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	virtual void work(const WorkContext* ctx)
 	{
+		foreach(const StreamEvent& ev, ctx->ev_host->m_data)
+		{
+			if (ev.type == StreamEventType::paramChange)
+				changeParam(ev.paramChange.tag, ev.paramChange.value);
+		}
+
 		int nChans = AudioIO::get().m_numInputChannels;
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;
 		if (m_rightChannel < 0 || m_rightChannel >= nChans) return;
 
-		for (int i=firstframe; i<lastframe; i++)
+		for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 		{
-			outpins[0].f[i*2  ] = AudioIO::get().m_inbuf[i * nChans + m_leftChannel];
-			outpins[0].f[i*2+1] = AudioIO::get().m_inbuf[i * nChans + m_rightChannel];
+			ctx->out[0].f[i*2  ] = AudioIO::get().m_inbuf[i * nChans + m_leftChannel];
+			ctx->out[0].f[i*2+1] = AudioIO::get().m_inbuf[i * nChans + m_rightChannel];
 		}
 	}
 

@@ -48,8 +48,10 @@ namespace WorkUnit
 		virtual ~WorkMachine();
 
 		std::vector< Ptr<WorkBuffer::Base> > m_inWorkBuffer, m_outWorkBuffer;
-		PinBuffer *m_inPinBuffer, *m_outPinBuffer;
+		Ptr<WorkBuffer::EventStream> m_eventWorkBuffer;
+		PinBuffer *m_inPinBuffer, *m_outPinBuffer, m_eventPinBuffer;
 		void updatePinBuffers();
+		WorkContext m_workContext;
 
 		virtual void dumpToDot(std::ostream& stream);
 
@@ -67,7 +69,6 @@ namespace WorkUnit
 			Ptr<WorkBuffer::ParamControl> buf;
 			bool doTimeUnitConversion;
 			TimeUnit::e fromTimeUnit, toTimeUnit;
-			std::map<int, double>::const_iterator iter, enditer;
 		};
 		std::vector<ParamPinBuf> m_paramPinBufs;
 

@@ -61,8 +61,7 @@ public:
 
 	ScriptValue* callScriptFunction(int id, const ScriptValue** args, int numargs);
 
-	void changeParam(ParamTag tag, double value);
-	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+	void work(const WorkContext* ctx);
 
 	MiPattern* createPattern(double length) { return new Pattern(this, length); }
 

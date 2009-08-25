@@ -46,6 +46,7 @@ namespace CosecantAPI
 		class ScriptValue;
 		class SequenceTrack;
 		class HostPinBuffer;
+		class HostPinBuffer_EventStream;
 		class EventStreamIter;
 #	endif
 
@@ -154,9 +155,20 @@ namespace CosecantAPI
 		double vel;
 	};
 
+	struct StreamEvent_ParamChange
+	{
+		ParamTag tag;
+		double value;
+	};
+
 	namespace StreamEventType
 	{
-		enum e { noteOn, noteOff, };
+		enum e
+		{
+			noteOn,
+			noteOff,
+			paramChange,
+		};
 		typedef unsigned char i;
 	};
 
@@ -167,6 +179,7 @@ namespace CosecantAPI
 		union
 		{
 			StreamEvent_Note note;
+			StreamEvent_ParamChange paramChange;
 		};
 	};
 
@@ -280,6 +293,7 @@ namespace CosecantAPI
 		union
 		{
 			float* f;
+			void* reserved[4];
 		};
 	};
 
@@ -289,6 +303,15 @@ namespace CosecantAPI
 		int beatsPerBar, beatsPerWholeNote;
 		int barsPerSmallGrid, smallGridsPerLargeGrid;
 		int samplesPerSecond;
+	};
+
+	struct WorkContext
+	{
+		const PinBuffer* ev;
+		const HostPinBuffer_EventStream* ev_host;
+		const PinBuffer* in;
+		PinBuffer* out;
+		int firstframe, lastframe;
 	};
 
 	////////////////////////////////////////////////////////////////////
@@ -303,8 +326,7 @@ namespace CosecantAPI
 		MachineInfo* (*Mi_getInfo)(Mi* m);
 		void (*Mi_init)(Mi* m);
 		
-		void (*Mi_changeParam)(Mi* m, ParamTag tag, double value);
-		void (*Mi_work)(Mi* m, const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
+		void (*Mi_work)(Mi* m, const WorkContext* ctx);
 		
 		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
 		
@@ -484,8 +506,7 @@ namespace CosecantAPI
 		virtual MachineInfo* getInfo() = 0;
 		virtual void init() {}
 
-		virtual void changeParam(ParamTag tag, double value) = 0;
-		virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) = 0;
+		virtual void work(const WorkContext* ctx) = 0;
 
 		/** Your machine's script can call this.
 			\param id the integer function id, as passed to HostFunctions::registerScriptFunction

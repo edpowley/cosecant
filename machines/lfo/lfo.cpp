@@ -66,34 +66,41 @@ public:
 		m_phasestep = 2.0 * M_PI / period;
 	}
 
-	void changeParam(ParamTag tag, double value)
+	void work(const WorkContext* ctx)
 	{
-		switch (tag)
+		ESIter enditer = ESIter::upperBound(ctx->ev, ctx->firstframe);
+		for (Helper::ESIter iter = ESIter::lowerBound(ctx->ev, ctx->firstframe); iter != enditer; ++iter)
 		{
-		case ptSpeed:
-			setPeriod(value);
-			break;
-		case ptStep:
-			m_sendphasemax = (int)value;
-			break;
-		case ptMin:
-			m_min = value;
-			break;
-		case ptMax:
-			m_max = value;
-			break;
+			StreamEvent ev = iter.value();
+			switch (ev.type)
+			{
+			case StreamEventType::paramChange:
+				switch (ev.paramChange.tag)
+				{
+				case ptSpeed:
+					setPeriod(ev.paramChange.value);
+					break;
+				case ptStep:
+					m_sendphasemax = (int)ev.paramChange.value;
+					break;
+				case ptMin:
+					m_min = ev.paramChange.value;
+					break;
+				case ptMax:
+					m_max = ev.paramChange.value;
+					break;
+				}
+				break;
+			}
 		}
-	}
 
-	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
-	{
-		for (int i=firstframe; i<lastframe; i++)
+		for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 		{
 			if (m_sendphase == 0)
 			{
 				double v = 0.5 * sin(m_phase) + 0.5;
 				v = m_min + v * (m_max - m_min);
-				g_host->addParamChangeEvent(&outpins[0], i, v);
+				g_host->addParamChangeEvent(&ctx->out[0], i, v);
 			}
 
 			m_sendphase ++;

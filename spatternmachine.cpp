@@ -31,16 +31,16 @@ QDebug& operator<<(QDebug& dbg, const StreamEvent& ev)
 	return dbg;
 }
 
-void SpatternMachine::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void SpatternMachine::work(const WorkContext* ctx)
 {
-	Ptr<WorkBuffer::EventStream> outbuf = dynamic_cast<WorkBuffer::EventStream*>(outpins[0].hostbuf);
+	Ptr<WorkBuffer::EventStream> outbuf = dynamic_cast<WorkBuffer::EventStream*>(ctx->out[0].hostbuf);
 	const TimeInfo& timeinfo = SeqPlay::get().getTimeInfo();
 	double beatsPerFrame = timeinfo.beatsPerSecond / timeinfo.samplesPerSecond;
 
 	foreach(const Ptr<Spattern::Note>& note, m_stoppingNotes)
 	{
 		StreamEvent ev;
-		ev.time = firstframe;
+		ev.time = ctx->firstframe;
 		ev.type = StreamEventType::noteOff;
 		ev.note.id = note.c_ptr();
 		outbuf->m_data.insert(ev.time, ev);
@@ -49,7 +49,7 @@ void SpatternMachine::work(const PinBuffer* inpins, PinBuffer* outpins, int firs
 
 	foreach(const Ptr<SpatternPlayer>& player, m_players)
 	{
-		player->work(outbuf, firstframe, lastframe, beatsPerFrame);
+		player->work(outbuf, ctx->firstframe, ctx->lastframe, beatsPerFrame);
 	}
 }
 

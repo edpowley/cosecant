@@ -20,23 +20,33 @@ public:
 
 	void changeParam(ParamTag tag, double value)
 	{
-		switch (tag)
-		{
-		case ptFreq:
-			setFreq(value);
-			break;
-
-		case ptVol:
-			m_amp = value;
-			break;
-		}
 	}
 
-	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+	void work(const WorkContext* ctx)
 	{
-		for (int i=firstframe; i<lastframe; i++)
+		ESIter enditer = ESIter::upperBound(ctx->ev, ctx->firstframe);
+		for (ESIter iter = ESIter::lowerBound(ctx->ev, ctx->firstframe); iter != enditer; ++iter)
 		{
-			outpins[0].f[i*2] = outpins[0].f[i*2+1]
+			StreamEvent ev = iter.value();
+			switch (ev.type)
+			{
+			case StreamEventType::paramChange:
+				switch (ev.paramChange.tag)
+				{
+				case ptFreq:
+					setFreq(ev.paramChange.value);
+					break;
+
+				case ptVol:
+					m_amp = ev.paramChange.value;
+					break;
+				}
+			}
+		}
+
+		for (int i=ctx->firstframe; i<ctx->lastframe; i++)
+		{
+			ctx->out[0].f[i*2] = ctx->out[0].f[i*2+1]
 				= (float)(sin(m_phase) * m_amp);
 			m_phase += m_phasestep;
 			if (m_phase > 2.0 * M_PI) m_phase -= 2.0 * M_PI;

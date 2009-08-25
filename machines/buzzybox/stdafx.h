@@ -13,3 +13,4 @@
 
 #include "../../cosecant_api.h"
 using namespace CosecantAPI;
+using namespace CosecantAPI::Helper;

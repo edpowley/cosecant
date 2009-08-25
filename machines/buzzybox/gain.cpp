@@ -37,24 +37,31 @@ MachineInfo* Gain::getInfo()
 	return &info;
 }
 
-void Gain::changeParam(ParamTag tag, double value)
+void Gain::work(const WorkContext* ctx)
 {
-	switch (tag)
+	ESIter enditer = ESIter::upperBound(ctx->ev, ctx->firstframe);
+	for (Helper::ESIter iter = ESIter::lowerBound(ctx->ev, ctx->firstframe); iter != enditer; ++iter)
 	{
-	case ptGain:
-		m_gain = static_cast<float>(value);
-		break;
-	case ptPan:
-		m_pan = static_cast<float>(value);
-		break;
+		StreamEvent ev = iter.value();
+		switch (ev.type)
+		{
+		case StreamEventType::paramChange:
+			switch (ev.paramChange.tag)
+			{
+			case ptGain:
+				m_gain = static_cast<float>(ev.paramChange.value);
+				break;
+			case ptPan:
+				m_pan = static_cast<float>(ev.paramChange.value);
+				break;
+			}
+			break;
+		}
 	}
-}
 
-void Gain::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
-{
-	for (int i=firstframe; i<lastframe; i++)
+	for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 	{
-		outpins[0].f[i*2  ] = inpins[0].f[i*2  ] * m_gain * (2.0f - m_pan);
-		outpins[0].f[i*2+1] = inpins[0].f[i*2+1] * m_gain * m_pan;
+		ctx->out[0].f[i*2  ] = ctx->in[0].f[i*2  ] * m_gain * (2.0f - m_pan);
+		ctx->out[0].f[i*2+1] = ctx->in[0].f[i*2+1] * m_gain * m_pan;
 	}
 }

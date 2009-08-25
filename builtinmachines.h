@@ -21,8 +21,7 @@ namespace Builtin
 				"This is a placeholder for a machine which you do not have installed." );
 		}
 
-		virtual void changeParam(ParamTag tag, double value) {}
-		virtual void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe) {}
+		virtual void work(const WorkContext* ctx) {}
 
 	protected:
 		virtual void initInfo()

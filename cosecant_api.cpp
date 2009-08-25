@@ -26,11 +26,8 @@ namespace PluginFuncImpl
 	void Mi_init(Mi* m)
 	{ m->init(); }
 		
-	void Mi_changeParam(Mi* m, ParamTag tag, double value)
-	{ m->changeParam(tag, value); }
-
-	void Mi_work(Mi* m, const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
-	{ m->work(inpins, outpins, firstframe, lastframe); }
+	void Mi_work(Mi* m, const WorkContext* ctx)
+	{ m->work(ctx); }
 
 	ScriptValue* Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
 	{ return m->callScriptFunction(id, args, numargs); }
@@ -54,7 +51,6 @@ static CosecantAPI::PluginFunctions g_pluginFuncs = {
 	PluginFuncImpl::Mi_destroy,
 	PluginFuncImpl::Mi_getInfo,
 	PluginFuncImpl::Mi_init,
-	PluginFuncImpl::Mi_changeParam,
 	PluginFuncImpl::Mi_work,
 	PluginFuncImpl::Mi_callScriptFunction,
 	PluginFuncImpl::Mi_createPattern,

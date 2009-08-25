@@ -55,6 +55,8 @@ WorkMachine::WorkMachine(WorkQueue* q, const Ptr<Machine>& machine)
 :	Base(q), m_machine(machine), m_inPinBuffer(NULL), m_outPinBuffer(NULL),
 	m_inpins(machine->m_inpins), m_outpins(machine->m_outpins)
 {
+	m_eventWorkBuffer = new WorkBuffer::EventStream;
+
 	BOOST_FOREACH(Ptr<Sequence::Track>& track, Song::get().m_sequence->m_tracks)
 	{
 		if (track->m_mac == m_machine)
@@ -93,6 +95,11 @@ void WorkMachine::updatePinBuffers()
 {
 	updatePinBuffers(m_inPinBuffer,  m_inWorkBuffer);
 	updatePinBuffers(m_outPinBuffer, m_outWorkBuffer);
+	m_workContext.in  = m_inPinBuffer;
+	m_workContext.out = m_outPinBuffer;
+	m_eventPinBuffer = m_eventWorkBuffer->getPinBuffer();
+	m_workContext.ev = &m_eventPinBuffer;
+	m_workContext.ev_host = m_eventWorkBuffer;
 
 	for (size_t pin=0; pin<m_inpins.size(); pin++)
 	{
@@ -119,20 +126,6 @@ void WorkMachine::updatePinBuffers()
 	}
 }
 
-void WorkMachine::sendParamChanges()
-{
-	QMutexLocker paramChangeLock(&m_machine->m_paramChangesMutex);
-
-	typedef std::pair<ParamTag, double> parampair;
-	BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
-	{
-		m_machine->changeParam(p.first, p.second);
-	}
-
-	// Clear parameter changes
-	m_machine->m_paramChanges.clear();
-}
-
 void WorkMachine::work(int firstframe, int lastframe)
 {
 	if (m_machine->m_dead) return;
@@ -143,22 +136,53 @@ void WorkMachine::work(int firstframe, int lastframe)
 
 		MutexLockerWithTimeout lock(&m_machine->m_mutex, 1000);
 
-		sendParamChanges();
+		m_eventWorkBuffer->clearAll();
+
+		{
+			QMutexLocker paramChangeLock(&m_machine->m_paramChangesMutex);
+
+			typedef std::pair<ParamTag, double> parampair;
+			BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
+			{
+				StreamEvent ev;
+				ev.type = StreamEventType::paramChange;
+				ev.time = firstframe;
+				ev.paramChange.tag = p.first;
+				ev.paramChange.value = p.second;
+				m_eventWorkBuffer->m_data.insert(ev.time, ev);
+			}
+
+			// Clear parameter changes
+			m_machine->m_paramChanges.clear();
+		}
+
+		BOOST_FOREACH(ParamPinBuf& ppb, m_paramPinBufs)
+		{
+			std::map<int, double>::const_iterator iter = ppb.buf->m_data.lower_bound(firstframe);
+			std::map<int, double>::const_iterator enditer = ppb.buf->m_data.lower_bound(lastframe);
+			for (; iter != enditer; ++iter)
+			{
+				double v = iter->second;
+
+				if (ppb.doTimeUnitConversion)
+					v = ConvertTimeUnits(ppb.fromTimeUnit, ppb.toTimeUnit, v);
+
+				v = ppb.param->sanitise(v);
+
+				StreamEvent ev;
+				ev.type = StreamEventType::paramChange;
+				ev.time = iter->first;
+				ev.paramChange.tag = ppb.tag;
+				ev.paramChange.value = v;
+				m_eventWorkBuffer->m_data.insert(ev.time, ev);
+				ppb.param->setState(v);
+			}
+		}
 
 		// Find break points (points where something changes)
 		std::set<int> breakpoints;
 		breakpoints.insert(lastframe);
-
-		BOOST_FOREACH(ParamPinBuf& ppb, m_paramPinBufs)
-		{
-			ppb.iter = ppb.buf->m_data.lower_bound(firstframe);
-			ppb.enditer = ppb.buf->m_data.lower_bound(lastframe);
-
-			for (std::map<int, double>::const_iterator pi = ppb.iter; pi != ppb.enditer; ++pi)
-			{
-				breakpoints.insert(pi->first);
-			}
-		}
+		m_eventWorkBuffer->getEventBreakPoints(breakpoints);
 
 		for (size_t pin=0; pin<m_inpins.size(); pin++)
 		{
@@ -181,25 +205,6 @@ void WorkMachine::work(int firstframe, int lastframe)
 		SeqPlayEventMap::const_iterator spemIter = spem.begin();
 		BOOST_FOREACH(int breakpoint, breakpoints)
 		{
-			// Param pins
-			BOOST_FOREACH(ParamPinBuf& ppb, m_paramPinBufs)
-			{
-				if (ppb.iter != ppb.enditer && ppb.iter->first == frame)
-				{
-					double v = ppb.iter->second;
-
-					if (ppb.doTimeUnitConversion)
-						v = ConvertTimeUnits(ppb.fromTimeUnit, ppb.toTimeUnit, v);
-
-					v = ppb.param->sanitise(v);
-
-					m_machine->changeParam(ppb.tag, v);
-					ppb.param->setState(v);
-
-					++ ppb.iter;
-				}
-			}
-
 			// Seq play events
 			for (; spemIter != spem.end() && spemIter.key() == frame; ++spemIter)
 			{
@@ -216,40 +221,11 @@ void WorkMachine::work(int firstframe, int lastframe)
 				}
 			}
 
-			// Notes
-#if 0
-			NotePinBuf& npb = m_notePinBuf;
-			if (npb.buf)
-			{
-				for (; npb.iter != npb.enditer && npb.iter->first == frame; ++ npb.iter)
-				{
-					// assert(npb.iter->second.m_type == SequenceEvent::note);
-					SequenceEvent::Note* nev = dynamic_cast<SequenceEvent::Note*>(npb.iter->second.c_ptr());
-					const NoteEvent& ev = nev->m_data;
-					std::map<void*, void*>::iterator idIter = m_machine->m_noteIdMap.find(ev.id);
-
-					if (ev.vel > 0.0) // note on
-					{
-						if (idIter != m_machine->m_noteIdMap.end())
-							m_machine->getMi()->noteOff(idIter->second);
-
-						m_machine->m_noteIdMap[ev.id] = m_machine->getMi()->noteOn(ev.note, ev.vel);
-					}
-					else // note off
-					{
-						if (idIter != m_machine->m_noteIdMap.end())
-						{
-							m_machine->getMi()->noteOff(idIter->second);
-							m_machine->m_noteIdMap.erase(idIter);
-						}
-					}
-				}
-			}
-#endif
-
 			if (breakpoint != frame)
 			{
-				m_machine->work(m_inPinBuffer, m_outPinBuffer, frame, breakpoint);
+				m_workContext.firstframe = frame;
+				m_workContext.lastframe = breakpoint;
+				m_machine->work(&m_workContext);
 			}
 
 			frame = breakpoint;

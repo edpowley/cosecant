@@ -76,31 +76,48 @@ LadspaMachine::~LadspaMachine()
 	}
 }
 
-void LadspaMachine::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void LadspaMachine::work(const WorkContext* ctx)
 {
+	// Process events
+	ESIter enditer = ESIter::upperBound(ctx->ev, ctx->firstframe);
+	for (Helper::ESIter iter = ESIter::lowerBound(ctx->ev, ctx->firstframe); iter != enditer; ++iter)
+	{
+		StreamEvent ev = iter.value();
+		switch (ev.type)
+		{
+		case StreamEventType::paramChange:
+			{
+				std::map<ParamTag, Buffer*>::iterator paramIter = m_paramBuffers.find(ev.paramChange.tag);
+				if (paramIter != m_paramBuffers.end())
+					paramIter->second->front() = (float)ev.paramChange.value;
+			}
+			break;
+		}
+	}
+
 	// Copy input buffers
 	for (size_t i=0; i<m_inPinBuffers.size(); i++)
 	{
 		const PinBufInfo& pbi = m_inPinBuffers[i];
 		if (pbi.bufR) // stereo
 		{
-			for (int j=0; j<lastframe-firstframe; j++)
+			for (int j=0; j<ctx->lastframe-ctx->firstframe; j++)
 			{
-				(*pbi.bufL)[j] = inpins[i].f[(firstframe+j)*2];
-				(*pbi.bufR)[j] = inpins[i].f[(firstframe+j)*2+1];
+				(*pbi.bufL)[j] = ctx->in[i].f[(ctx->firstframe+j)*2];
+				(*pbi.bufR)[j] = ctx->in[i].f[(ctx->firstframe+j)*2+1];
 			}
 		}
 		else // mono
 		{
-			for (int j=0; j<lastframe-firstframe; j++)
+			for (int j=0; j<ctx->lastframe-ctx->firstframe; j++)
 			{
-				(*pbi.bufL)[j] = inpins[i].f[firstframe+j];
+				(*pbi.bufL)[j] = ctx->in[i].f[ctx->firstframe+j];
 			}
 		}
 	}
 
 	// Do the work
-	m_desc->run(m_handle, lastframe-firstframe);
+	m_desc->run(m_handle, ctx->lastframe-ctx->firstframe);
 
 	// Copy output buffers
 	for (size_t i=0; i<m_outPinBuffers.size(); i++)
@@ -108,32 +125,25 @@ void LadspaMachine::work(const PinBuffer* inpins, PinBuffer* outpins, int firstf
 		const PinBufInfo& pbi = m_outPinBuffers[i];
 		if (pbi.isControl)
 		{
-			g_host->addParamChangeEvent(&outpins[i], firstframe, pbi.bufL->front());
+			g_host->addParamChangeEvent(&ctx->out[i], ctx->firstframe, pbi.bufL->front());
 		}
 		else
 		{
 			if (pbi.bufR) // stereo
 			{
-				for (int j=0; j<lastframe-firstframe; j++)
+				for (int j=0; j<ctx->lastframe-ctx->firstframe; j++)
 				{
-					outpins[i].f[(firstframe+j)*2  ] = (*pbi.bufL)[j];
-					outpins[i].f[(firstframe+j)*2+1] = (*pbi.bufR)[j];
+					ctx->out[i].f[(ctx->firstframe+j)*2  ] = (*pbi.bufL)[j];
+					ctx->out[i].f[(ctx->firstframe+j)*2+1] = (*pbi.bufR)[j];
 				}
 			}
 			else // mono
 			{
-				for (int j=0; j<lastframe-firstframe; j++)
+				for (int j=0; j<ctx->lastframe-ctx->firstframe; j++)
 				{
-					outpins[i].f[firstframe+j] = (*pbi.bufL)[j];
+					ctx->out[i].f[ctx->firstframe+j] = (*pbi.bufL)[j];
 				}
 			}
 		}
 	}
-}
-
-void LadspaMachine::changeParam(ParamTag tag, double value)
-{
-	std::map<ParamTag, Buffer*>::iterator iter = m_paramBuffers.find(tag);
-	if (iter != m_paramBuffers.end())
-		iter->second->front() = (float)value;
 }

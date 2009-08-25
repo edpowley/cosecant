@@ -25,12 +25,12 @@ MachineInfo* StereoToMonoMono::getInfo()
 	return &info;
 }
 
-void StereoToMonoMono::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void StereoToMonoMono::work(const WorkContext* ctx)
 {
-	for (int i=firstframe; i<lastframe; i++)
+	for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 	{
-		outpins[0].f[i] = inpins[0].f[i*2];
-		outpins[1].f[i] = inpins[0].f[i*2+1];
+		ctx->out[0].f[i] = ctx->in[0].f[i*2];
+		ctx->out[1].f[i] = ctx->in[0].f[i*2+1];
 	}
 }
 
@@ -60,11 +60,11 @@ MachineInfo* MonoMonoToStereo::getInfo()
 	return &info;
 }
 
-void MonoMonoToStereo::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void MonoMonoToStereo::work(const WorkContext* ctx)
 {
-	for (int i=firstframe; i<lastframe; i++)
+	for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 	{
-		outpins[0].f[i*2]   = inpins[0].f[i];
-		outpins[0].f[i*2+1] = inpins[1].f[i];
+		ctx->out[0].f[i*2]   = ctx->in[0].f[i];
+		ctx->out[0].f[i*2+1] = ctx->in[1].f[i];
 	}
 }

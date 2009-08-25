@@ -36,8 +36,7 @@ public:
 	MachineInfo* getInfo();
 
 	void init();
-	void work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe);
-	void changeParam(ParamTag tag, double value);
+	void work(const WorkContext* ctx);
 
 protected:
 	LadspaDll m_dll;

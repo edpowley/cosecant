@@ -255,5 +255,7 @@ namespace Helper
 		EventStreamIter* m_iter;
 	};
 
+	typedef EventStreamIterator ESIter;
+
 }; // end namespace Helper
 }; // end namespace CosecantAPI

@@ -110,17 +110,13 @@ ScriptValue* TrackerTest::callScriptFunction(int id, const ScriptValue** args, i
 	return NULL;
 }
 
-void TrackerTest::changeParam(ParamTag tag, double value)
-{
-}
-
-void TrackerTest::work(const PinBuffer* inpins, PinBuffer* outpins, int firstframe, int lastframe)
+void TrackerTest::work(const WorkContext* ctx)
 {
 	const TimeInfo* timeinfo = g_host->getTimeInfo(m_hm);
 	m_beatsPerFrame = timeinfo->beatsPerSecond / timeinfo->samplesPerSecond;
 	for (PatternPlayerMap::iterator iter = m_patternPlayers.begin(); iter != m_patternPlayers.end(); ++iter)
 	{
-		iter->second.work(outpins, firstframe, lastframe);
+		iter->second.work(ctx->out, ctx->firstframe, ctx->lastframe);
 	}
 }
 

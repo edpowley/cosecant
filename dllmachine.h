@@ -39,8 +39,7 @@ namespace DllMachine
 		Ptr<MacDll> getDll() { return m_dll; }
 		Mi* getMi() { return m_mi; }
 
-		virtual void changeParam(ParamTag tag, double value);
-		virtual void work(const PinBuffer*, PinBuffer*, int, int);
+		virtual void work(const WorkContext* ctx);
 
 		virtual QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id);
 
