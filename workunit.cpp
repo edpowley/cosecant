@@ -99,7 +99,6 @@ void WorkMachine::updatePinBuffers()
 	m_workContext.out = m_outPinBuffer;
 	m_eventPinBuffer = m_eventWorkBuffer->getPinBuffer();
 	m_workContext.ev = &m_eventPinBuffer;
-	m_workContext.ev_host = m_eventWorkBuffer;
 
 	for (size_t pin=0; pin<m_inpins.size(); pin++)
 	{

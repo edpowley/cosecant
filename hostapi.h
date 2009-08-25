@@ -12,7 +12,7 @@ inline QString decodeApiString(const char* str)
 class MachineFactory;
 class Machine;
 namespace Sequence { class Track; };
-namespace WorkBuffer { class Base; class EventStream; };
+namespace WorkBuffer { class Base; };
 
 namespace CosecantAPI
 {
@@ -31,7 +31,6 @@ namespace CosecantAPI
 	typedef Sequence::Track SequenceTrack;
 
 	typedef WorkBuffer::Base HostPinBuffer;
-	typedef WorkBuffer::EventStream HostPinBuffer_EventStream;
 
 	class EventStreamIter; // defined in callbacks.cpp
 };

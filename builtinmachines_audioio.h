@@ -26,13 +26,17 @@ protected:
 	{
 	}
 
-	void changeParam(ParamTag tag, double value)
+	void processEvents(const WorkContext* ctx)
 	{
-		if (tag == ptChannel)
+		const WorkBuffer::EventStream* evbuf = static_cast<const WorkBuffer::EventStream*>(ctx->ev->hostbuf);
+		foreach(const StreamEvent& ev, evbuf->m_data)
 		{
-			int c = static_cast<int>(value) - 1;
-			m_leftChannel  = c*2;
-			m_rightChannel = c*2+1;
+			if (ev.type == StreamEventType::paramChange && ev.paramChange.tag == ptChannel)
+			{
+				int c = static_cast<int>(ev.paramChange.value) - 1;
+				m_leftChannel  = c*2;
+				m_rightChannel = c*2+1;
+			}
 		}
 	}
 
@@ -83,11 +87,7 @@ public:
 
 	virtual void work(const WorkContext* ctx)
 	{
-		foreach(const StreamEvent& ev, ctx->ev_host->m_data)
-		{
-			if (ev.type == StreamEventType::paramChange)
-				changeParam(ev.paramChange.tag, ev.paramChange.value);
-		}
+		processEvents(ctx);
 
 		int nChans = AudioIO::get().m_numOutputChannels;
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;
@@ -147,11 +147,7 @@ public:
 
 	virtual void work(const WorkContext* ctx)
 	{
-		foreach(const StreamEvent& ev, ctx->ev_host->m_data)
-		{
-			if (ev.type == StreamEventType::paramChange)
-				changeParam(ev.paramChange.tag, ev.paramChange.value);
-		}
+		processEvents(ctx);
 
 		int nChans = AudioIO::get().m_numInputChannels;
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;

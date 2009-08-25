@@ -46,7 +46,6 @@ namespace CosecantAPI
 		class ScriptValue;
 		class SequenceTrack;
 		class HostPinBuffer;
-		class HostPinBuffer_EventStream;
 		class EventStreamIter;
 #	endif
 
@@ -308,7 +307,6 @@ namespace CosecantAPI
 	struct WorkContext
 	{
 		const PinBuffer* ev;
-		const HostPinBuffer_EventStream* ev_host;
 		const PinBuffer* in;
 		PinBuffer* out;
 		int firstframe, lastframe;
