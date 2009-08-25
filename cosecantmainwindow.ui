@@ -16,7 +16,79 @@
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
   </property>
-  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QWidget" name="widgetKeyJazzOctave" native="true">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>10</y>
+      <width>110</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="spacing">
+      <number>6</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>6</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="labelKeyJazzOctave">
+       <property name="text">
+        <string>Octave</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboKeyJazzOctave"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="widgetKeyJazzTranspose" native="true">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>50</y>
+      <width>130</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>6</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QLabel" name="labelKeyJazzTranspose">
+       <property name="text">
+        <string>Transpose</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboKeyJazzTranspose"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
@@ -109,6 +181,17 @@
    <addaction name="actionTransportPlay"/>
    <addaction name="actionTransportRecord"/>
    <addaction name="actionTransportStop"/>
+  </widget>
+  <widget class="QToolBar" name="keyjazzToolBar">
+   <property name="windowTitle">
+    <string>Keyjazz toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <widget class="QToolBar" name="contextToolBar">
    <property name="windowTitle">

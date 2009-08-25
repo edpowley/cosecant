@@ -13,12 +13,14 @@ namespace SpatternEditor
 	public:
 		PianoKeyItem(Editor* editor, int note);
 
+		void updateQwertyKeyName();
+
 	protected:
 		Editor* m_editor;
 		int m_note;
 		bool m_isBlack, m_isHighlighted;
 
-		GraphicsLayoutTextItem* m_noteName;
+		GraphicsLayoutTextItem *m_noteName, *m_qwertyKeyName;
 	};
 
 	class PianoRowItem : public QGraphicsRectItem
@@ -86,6 +88,8 @@ namespace SpatternEditor
 
 		void onNoteAdded(const Ptr<Spattern::Note>& note);
 		void onNoteRemoved(const Ptr<Spattern::Note>& note);
+
+		void onKeyJazzRootChanged();
 
 	protected:
 		Ptr<Spattern::Pattern> m_pattern;

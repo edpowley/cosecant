@@ -70,6 +70,11 @@ Editor::Editor(const Ptr<Spattern::Pattern>& pattern)
 		this, SLOT(onNoteAdded(const Ptr<Spattern::Note>&)) );
 	connect(m_pattern, SIGNAL(signalNoteRemoved(const Ptr<Spattern::Note>&)),
 		this, SLOT(onNoteRemoved(const Ptr<Spattern::Note>&)) );
+
+	connect(&KeyJazz::get(), SIGNAL(signalChangeOctave(int)),
+		this, SLOT(onKeyJazzRootChanged()) );
+	connect(&KeyJazz::get(), SIGNAL(signalChangeTranspose(int)),
+		this, SLOT(onKeyJazzRootChanged()) );
 }
 
 void Editor::onHeadViewResize(const QSize& oldsize, const QSize& newsize)
@@ -212,7 +217,28 @@ PianoKeyItem::PianoKeyItem(Editor* editor, int note)
 	m_noteName = new GraphicsLayoutTextItem(rect(), Qt::AlignRight | Qt::AlignVCenter,
 		formatNote(m_note) + " ", this);
 	m_noteName->setFont(QFont("Courier", 10));
+
+	m_qwertyKeyName = new GraphicsLayoutTextItem(rect(), Qt::AlignLeft | Qt::AlignVCenter,
+		QString(), this);
+	m_qwertyKeyName->setFont(QFont("Courier", 10));
+	if (m_isBlack) m_qwertyKeyName->setPen(QPen(Qt::white));
+	updateQwertyKeyName();
 }
+
+void PianoKeyItem::updateQwertyKeyName()
+{
+	m_qwertyKeyName->setText(" " + KeyJazz::get().getKeyNameForNote(m_note));
+}
+
+void Editor::onKeyJazzRootChanged()
+{
+	foreach(PianoKeyItem* pki, m_pianoKeyItems)
+	{
+		pki->updateQwertyKeyName();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 PianoRowItem::PianoRowItem(Editor* editor, int note)
 : m_editor(editor), m_note(note), QGraphicsRectItem(0,0,editor->getPattern()->getLength(),1), m_isHighlighted(false)

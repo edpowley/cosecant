@@ -13,6 +13,8 @@ KeyJazz::KeyJazz()
 
 	m_scanCodeOff = 2; // 1
 	m_scanCodeExtend = 30; // A
+	m_scanCodeOctaveUp = 55; // numpad *
+	m_scanCodeOctaveDown = 309; // numpad /
 
 	// ZXC row
 	{
@@ -46,6 +48,16 @@ bool KeyJazz::keyPress(QKeyEvent* ev)
 		sendEvent(KeyJazzEvent::extend);
 		return true;
 	}
+	else if (scan == m_scanCodeOctaveUp)
+	{
+		if (m_octave < c_maxOctave) setOctave(m_octave+1);
+		return true;
+	}
+	else if (scan == m_scanCodeOctaveDown)
+	{
+		if (m_octave > 0) setOctave(m_octave-1);
+		return true;
+	}
 	else if (m_noteScanCodes.contains(scan))
 	{
 		double note = m_noteScanCodes.value(scan) + m_octave*12.0 + m_transpose;
@@ -77,3 +89,40 @@ void KeyJazz::sendEvent(KeyJazzEvent::Type type, double note)
 {
 	sendEvent(KeyJazzEvent(type, note));
 }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+QString KeyJazz::getKeyNameForNote(double note)
+{
+	QStringList names;
+	foreach(quint32 scancode, m_noteScanCodes.keys(note - m_octave*12.0 - m_transpose))
+	{
+		UINT vk = MapVirtualKey(scancode, MAPVK_VSC_TO_VK);
+		if (vk == 0) continue;
+		UINT ch = MapVirtualKey(vk, MAPVK_VK_TO_CHAR);
+		if (ch == 0) continue;
+		names.append(QString(QChar(ch)));
+	}
+	return names.join(" ");
+}
+
+void KeyJazz::setOctave(int octave)
+{
+	octave = clamp(octave, 0, c_maxOctave);
+	if (m_octave != octave)
+	{
+		m_octave = octave;
+		signalChangeOctave(octave);
+	}
+}
+
+void KeyJazz::setTranspose(int transpose)
+{
+	transpose = clamp(transpose, 0, 11);
+	if (m_transpose != transpose)
+	{
+		m_transpose = transpose;
+		signalChangeTranspose(transpose);
+	}
+}
+

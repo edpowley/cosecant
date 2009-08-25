@@ -54,7 +54,7 @@ public:
 
 	void setFont(const QFont& font) { m_font = font; update(); }
 	void setPen (const QPen& pen)   { m_pen  = pen;  update(); }
-	void setText(const QString& text) { m_text = text; update(); }
+	void setText(const QString& text) { m_boundingRect = m_rect; m_text = text; update(); }
 
 	virtual QRectF boundingRect() const;
 	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = 0);

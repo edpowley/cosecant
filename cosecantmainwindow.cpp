@@ -9,6 +9,7 @@
 #include "sequenceeditor.h"
 #include "dlg_settings.h"
 #include "dlg_about.h"
+#include "keyjazz.h"
 
 CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
 
@@ -37,6 +38,27 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	ui.mainToolBar->insertAction(ui.actionUndoredo_placeholder, redoaction);
 
 	ui.actionUndoredo_placeholder->setVisible(false);
+
+	ui.keyjazzToolBar->addWidget(ui.widgetKeyJazzOctave);
+	for (int i=0; i<=KeyJazz::c_maxOctave; i++)
+		ui.comboKeyJazzOctave->addItem(QString::number(i));
+	ui.comboKeyJazzOctave->setCurrentIndex(KeyJazz::get().getOctave());
+
+	ui.keyjazzToolBar->addWidget(ui.widgetKeyJazzTranspose);
+	static const char* notenames[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+	for (int i=0; i<12; i++)
+		ui.comboKeyJazzTranspose->addItem( QString("+%1 %2").arg(i).arg(notenames[i]) );
+	ui.comboKeyJazzTranspose->setCurrentIndex(KeyJazz::get().getTranspose());
+
+	connect(ui.comboKeyJazzOctave, SIGNAL(currentIndexChanged(int)),
+		&KeyJazz::get(), SLOT(setOctave(int)) );
+	connect(&KeyJazz::get(), SIGNAL(signalChangeOctave(int)),
+		ui.comboKeyJazzOctave, SLOT(setCurrentIndex(int)) );
+
+	connect(ui.comboKeyJazzTranspose, SIGNAL(currentIndexChanged(int)),
+		&KeyJazz::get(), SLOT(setTranspose(int)) );
+	connect(&KeyJazz::get(), SIGNAL(signalChangeTranspose(int)),
+		ui.comboKeyJazzTranspose, SLOT(setCurrentIndex(int)) );
 
 	// Must do this _before_ adding any tabs
 	m_paletteDock = new QDockWidget(tr("Context palette"), this);
