@@ -2,7 +2,6 @@
 #include "common.h"
 #include "workunit.h"
 #include "workqueue.h"
-#include "eventlist.h"
 #include "perfclock.h"
 #include "song.h"
 #include "seqplay.h"
@@ -55,7 +54,7 @@ WorkMachine::WorkMachine(WorkQueue* q, const Ptr<Machine>& machine)
 :	Base(q), m_machine(machine), m_inPinBuffer(NULL), m_outPinBuffer(NULL),
 	m_inpins(machine->m_inpins), m_outpins(machine->m_outpins)
 {
-	m_eventWorkBuffer = new WorkBuffer::EventStream;
+	m_eventWorkBuffer = new WorkBuffer::Events;
 
 	BOOST_FOREACH(Ptr<Sequence::Track>& track, Song::get().m_sequence->m_tracks)
 	{
@@ -148,7 +147,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 				ev.time = firstframe;
 				ev.paramChange.tag = p.first;
 				ev.paramChange.value = p.second;
-				m_eventWorkBuffer->m_data.insert(ev.time, ev);
+				m_eventWorkBuffer->m_data.insert(ev);
 			}
 
 			// Clear parameter changes
@@ -173,7 +172,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 				ev.time = iter->first;
 				ev.paramChange.tag = ppb.tag;
 				ev.paramChange.value = v;
-				m_eventWorkBuffer->m_data.insert(ev.time, ev);
+				m_eventWorkBuffer->m_data.insert(ev);
 				ppb.param->setState(v);
 			}
 		}

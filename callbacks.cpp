@@ -3,7 +3,6 @@
 #include "callbacks.h"
 #include "cosecant_api.h"
 using namespace CosecantAPI;
-#include "eventlist.h"
 #include "song.h"
 #include "dllmachine.h"
 #include "seqplay.h"
@@ -87,16 +86,16 @@ namespace CosecantAPI
 	class EventStreamIter
 	{
 	public:
-		const QMultiMap<int, StreamEvent>* map;
-		QMultiMap<int, StreamEvent>::const_iterator i;
+		const EventStream* stream;
+		EventStream::const_iterator i;
 
-		EventStreamIter(const QMultiMap<int, StreamEvent>* map_) : map(map_) {}
+		EventStreamIter(const EventStream* s) : stream(s) {}
 	};
 };
 
 static EventStreamIter* createEventStreamIter(const PinBuffer* buf)
 {
-	if (const WorkBuffer::EventStream* es = dynamic_cast<const WorkBuffer::EventStream*>(buf->hostbuf))
+	if (const WorkBuffer::Events* es = dynamic_cast<const WorkBuffer::Events*>(buf->hostbuf))
 		return new EventStreamIter(&es->m_data);
 	else
 		return NULL;
@@ -105,35 +104,35 @@ static EventStreamIter* createEventStreamIter(const PinBuffer* buf)
 static EventStreamIter* EventStream_begin(const PinBuffer* buf)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
-	if (i) i->i = i->map->begin();
+	if (i) i->i = i->stream->begin();
 	return i;
 }
 
 static EventStreamIter* EventStream_end(const PinBuffer* buf)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
-	if (i) i->i = i->map->end();
+	if (i) i->i = i->stream->end();
 	return i;
 }
 
 static EventStreamIter* EventStream_find(const PinBuffer* buf, int key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
-	if (i) i->i = i->map->find(key);
+	if (i) i->i = i->stream->find(key);
 	return i;
 }
 
 static EventStreamIter* EventStream_lowerBound(const PinBuffer* buf, int key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
-	if (i) i->i = i->map->lowerBound(key);
+	if (i) i->i = i->stream->lowerBound(key);
 	return i;
 }
 
 static EventStreamIter* EventStream_upperBound(const PinBuffer* buf, int key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
-	if (i) i->i = i->map->upperBound(key);
+	if (i) i->i = i->stream->upperBound(key);
 	return i;
 }
 
@@ -162,10 +161,10 @@ static void EventStreamIter_dec(EventStreamIter* iter)
 
 static int EventStreamIter_deref(EventStreamIter* iter, StreamEvent* ev, unsigned int evSize)
 {
-	if (!iter) return -1;
+	if (!iter) return 0;
 	if (ev && evSize)
-		memcpy(ev, &iter->i.value(), min(evSize, sizeof(StreamEvent)));
-	return iter->i.key();
+		memcpy(ev, &*iter->i, min(evSize, sizeof(StreamEvent)));
+	return iter->i->time;
 }
 
 static cbool EventStreamIter_equal(EventStreamIter* a, EventStreamIter* b)

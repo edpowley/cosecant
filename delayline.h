@@ -3,7 +3,7 @@
 #include "cosecant_api.h"
 using namespace CosecantAPI;
 
-//namespace WorkBuffer { class Base; class ParamControl; class EventStream; };
+#include "eventstream.h"
 
 namespace DelayLine
 {
@@ -67,12 +67,11 @@ namespace DelayLine
 		virtual void reallocate() { m_data.clear(); }
 	};
 
-	class EventStream : public Base
+	class Events : public Base
 	{
 	public:
-		EventStream(int length) : Base(length) {}
-		typedef QList< QPair<int, StreamEvent> > Data;
-		Data m_data;
+		Events(int length) : Base(length) {}
+		EventStream m_data;
 
 		virtual void read (WorkBuffer::Base* buf, int firstframe, int lastframe);
 		virtual void write(WorkBuffer::Base* buf, int firstframe, int lastframe);

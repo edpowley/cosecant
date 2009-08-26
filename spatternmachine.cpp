@@ -33,7 +33,7 @@ QDebug& operator<<(QDebug& dbg, const StreamEvent& ev)
 
 void SpatternMachine::work(const WorkContext* ctx)
 {
-	Ptr<WorkBuffer::EventStream> outbuf = dynamic_cast<WorkBuffer::EventStream*>(ctx->out[0].hostbuf);
+	Ptr<WorkBuffer::Events> outbuf = dynamic_cast<WorkBuffer::Events*>(ctx->out[0].hostbuf);
 	const TimeInfo& timeinfo = SeqPlay::get().getTimeInfo();
 	double beatsPerFrame = timeinfo.beatsPerSecond / timeinfo.samplesPerSecond;
 
@@ -43,7 +43,7 @@ void SpatternMachine::work(const WorkContext* ctx)
 		ev.time = ctx->firstframe;
 		ev.type = StreamEventType::noteOff;
 		ev.note.id = note.c_ptr();
-		outbuf->m_data.insert(ev.time, ev);
+		outbuf->m_data.insert(ev);
 	}
 	m_stoppingNotes.clear();
 
@@ -121,7 +121,7 @@ void SpatternPlayer::resetIter()
 	m_enditer = m_pattern->m_notes.end();
 }
 
-void SpatternPlayer::work(const Ptr<WorkBuffer::EventStream>& outbuf,
+void SpatternPlayer::work(const Ptr<WorkBuffer::Events>& outbuf,
 						  int firstframe, int lastframe, double beatsPerFrame)
 {
 
@@ -137,7 +137,7 @@ void SpatternPlayer::work(const Ptr<WorkBuffer::EventStream>& outbuf,
 		ev.note.note = m_iter.value()->getNote();
 		ev.note.vel = 1.0;
 
-		outbuf->m_data.insert(ev.time, ev);
+		outbuf->m_data.insert(ev);
 
 		m_playingNotes.append(m_iter.value());
 	}
@@ -153,7 +153,7 @@ void SpatternPlayer::work(const Ptr<WorkBuffer::EventStream>& outbuf,
 			ev.type = StreamEventType::noteOff;
 			ev.note.id = note.c_ptr();
 
-			outbuf->m_data.insert(ev.time, ev);
+			outbuf->m_data.insert(ev);
 
 			iter = m_playingNotes.erase(iter);
 		}

@@ -2,7 +2,6 @@
 #include "common.h"
 #include "workbuffer.h"
 using namespace WorkBuffer;
-#include "eventlist.h"
 
 std::map<SignalType::e, Ptr<Factory_Base> > WorkBuffer::s_factories;
 FactoriesInitialiser facinit;
@@ -11,7 +10,7 @@ FactoriesInitialiser::FactoriesInitialiser()
 	s_factories[SignalType::monoAudio]		= new Factory<MonoAudio>("monoAudio");
 	s_factories[SignalType::stereoAudio]	= new Factory<StereoAudio>("stereoAudio");
 	s_factories[SignalType::paramControl]	= new Factory<ParamControl>("paramControl");
-	s_factories[SignalType::noteTrigger]	= new Factory<EventStream>("noteTrigger");
+	s_factories[SignalType::noteTrigger]	= new Factory<Events>("noteTrigger");
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -153,43 +152,45 @@ void ParamControl::getEventBreakPoints(std::set<int>& bp)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-void EventStream::clear(int firstframe, int lastframe)
+void Events::clear(int firstframe, int lastframe)
 {
-	EventMap::iterator iter = m_data.lowerBound(firstframe);
-	while (iter != m_data.end() && iter.key() < lastframe)
+	EventStream::iterator iter = m_data.lowerBound(firstframe);
+	EventStream::iterator enditer = m_data.upperBound(lastframe-1);
+	while (iter != enditer)
 		iter = m_data.erase(iter);
 }
 
-void EventStream::clearAll()
+void Events::clearAll()
 {
 	m_data.clear();
 }
 
-void EventStream::copy(Base* other, int firstframe, int lastframe)
+void Events::copy(Base* other, int firstframe, int lastframe)
 {
-	if (EventStream* p = dynamic_cast<EventStream*>(other))
+	if (Events* p = dynamic_cast<Events*>(other))
 	{
 		clear(firstframe, lastframe);
 		mix(p, firstframe, lastframe);
 	}
 }
 
-void EventStream::mix(Base* other, int firstframe, int lastframe)
+void Events::mix(Base* other, int firstframe, int lastframe)
 {
-	if (EventStream* p = dynamic_cast<EventStream*>(other))
+	if (Events* p = dynamic_cast<Events*>(other))
 	{
-		for (EventMap::const_iterator iter = p->m_data.lowerBound(firstframe);
-			iter != p->m_data.end() && iter.key() < lastframe; ++iter)
+		EventStream::const_iterator enditer = p->m_data.upperBound(lastframe-1);
+		for (EventStream::const_iterator iter = p->m_data.lowerBound(firstframe);
+			iter != enditer; ++iter)
 		{
-			m_data.insert(iter.key(), iter.value());
+			m_data.insert(*iter);
 		}
 	}
 }
 
-void EventStream::getEventBreakPoints(std::set<int>& bp)
+void Events::getEventBreakPoints(std::set<int>& bp)
 {
-	for (QMultiMap<int,StreamEvent>::const_iterator iter = m_data.begin(); iter != m_data.end(); ++iter)
+	for (EventStream::const_iterator iter = m_data.begin(); iter != m_data.end(); ++iter)
 	{
-		bp.insert(iter.key());
+		bp.insert(iter->time);
 	}
 }

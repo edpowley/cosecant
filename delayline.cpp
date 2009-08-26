@@ -80,31 +80,33 @@ void ParamControl::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-void EventStream::read(WorkBuffer::Base* bufb, int firstframe, int lastframe)
+void Events::read(WorkBuffer::Base* bufb, int firstframe, int lastframe)
 {
-	WorkBuffer::EventStream* buf = dynamic_cast<WorkBuffer::EventStream*>(bufb);
+	WorkBuffer::Events* buf = dynamic_cast<WorkBuffer::Events*>(bufb);
 
-	Data::iterator iter = m_data.begin();
+	EventStream::iterator iter = m_data.begin();
 	
 	// Consume some elements
-	while (iter != m_data.end() && iter->first < lastframe-firstframe)
+	while (iter != m_data.end() && iter->time < lastframe-firstframe)
 	{
-		buf->m_data.insert(iter->first + firstframe, iter->second);
+		StreamEvent ev = *iter;
+		ev.time += firstframe;
+		buf->m_data.insert(ev);
+		iter = m_data.erase(iter);
 	}
 
 	// Adjust timestamps of the rest
-	for (; iter != m_data.end(); ++iter)
-	{
-		iter->first -= lastframe-firstframe;
-	}
+	m_data.offsetTimes(-(lastframe-firstframe));
 }
 
-void EventStream::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
+void Events::write(WorkBuffer::Base* bufb, int firstframe, int lastframe)
 {
-	WorkBuffer::EventStream* buf = dynamic_cast<WorkBuffer::EventStream*>(bufb);
+	WorkBuffer::Events* buf = dynamic_cast<WorkBuffer::Events*>(bufb);
 
-	for (QMultiMap<int,StreamEvent>::const_iterator iter = buf->m_data.begin(); iter != buf->m_data.end(); ++iter)
+	for (EventStream::iterator iter = buf->m_data.begin(); iter != buf->m_data.end(); ++iter)
 	{
-		m_data.append(qMakePair(iter.key() - firstframe + m_length, iter.value()));
+		StreamEvent ev = *iter;
+		ev.time = ev.time - firstframe + m_length;
+		m_data.insert(ev);
 	}
 }

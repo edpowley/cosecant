@@ -216,7 +216,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\eventlist.cpp"
+				RelativePath=".\eventstream.cpp"
 				>
 			</File>
 			<File
@@ -996,7 +996,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\eventlist.h"
+				RelativePath=".\eventstream.h"
 				>
 			</File>
 			<File

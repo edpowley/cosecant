@@ -9,7 +9,7 @@ class SpatternPlayer : public Object
 public:
 	SpatternPlayer(const Ptr<Spattern::Pattern>& pattern, double startpos);
 
-	void work(const Ptr<WorkBuffer::EventStream>& outbuf, int firstframe, int lastframe, double beatsPerFrame);
+	void work(const Ptr<WorkBuffer::Events>& outbuf, int firstframe, int lastframe, double beatsPerFrame);
 	
 	QList< Ptr<Spattern::Note> > getPlayingNotes() { return m_playingNotes; }
 	Ptr<Spattern::Pattern> getPattern() { return m_pattern; }

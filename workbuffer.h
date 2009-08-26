@@ -2,6 +2,7 @@
 
 #include "audioio.h"
 #include "delayline.h"
+#include "eventstream.h"
 
 namespace WorkBuffer
 {
@@ -97,18 +98,18 @@ namespace WorkBuffer
 
 	//////////////////////////////////////////////////////////////////////////
 
-	class EventStream : public Base
+	class Events : public Base
 	{
 	public:
 		static const unsigned int s_flags = needsPreProcess;
 		virtual unsigned int getFlags() const { return s_flags; }
 
-		EventStream() {}
+		Events() {}
 
 		virtual PinBuffer getPinBuffer()
 		{ PinBuffer pb; pb.hostbuf = this; return pb; }
 
-		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::EventStream(length); }
+		static Ptr<DelayLine::Base> createDelayLine(int length) { return new DelayLine::Events(length); }
 
 		virtual void preProcess() { clearAll(); }
 		virtual void clearAll();
@@ -117,9 +118,7 @@ namespace WorkBuffer
 		virtual void mix (WorkBuffer::Base* other, int firstframe, int lastframe);
 		virtual void getEventBreakPoints(std::set<int>& bp);
 
-		typedef QMultiMap<int, StreamEvent> EventMap;
-
-		EventMap m_data;
+		EventStream m_data;
 	};
 
 	///////////////////////////////////////////////////////////////////////////

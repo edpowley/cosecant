@@ -48,7 +48,7 @@ namespace WorkUnit
 		virtual ~WorkMachine();
 
 		std::vector< Ptr<WorkBuffer::Base> > m_inWorkBuffer, m_outWorkBuffer;
-		Ptr<WorkBuffer::EventStream> m_eventWorkBuffer;
+		Ptr<WorkBuffer::Events> m_eventWorkBuffer;
 		PinBuffer *m_inPinBuffer, *m_outPinBuffer, m_eventPinBuffer;
 		void updatePinBuffers();
 		WorkContext m_workContext;

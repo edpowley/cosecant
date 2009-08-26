@@ -28,7 +28,7 @@ protected:
 
 	void processEvents(const WorkContext* ctx)
 	{
-		const WorkBuffer::EventStream* evbuf = static_cast<const WorkBuffer::EventStream*>(ctx->ev->hostbuf);
+		const WorkBuffer::Events* evbuf = static_cast<const WorkBuffer::Events*>(ctx->ev->hostbuf);
 		foreach(const StreamEvent& ev, evbuf->m_data)
 		{
 			if (ev.type == StreamEventType::paramChange && ev.paramChange.tag == ptChannel)
