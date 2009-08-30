@@ -190,31 +190,31 @@ void WorkMachine::work(int firstframe, int lastframe)
 			}
 		}
 
-		static const SeqPlayEventMap emptySpem;
-		const SeqPlayEventMap& spem = SeqPlay::get().m_events.value(m_machine, emptySpem);
+		static const EventStream emptySpem;
+		const EventStream& spem = SeqPlay::get().m_events.value(m_machine, emptySpem);
 
-		for (SeqPlayEventMap::const_iterator iter = spem.begin(); iter != spem.end(); ++iter)
+		for (EventStream::const_iterator iter = spem.begin(); iter != spem.end(); ++iter)
 		{
-			breakpoints.insert(iter.key());
+			breakpoints.insert(iter->time);
 		}
 
 		// Do the work
 		int frame = firstframe;
-		SeqPlayEventMap::const_iterator spemIter = spem.begin();
+		EventStream::const_iterator spemIter = spem.begin();
 		BOOST_FOREACH(int breakpoint, breakpoints)
 		{
 			// Seq play events
-			for (; spemIter != spem.end() && spemIter.key() == frame; ++spemIter)
+			for (; spemIter != spem.end() && spemIter->time == frame; ++spemIter)
 			{
-				const SeqPlayEvent& spe = spemIter.value();
-				switch (spe.m_type)
+				const StreamEvent& spe = *spemIter;
+				switch (spe.type)
 				{
-				case SeqPlayEvent::patternStart:
-					spe.m_patternStart.pattern->play(spe.m_patternStart.track, spe.m_patternStart.pos);
+				case StreamEventType::patternPlay:
+					spe.pattern.hostPattern->play(spe.pattern.track, spe.pattern.pos);
 					break;
 
-				case SeqPlayEvent::patternStop:
-					spe.m_patternStop.pattern->stop(spe.m_patternStop.track);
+				case StreamEventType::patternStop:
+					spe.pattern.hostPattern->stop(spe.pattern.track);
 					break;
 				}
 			}

@@ -2,51 +2,22 @@
 
 #include "cosecant_api.h"
 #include "sequence.h"
+#include "eventstream.h"
 
 class SeqPlay;
-
-struct SeqPlayEvent
-{
-	enum Type { patternStart, patternStop, timeChange };
-	Type m_type;
-
-	SeqPlayEvent(Type type) : m_type(type) {}
-
-	struct PatternStart
-	{
-		Sequence::Track* track;
-		Sequence::Pattern* pattern;
-		double pos;
-	};
-
-	struct PatternStop
-	{
-		Sequence::Track* track;
-		Sequence::Pattern* pattern;
-	};
-
-	union
-	{
-		PatternStart m_patternStart;
-		PatternStop m_patternStop;
-		CosecantAPI::TimeInfo m_timeChange;
-	};
-};
-
-typedef QMultiMap<int, SeqPlayEvent> SeqPlayEventMap;
 
 class SeqTrackPlay : public Object
 {
 	Q_OBJECT
 
 public:
-	SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, SeqPlayEventMap& events);
+	SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, EventStream& events);
 
 	void preWork(int firstframe = 0);
 	void work(int firstframe, int lastframe, bool fromScratch);
 
-	SeqPlayEventMap& m_events;
-	QList<SeqPlayEvent> m_pendingEvents;
+	EventStream& m_events;
+	QList<CosecantAPI::StreamEvent> m_pendingEvents;
 
 protected slots:
 	void onAddClip(const Ptr<Sequence::Clip>& clip);
@@ -88,7 +59,7 @@ public:
 	void preWork();
 	void work(int firstframe, int lastframe, bool fromScratch);
 
-	QHash< Ptr<Machine>, SeqPlayEventMap > m_events;
+	QHash< Ptr<Machine>, EventStream > m_events;
 	QHash< Ptr<Sequence::Track>, Ptr<SeqTrackPlay> > m_trackPlays;
 
 public slots:

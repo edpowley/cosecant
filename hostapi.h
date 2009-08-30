@@ -11,7 +11,7 @@ inline QString decodeApiString(const char* str)
 
 class MachineFactory;
 class Machine;
-namespace Sequence { class Track; };
+namespace Sequence { class Track; class Pattern; };
 namespace WorkBuffer { class Base; };
 
 namespace CosecantAPI
@@ -28,6 +28,7 @@ namespace CosecantAPI
 	
 	typedef QScriptValue ScriptValue;
 	
+	typedef Sequence::Pattern HostPattern;
 	typedef Sequence::Track SequenceTrack;
 
 	typedef WorkBuffer::Base HostPinBuffer;

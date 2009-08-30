@@ -33,7 +33,7 @@ public:
 	void decRef()
 	{
 		if (!m_refcount.deref() && m_refcountenable)
-			delete this;
+			deleteLater();
 	}
 
 	/** Enable or disable reference counting. To be more precise, enable or disable

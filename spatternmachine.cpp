@@ -124,24 +124,9 @@ void SpatternPlayer::resetIter()
 void SpatternPlayer::work(const Ptr<WorkBuffer::Events>& outbuf,
 						  int firstframe, int lastframe, double beatsPerFrame)
 {
-
 	double nextpos = m_pos + beatsPerFrame * (lastframe - firstframe);
-	for(; m_iter != m_enditer && m_iter.key() < nextpos; ++m_iter)
-	{
-		if (m_iter.key() < m_pos) continue;
 
-		StreamEvent ev;
-		ev.time = (int)floor(firstframe + (m_iter.key() - m_pos) / beatsPerFrame);
-		ev.type = StreamEventType::noteOn;
-		ev.note.id = m_iter.value().c_ptr();
-		ev.note.note = m_iter.value()->getNote();
-		ev.note.vel = 1.0;
-
-		outbuf->m_data.insert(ev);
-
-		m_playingNotes.append(m_iter.value());
-	}
-
+	// Stop already playing notes
 	for(QList< Ptr<Spattern::Note> >::iterator iter = m_playingNotes.begin(); iter != m_playingNotes.end(); )
 	{
 		const Ptr<Spattern::Note>& note = *iter;
@@ -161,6 +146,23 @@ void SpatternPlayer::work(const Ptr<WorkBuffer::Events>& outbuf,
 		{
 			++iter;
 		}
+	}
+
+	// Start new notes
+	for(; m_iter != m_enditer && m_iter.key() < nextpos; ++m_iter)
+	{
+		if (m_iter.key() < m_pos) continue;
+
+		StreamEvent ev;
+		ev.time = (int)floor(firstframe + (m_iter.key() - m_pos) / beatsPerFrame);
+		ev.type = StreamEventType::noteOn;
+		ev.note.id = m_iter.value().c_ptr();
+		ev.note.note = m_iter.value()->getNote();
+		ev.note.vel = 1.0;
+
+		outbuf->m_data.insert(ev);
+
+		m_playingNotes.append(m_iter.value());
 	}
 
 	m_pos = nextpos;

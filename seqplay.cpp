@@ -6,30 +6,6 @@
 
 SingletonPtr<SeqPlay> SeqPlay::s_singleton;
 
-QDebug& operator<<(QDebug& dbg, const SeqPlayEvent& spe)
-{
-	dbg.nospace() << "SeqPlayEvent(";
-	switch (spe.m_type)
-	{
-	case SeqPlayEvent::patternStart:
-		dbg << "start pattern " << spe.m_patternStart.pattern
-			<< " on " << spe.m_patternStart.track
-			<< " at " << spe.m_patternStart.pos;
-		break;
-	
-	case SeqPlayEvent::patternStop:
-		dbg << "stop pattern on " << spe.m_patternStop.track;
-		break;
-
-	default:
-		dbg << "unknown type " << spe.m_type;
-		break;
-	}
-	dbg << ")";
-
-	return dbg.space();
-}
-
 SeqPlay::SeqPlay(const Ptr<Sequence::Seq>& seq)
 : m_seq(seq), m_playing(false), m_playPos(0)
 {
@@ -107,12 +83,12 @@ void SeqPlay::work(int firstframe, int lastframe, bool fromScratch)
 		stp->work(firstframe, lastframe, fromScratch);
 	}
 
-#if _DEBUG
-	foreach(const SeqPlayEventMap& spem, m_events)
+#ifdef _DEBUG
+	foreach(const EventStream& spem, m_events)
 	{
 		if (!spem.empty())
 		{
-			qDebug() << m_events;
+			qDebug() << "Seqplay eventstream is not empty";
 			break;
 		}
 	}
@@ -123,7 +99,7 @@ void SeqPlay::work(int firstframe, int lastframe, bool fromScratch)
 
 ///////////////////////////////////////////////////////////////////////////
 
-SeqTrackPlay::SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, SeqPlayEventMap& events)
+SeqTrackPlay::SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, EventStream& events)
 : m_sp(sp), m_track(track), m_events(events), m_workFromScratch(true)
 {
 	connect( m_track, SIGNAL(signalAddClip(const Ptr<Sequence::Clip>&)),
@@ -153,9 +129,10 @@ void SeqTrackPlay::onRemoveClip(const Ptr<Sequence::Clip>& clip)
 
 	if (m_playingClip == clip)
 	{
-		SeqPlayEvent spe(SeqPlayEvent::patternStop);
-		spe.m_patternStop.track = m_track;
-		spe.m_patternStop.pattern = m_playingClip->m_pattern;
+		StreamEvent spe;
+		spe.type = StreamEventType::patternStop;
+		spe.pattern.track = m_track;
+		spe.pattern.hostPattern = m_playingClip->m_pattern;
 		m_pendingEvents.append(spe);
 		m_playingClip = NULL;
 	}
@@ -167,9 +144,11 @@ void SeqTrackPlay::onRemoveClip(const Ptr<Sequence::Clip>& clip)
 void SeqTrackPlay::preWork(int firstframe)
 {
 	m_events.clear();
-	foreach(const SeqPlayEvent& spe, m_pendingEvents)
+	foreach(const StreamEvent& spe, m_pendingEvents)
 	{
-		m_events.insert(firstframe, spe);
+		StreamEvent ev(spe);
+		ev.time = firstframe;
+		m_events.insert(ev);
 	}
 	m_pendingEvents.clear();
 }
@@ -185,10 +164,12 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 		if (m_iter != m_track->getClips().begin()) -- m_iter;
 		if (m_playingClip)
 		{
-			SeqPlayEvent spe(SeqPlayEvent::patternStop);
-			spe.m_patternStop.track = m_track;
-			spe.m_patternStop.pattern = m_playingClip->m_pattern;
-			m_events.insert(firstframe, spe);
+			StreamEvent spe;
+			spe.type = StreamEventType::patternStop;
+			spe.time = firstframe;
+			spe.pattern.track = m_track;
+			spe.pattern.hostPattern = m_playingClip->m_pattern;
+			m_events.insert(spe);
 		}
 		m_playingClip = NULL;
 
@@ -200,10 +181,12 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 		if (m_playingClip && m_playingClip->getEndTime() < nextpos)
 		{
 			int f = firstframe + (int)floor( (m_playingClip->getEndTime() - playpos) / m_sp->m_beatsPerSample );
-			SeqPlayEvent spe(SeqPlayEvent::patternStop);
-			spe.m_patternStop.track = m_track;
-			spe.m_patternStop.pattern = m_playingClip->m_pattern;
-			m_events.insert(f, spe);
+			StreamEvent spe;
+			spe.type = StreamEventType::patternStop;
+			spe.time = f;
+			spe.pattern.track = m_track;
+			spe.pattern.hostPattern = m_playingClip->m_pattern;
+			m_events.insert(spe);
 			m_playingClip = NULL;
 
 			playpos += (f - firstframe) * m_sp->m_beatsPerSample;
@@ -229,11 +212,13 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 
 			playpos += (f - firstframe) * m_sp->m_beatsPerSample;
 
-			SeqPlayEvent spe(SeqPlayEvent::patternStart);
-			spe.m_patternStart.track = m_track;
-			spe.m_patternStart.pattern = m_playingClip->m_pattern;
-			spe.m_patternStart.pos = m_playingClip->m_begin + (playpos - m_iter.key());
-			m_events.insert(f, spe);
+			StreamEvent spe;
+			spe.type = StreamEventType::patternPlay;
+			spe.time = f;
+			spe.pattern.track = m_track;
+			spe.pattern.hostPattern = m_playingClip->m_pattern;
+			spe.pattern.pos = m_playingClip->m_begin + (playpos - m_iter.key());
+			m_events.insert(spe);
 
 			firstframe = f;
 			++ m_iter;

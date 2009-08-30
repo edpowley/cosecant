@@ -44,6 +44,7 @@ namespace CosecantAPI
 		class MiFactoryList;
 		class HostMachine;
 		class ScriptValue;
+		class HostPattern;
 		class SequenceTrack;
 		class HostPinBuffer;
 		class EventStreamIter;
@@ -160,13 +161,29 @@ namespace CosecantAPI
 		double value;
 	};
 
+	struct StreamEvent_Pattern
+	{
+		SequenceTrack* track;
+		HostPattern* hostPattern;
+		double pos;
+	};
+
+	struct StreamEvent_Custom
+	{
+		const char* type;
+		void* data;
+	};
+
 	namespace StreamEventType
 	{
 		enum e
 		{
+			custom,
 			noteOn,
 			noteOff,
 			paramChange,
+			patternPlay,
+			patternStop,
 		};
 		typedef unsigned char i;
 	};
@@ -179,6 +196,8 @@ namespace CosecantAPI
 		{
 			StreamEvent_Note note;
 			StreamEvent_ParamChange paramChange;
+			StreamEvent_Pattern pattern;
+			StreamEvent_Custom custom;
 		};
 	};
 
