@@ -8,7 +8,7 @@ using namespace CosecantAPI;
 #include "seqplay.h"
 #include "application.h"
 
-static int returnString(const QString& s, char* buf, int buf_size)
+static int32_t returnString(const QString& s, char* buf, int32_t buf_size)
 {
 	QByteArray bytes = s.toUtf8();
 
@@ -18,10 +18,10 @@ static int returnString(const QString& s, char* buf, int buf_size)
 		buf[buf_size-1] = '\0';
 	}
 
-	return static_cast<int>(bytes.size() + 1);
+	return static_cast<int32_t>(bytes.size() + 1);
 }
 
-static unsigned int getHostVersion()
+static uint32_t getHostVersion()
 {
 	return CosecantAPI::version;
 }
@@ -41,13 +41,13 @@ static void popStatus()
 	Application::get().popStatusMsg();
 }
 
-static int toUtf8(char* buf, int bufsize, const wchar_t* str)
+static int32_t toUtf8(char* buf, int32_t bufsize, const wchar_t* str)
 {
 	return returnString(QString::fromWCharArray(str), buf, bufsize);
 }
 
 static void registerMiFactory(MiFactoryList* list,
-							  const char* id, const char* desc, void* user, unsigned int userSize)
+							  const char* id, const char* desc, void* user, uint32_t userSize)
 {
 	MachineFactory::add(id, new DllMachine::Factory(list->m_dllpath, id, desc, user, userSize));
 }
@@ -57,7 +57,7 @@ static const TimeInfo* getTimeInfo(HostMachine* mac)
 	return &SeqPlay::get().getTimeInfo();
 }
 
-static void registerScriptFunction(HostMachine* mac, const char* name, int id)
+static void registerScriptFunction(HostMachine* mac, const char* name, int32_t id)
 {
 	mac->addScriptFunction(name, id);
 }
@@ -73,7 +73,7 @@ static cbool unlockMutex(HostMachine* mac)
 	return ctrue;
 }
 
-static void addParamChangeEvent(PinBuffer* buf, int time, double value)
+static void addParamChangeEvent(PinBuffer* buf, int32_t time, double value)
 {
 	WorkBuffer::ParamControl* p = dynamic_cast<WorkBuffer::ParamControl*>(buf->hostbuf);
 	if (p) p->m_data.insert(std::make_pair(time, value));
@@ -115,21 +115,21 @@ static EventStreamIter* EventStream_end(const PinBuffer* buf)
 	return i;
 }
 
-static EventStreamIter* EventStream_find(const PinBuffer* buf, int key)
+static EventStreamIter* EventStream_find(const PinBuffer* buf, int32_t key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->stream->find(key);
 	return i;
 }
 
-static EventStreamIter* EventStream_lowerBound(const PinBuffer* buf, int key)
+static EventStreamIter* EventStream_lowerBound(const PinBuffer* buf, int32_t key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->stream->lowerBound(key);
 	return i;
 }
 
-static EventStreamIter* EventStream_upperBound(const PinBuffer* buf, int key)
+static EventStreamIter* EventStream_upperBound(const PinBuffer* buf, int32_t key)
 {
 	EventStreamIter* i = createEventStreamIter(buf);
 	if (i) i->i = i->stream->upperBound(key);
@@ -159,7 +159,7 @@ static void EventStreamIter_dec(EventStreamIter* iter)
 		-- iter->i;
 }
 
-static int EventStreamIter_deref(EventStreamIter* iter, StreamEvent* ev, unsigned int evSize)
+static int32_t EventStreamIter_deref(EventStreamIter* iter, StreamEvent* ev, uint32_t evSize)
 {
 	if (!iter) return 0;
 	if (ev && evSize)
@@ -207,7 +207,7 @@ static cbool ScriptValue_isNumber(const ScriptValue* v)
 	return v->isNumber() ?ctrue:cfalse;
 }
 
-static int ScriptValue_toInt(const ScriptValue* v)
+static int32_t ScriptValue_toInt(const ScriptValue* v)
 {
 	return v->toInt32();
 }
@@ -222,7 +222,7 @@ static cbool ScriptValue_isString(const ScriptValue* v)
 	return v->isString() ?ctrue:cfalse;
 }
 
-static int ScriptValue_toString(const ScriptValue* v, char* buf, int bufsize)
+static int32_t ScriptValue_toString(const ScriptValue* v, char* buf, int32_t bufsize)
 {
 	return returnString(v->toString(), buf, bufsize);
 }
@@ -232,12 +232,12 @@ static cbool ScriptValue_isArray(const ScriptValue* v)
 	return v->isArray() ?ctrue:cfalse;
 }
 
-static unsigned int ScriptValue_getArrayLength(const ScriptValue* v)
+static uint32_t ScriptValue_getArrayLength(const ScriptValue* v)
 {
 	return v->property("length").toInt32();
 }
 
-static const ScriptValue* ScriptValue_getArrayElement(const ScriptValue* v, unsigned int index)
+static const ScriptValue* ScriptValue_getArrayElement(const ScriptValue* v, uint32_t index)
 {
 	return new QScriptValue(v->property(index));
 }
@@ -271,7 +271,7 @@ static ScriptValue* ScriptValue_createInvalid()
 	return new QScriptValue(QScriptValue::UndefinedValue);
 }
 
-static ScriptValue* ScriptValue_createInt(int v)
+static ScriptValue* ScriptValue_createInt(int32_t v)
 {
 	return new QScriptValue(v);
 }
@@ -291,12 +291,12 @@ static void ScriptValue_destroy(const ScriptValue* v)
 	delete v;
 }
 
-static ScriptValue* ScriptValue_createArray(unsigned int length)
+static ScriptValue* ScriptValue_createArray(uint32_t length)
 {
 	return new QScriptValue(Application::get().getScriptEngine()->newArray(length));
 }
 
-static void ScriptValue_setArrayElement(ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership)
+static void ScriptValue_setArrayElement(ScriptValue* arr, uint32_t index, ScriptValue* value, cbool takeOwnership)
 {
 	arr->setProperty(index, *value);
 	if (takeOwnership) delete value;

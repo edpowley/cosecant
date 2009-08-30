@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "cosecant_api.h"
 
-COSECANT_EXPORT(unsigned int) csc_getVersion()
+COSECANT_EXPORT(uint32_t) csc_getVersion()
 {
 	return CosecantAPI::version;
 }
@@ -29,7 +29,7 @@ namespace PluginFuncImpl
 	void Mi_work(Mi* m, const WorkContext* ctx)
 	{ m->work(ctx); }
 
-	ScriptValue* Mi_callScriptFunction(Mi* m, int id, const ScriptValue** args, int numargs)
+	ScriptValue* Mi_callScriptFunction(Mi* m, int32_t id, const ScriptValue** args, int32_t numargs)
 	{ return m->callScriptFunction(id, args, numargs); }
 	
 	MiPattern* Mi_createPattern(Mi* m, double length)

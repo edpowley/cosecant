@@ -7,7 +7,19 @@
 #endif
 
 #if defined(min) || defined(max)
-#	error "min or max is defined. If you include windows.h, do a '#define NOMINMAX' first."
+#	error "min or max is defined. If you include windows.h, do a '#define NOMINMAX' before it."
+#endif
+
+#ifndef COSECANT_API_NO_STDINT
+#ifdef _MSC_VER
+	// Visual C++ doesn't ship with stdint.h
+	typedef	         __int8  int8_t;
+	typedef unsigned __int8  uint8_t;
+	typedef          __int32 int32_t;
+	typedef unsigned __int32 uint32_t;
+#else
+#	include <stdint.h>
+#endif
 #endif
 
 #include <sstream>
@@ -27,9 +39,9 @@ namespace CosecantAPI
 {
 	/** The API version for this header file.
 		\sa HostFunctions::getHostVersion */
-	const unsigned int version = 1000;
+	const uint32_t version = 1000;
 
-	const unsigned int maxFramesPerBuffer = 1024;
+	const uint32_t maxFramesPerBuffer = 1024;
 
 #	ifdef COSECANT_PATHS_ARE_WIDE_STRINGS
 		typedef wchar_t PathChar;
@@ -54,7 +66,7 @@ namespace CosecantAPI
 
 	//////////////////////////////////////////////////////////////////////////////////
 
-	typedef unsigned char cbool;
+	typedef uint8_t cbool;
 	static const cbool cfalse = 0;
 	static const cbool ctrue = 1;
 
@@ -77,7 +89,7 @@ namespace CosecantAPI
 			master, generator, effect, control,
 		};
 
-		typedef unsigned char i;
+		typedef uint8_t i;
 	};
 
 	namespace SignalType
@@ -95,13 +107,13 @@ namespace CosecantAPI
 			internal_seq = 100,
 		};
 
-		typedef unsigned char i;
+		typedef uint8_t i;
 	};
 
 	namespace ParamScale
 	{
 		enum e { linear, logarithmic };
-		typedef unsigned char i;
+		typedef uint8_t i;
 	};
 
 	namespace ParamFlags
@@ -112,7 +124,7 @@ namespace CosecantAPI
 			noMax = 1 << 1,
 			noMinMax = noMin | noMax,
 		};
-		typedef unsigned int i;
+		typedef uint32_t i;
 	};
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -185,13 +197,13 @@ namespace CosecantAPI
 			patternPlay,
 			patternStop,
 		};
-		typedef unsigned char i;
+		typedef uint8_t i;
 	};
 
 	struct StreamEvent
 	{
 		StreamEventType::i type;
-		int time;
+		int32_t time;
 		union
 		{
 			StreamEvent_Note note;
@@ -210,7 +222,7 @@ namespace CosecantAPI
 			tGroup, tReal, tInt, tTime, tEnum,
 		};
 
-		typedef unsigned char i;
+		typedef uint8_t i;
 	};
 
 	struct ParamInfo
@@ -243,7 +255,7 @@ namespace CosecantAPI
 	struct IntParamInfo
 	{
 		ParamInfo p;
-		int min, max, def;
+		int32_t min, max, def;
 
 		IntParamInfo() : p(ParamType::tInt), min(0), max(1), def(0) {}
 	};
@@ -261,7 +273,7 @@ namespace CosecantAPI
 	{
 		ParamInfo p;
 		const char** items;
-		unsigned int def;
+		uint32_t def;
 
 		EnumParamInfo() : p(ParamType::tEnum), items(NULL), def(0) {}
 	};
@@ -274,7 +286,7 @@ namespace CosecantAPI
 		{
 			breakOnEvent = 1 << 0,
 		};
-		typedef unsigned int i;
+		typedef uint32_t i;
 	};
 
 	struct PinInfo
@@ -318,9 +330,9 @@ namespace CosecantAPI
 	struct TimeInfo
 	{
 		double beatsPerSecond;
-		int beatsPerBar, beatsPerWholeNote;
-		int barsPerSmallGrid, smallGridsPerLargeGrid;
-		int samplesPerSecond;
+		int32_t beatsPerBar, beatsPerWholeNote;
+		int32_t barsPerSmallGrid, smallGridsPerLargeGrid;
+		int32_t samplesPerSecond;
 	};
 
 	struct WorkContext
@@ -328,7 +340,7 @@ namespace CosecantAPI
 		const PinBuffer* ev;
 		const PinBuffer* in;
 		PinBuffer* out;
-		int firstframe, lastframe;
+		int32_t firstframe, lastframe;
 	};
 
 	////////////////////////////////////////////////////////////////////
@@ -337,7 +349,7 @@ namespace CosecantAPI
 	{
 		void (*MiFactory_enumerate)(MiFactoryList* list);
 
-		Mi* (*Mi_create)(const void* facUser, unsigned int facUserSize, HostMachine* hm);
+		Mi* (*Mi_create)(const void* facUser, uint32_t facUserSize, HostMachine* hm);
 		void (*Mi_destroy)(Mi* m);
 		
 		MachineInfo* (*Mi_getInfo)(Mi* m);
@@ -345,7 +357,7 @@ namespace CosecantAPI
 		
 		void (*Mi_work)(Mi* m, const WorkContext* ctx);
 		
-		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int id, const ScriptValue** args, int numargs);
+		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int32_t id, const ScriptValue** args, int32_t numargs);
 		
 		MiPattern* (*Mi_createPattern)(Mi* m, double length);
 		void (*MiPattern_destroy)(MiPattern* p);
@@ -356,7 +368,7 @@ namespace CosecantAPI
 	/** \struct HostFunctions
 	Callbacks provided by the host. Use these functions via the global g_host variable.
 	*/
-	/** \fn unsigned int (*HostFunctions::getHostVersion)()
+	/** \fn uint32_t (*HostFunctions::getHostVersion)()
 	Get the plugin API version of the host.
 	\sa version
 	*/
@@ -364,7 +376,7 @@ namespace CosecantAPI
 	Write a string to the host's debug output. The CosecantHelper::DebugPrint class provides a convenient
 	wrapper for this function.
 	*/
-	/** \fn void (*HostFunctions::registerMiFactory)(MiFactoryList* list, const char* id, const char* desc, void* user, unsigned int userSize)
+	/** \fn void (*HostFunctions::registerMiFactory)(MiFactoryList* list, const char* id, const char* desc, void* user, uint32_t userSize)
 	Register a machine provided by your plugin. Call this in your implementation of
 	CosecantPlugin::enumerateFactories.
 	\param list the argument to CosecantPlugin::enumerateFactories
@@ -379,7 +391,7 @@ namespace CosecantAPI
 	/** \fn const TimeInfo* (*HostFunctions::getTimeInfo)(HostMachine*)
 	Get the TimeInfo structure associated with this machine.
 	*/
-	/** \fn void (*HostFunctions::registerScriptFunction)(HostMachine*, const char* name, int id)
+	/** \fn void (*HostFunctions::registerScriptFunction)(HostMachine*, const char* name, int32_t id)
 	Register a function that can be called from your machine's script. A function named \p name will be
 	added to your main script object's \p cscFunctions member; calling this function will call your
 	Mi::callScriptFunction to be called.
@@ -394,21 +406,21 @@ namespace CosecantAPI
 	Unlock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
 	\returns \p ctrue
 	*/
-	/** \fn const ScriptValue* (*HostFunctions::ScriptValue_getArrayElement)(const ScriptValue* sv, unsigned int index)
+	/** \fn const ScriptValue* (*HostFunctions::ScriptValue_getArrayElement)(const ScriptValue* sv, uint32_t index)
 	Get the array element at the specified index. Note that you take ownership of the return value,
 	so it is your responsibility to call ScriptValue_destroy() when you are finished with it.
 	\param sv the array
 	\param index the index into the array
 	\returns the index'th element of sv. If there is no such element, an invalid value is returned.
 	*/
-	/** \fn ScriptValue* (*HostFunctions::ScriptValue_createArray)(unsigned int length)
+	/** \fn ScriptValue* (*HostFunctions::ScriptValue_createArray)(uint32_t length)
 	Create a new QtScript Array object.
 	\param length the initial length (number of elements) of the array. Note that the array can be expanded
 		by inserting elements beyond its current length. If you do not know the array length in advance, it
 		is acceptable to pass 0 here.
 	\returns a pointer to the new object, which you own.
 	*/
-	/** \fn void (*HostFunctions::ScriptValue_setArrayElement)(ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership)
+	/** \fn void (*HostFunctions::ScriptValue_setArrayElement)(ScriptValue* arr, uint32_t index, ScriptValue* value, cbool takeOwnership)
 	Set the array element at the specified index. \p value is copied and the copy is inserted into the array,
 	so you may safely destroy \p value after calling this function. In fact, the \p takeOwnership parameter
 	allows this function to destroy \p value so you don't have to.
@@ -419,36 +431,36 @@ namespace CosecantAPI
 	*/
 	struct HostFunctions
 	{
-		unsigned int (*getHostVersion)();
+		uint32_t (*getHostVersion)();
 
 		void (*debugPrint)(const char* msg);
 		void (*pushStatus)(const char* msg);
 		void (*popStatus)();
 
-		int (*toUtf8)(char* buf, int bufsize, const wchar_t* str);
+		int32_t (*toUtf8)(char* buf, int32_t bufsize, const wchar_t* str);
 		
 		void (*registerMiFactory)(MiFactoryList* list,
-			const char* id, const char* desc, void* user, unsigned int userSize);
+			const char* id, const char* desc, void* user, uint32_t userSize);
 
 		const TimeInfo* (*getTimeInfo)(HostMachine*);
 		
-		void (*registerScriptFunction)(HostMachine*, const char* name, int id);
+		void (*registerScriptFunction)(HostMachine*, const char* name, int32_t id);
 		
 		cbool (*lockMutex)(HostMachine*);
 		cbool (*unlockMutex)(HostMachine*);
 
-		void (*addParamChangeEvent)(PinBuffer* buf, int time, double value);
+		void (*addParamChangeEvent)(PinBuffer* buf, int32_t time, double value);
 
 		EventStreamIter* (*EventStream_begin)(const PinBuffer* buf);
 		EventStreamIter* (*EventStream_end)(const PinBuffer* buf);
-		EventStreamIter* (*EventStream_find)(const PinBuffer* buf, int key);
-		EventStreamIter* (*EventStream_lowerBound)(const PinBuffer* buf, int key);
-		EventStreamIter* (*EventStream_upperBound)(const PinBuffer* buf, int key);
+		EventStreamIter* (*EventStream_find)(const PinBuffer* buf, int32_t key);
+		EventStreamIter* (*EventStream_lowerBound)(const PinBuffer* buf, int32_t key);
+		EventStreamIter* (*EventStream_upperBound)(const PinBuffer* buf, int32_t key);
 		EventStreamIter* (*EventStreamIter_copy)(EventStreamIter* iter);
 		void (*EventStreamIter_destroy)(EventStreamIter* iter);
 		void (*EventStreamIter_inc)(EventStreamIter* iter);
 		void (*EventStreamIter_dec)(EventStreamIter* iter);
-		int (*EventStreamIter_deref)(EventStreamIter* iter, StreamEvent* ev, unsigned int evSize);
+		int32_t (*EventStreamIter_deref)(EventStreamIter* iter, StreamEvent* ev, uint32_t evSize);
 		cbool (*EventStreamIter_equal)(EventStreamIter* a, EventStreamIter* b);
 
 		void (*iteratePaths)(
@@ -460,30 +472,30 @@ namespace CosecantAPI
 		cbool (*ScriptValue_isValid)(const ScriptValue*);
 
 		cbool (*ScriptValue_isNumber)(const ScriptValue*);
-		int (*ScriptValue_toInt)(const ScriptValue*);
+		int32_t (*ScriptValue_toInt)(const ScriptValue*);
 		double (*ScriptValue_toDouble)(const ScriptValue*);
 
 		cbool (*ScriptValue_isString)(const ScriptValue*);
-		int (*ScriptValue_toString)(const ScriptValue*, char* buf, int bufsize);
+		int32_t (*ScriptValue_toString)(const ScriptValue*, char* buf, int32_t bufsize);
 
 		cbool (*ScriptValue_isArray)(const ScriptValue*);
-		unsigned int (*ScriptValue_getArrayLength)(const ScriptValue*);
+		uint32_t (*ScriptValue_getArrayLength)(const ScriptValue*);
 
-		const ScriptValue* (*ScriptValue_getArrayElement)(const ScriptValue* sv, unsigned int index);
+		const ScriptValue* (*ScriptValue_getArrayElement)(const ScriptValue* sv, uint32_t index);
 
 		Mi* (*ScriptValue_toMi)(const ScriptValue*);
 		MiPattern* (*ScriptValue_toMiPattern)(const ScriptValue*);
 
 		ScriptValue* (*ScriptValue_createNull)();
 		ScriptValue* (*ScriptValue_createInvalid)();
-		ScriptValue* (*ScriptValue_createInt)(int v);
+		ScriptValue* (*ScriptValue_createInt)(int32_t v);
 		ScriptValue* (*ScriptValue_createDouble)(double v);
 		ScriptValue* (*ScriptValue_createString)(const char* v);
 		void (*ScriptValue_destroy)(const ScriptValue*);
 
-		ScriptValue* (*ScriptValue_createArray)(unsigned int length);
+		ScriptValue* (*ScriptValue_createArray)(uint32_t length);
 		void (*ScriptValue_setArrayElement)(
-			ScriptValue* arr, unsigned int index, ScriptValue* value, cbool takeOwnership);
+			ScriptValue* arr, uint32_t index, ScriptValue* value, cbool takeOwnership);
 	};
 	
 	/** A global instance of HostFunctions, initialised when your plugin is loaded.
@@ -522,7 +534,7 @@ namespace CosecantAPI
 				HostFunctions. The host takes ownership of the return value and destroys it, so you should not
 				store it. Returning a \p NULL pointer is the same as returning a null script value.
 		*/
-		virtual ScriptValue* callScriptFunction(int id, const ScriptValue** args, int numargs)
+		virtual ScriptValue* callScriptFunction(int32_t id, const ScriptValue** args, int32_t numargs)
 		{ return NULL; }
 
 		virtual MiPattern* createPattern(double length) { return NULL; }
@@ -558,6 +570,6 @@ namespace CosecantPlugin
 		\param facUserSize the size, in bytes, of the data pointed to by \p facUser
 		\param hm a pointer to the host machine, to be passed to your machine class's constructor
 		\returns a \p new instance of your machine class */
-	CosecantAPI::Mi* createMachine(const void* facUser, unsigned int facUserSize, CosecantAPI::HostMachine* hm);
+	CosecantAPI::Mi* createMachine(const void* facUser, uint32_t facUserSize, CosecantAPI::HostMachine* hm);
 };
 #endif
