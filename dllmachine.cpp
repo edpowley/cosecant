@@ -167,15 +167,3 @@ Pattern::~Pattern()
 	if (m_dll->m_funcs->MiPattern_destroy)
 		m_dll->m_funcs->MiPattern_destroy(m_mip);
 }
-
-void Pattern::play(Sequence::Track* track, double startpos)
-{
-	if (m_dll->m_funcs->MiPattern_play)
-		m_dll->m_funcs->MiPattern_play(m_mip, track, startpos);
-}
-
-void Pattern::stop(Sequence::Track* track)
-{
-	if (m_dll->m_funcs->MiPattern_stop)
-		m_dll->m_funcs->MiPattern_stop(m_mip, track);
-}

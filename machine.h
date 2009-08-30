@@ -159,6 +159,8 @@ public:
 	QMutex m_paramChangesMutex;
 	std::map<ParamTag, double> m_paramChanges;
 
+	Ptr<WorkBuffer::Events> m_eventBuffer;
+
 	void addPin(const Ptr<Pin>& pin);
 	void removePin(const Ptr<Pin>& pin);
 

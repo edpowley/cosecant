@@ -59,9 +59,6 @@ namespace DllMachine
 		Pattern(const Ptr<Mac>& mac, MiPattern* mip, double length);
 		virtual ~Pattern();
 
-		virtual void play(Sequence::Track* track, double startpos);
-		virtual void stop(Sequence::Track* track);
-
 		MiPattern* getMiPattern() { return m_mip; }
 
 	protected:

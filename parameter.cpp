@@ -111,7 +111,7 @@ void Parameter::Scalar::change(double newval)
 		setState(newval);
 		valueChanged(newval);
 
-		QMutexLocker lock(&m_mac->m_paramChangesMutex);
+		CSC_LOCK_MUTEX(&m_mac->m_paramChangesMutex);
 		m_mac->m_paramChanges[m_tag] = newval;
 	}
 }

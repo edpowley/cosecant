@@ -90,7 +90,7 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 						PaStreamCallbackFlags status,
 						void* user)
 {
-	QReadLocker wqlock(&WorkQueue::s_mutex);
+	CSC_LOCK_READ(&WorkQueue::s_mutex);
 
 	AudioIO& s = *s_singleton;
 
@@ -115,8 +115,7 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 		int numFramesForThisIter = min<int>(c_maxBufferSize, frames - firstframe);
 
 		{
-			QWriteLocker lock(&SeqPlay::get().m_mutex);
-			SeqPlay::get().preWork();
+			CSC_LOCK_WRITE(&SeqPlay::get().m_mutex);
 			SeqPlay::get().work(0, numFramesForThisIter, false);
 		}
 
@@ -126,7 +125,7 @@ int AudioIO::paCallback(const void* inbuf, void* outbuf, unsigned long frames,
 		{
 			WorkUnit::Base* wu;
 			{
-				QMutexLocker lock(&wq->m_mutex);
+				CSC_LOCK_MUTEX(&wq->m_mutex);
 				wu = wq->popReady();
 			}
 

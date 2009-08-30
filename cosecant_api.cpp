@@ -37,12 +37,6 @@ namespace PluginFuncImpl
 
 	void MiPattern_destroy(MiPattern* p)
 	{ delete p; }
-
-	void MiPattern_play(MiPattern* p, SequenceTrack* track, double startpos)
-	{ p->play(track, startpos); }
-
-	void MiPattern_stop(MiPattern* p, SequenceTrack* track)
-	{ p->stop(track); }
 };
 
 static CosecantAPI::PluginFunctions g_pluginFuncs = {
@@ -55,8 +49,6 @@ static CosecantAPI::PluginFunctions g_pluginFuncs = {
 	PluginFuncImpl::Mi_callScriptFunction,
 	PluginFuncImpl::Mi_createPattern,
 	PluginFuncImpl::MiPattern_destroy,
-	PluginFuncImpl::MiPattern_play,
-	PluginFuncImpl::MiPattern_stop,
 };
 
 COSECANT_EXPORT(CosecantAPI::PluginFunctions*) csc_getPluginFunctions()

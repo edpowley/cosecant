@@ -33,6 +33,28 @@ QDebug& operator<<(QDebug& dbg, const StreamEvent& ev)
 
 void SpatternMachine::work(const WorkContext* ctx)
 {
+	WorkBuffer::Events* events = static_cast<WorkBuffer::Events*>(ctx->ev->hostbuf);
+
+	for (EventStream::const_iterator iter = events->m_data.lowerBound(ctx->firstframe);
+		iter != events->m_data.end() && iter->time == ctx->firstframe; ++iter)
+	{
+		switch (iter->type)
+		{
+		case StreamEventType::patternPlay:
+			playPattern(iter->pattern.track,
+				static_cast<Spattern::Pattern*>(iter->pattern.hostPattern),
+						iter->pattern.pos
+			);
+			break;
+
+		case StreamEventType::patternStop:
+			stopPattern(iter->pattern.track,
+						static_cast<Spattern::Pattern*>(iter->pattern.hostPattern)
+			);
+			break;
+		}
+	}
+
 	Ptr<WorkBuffer::Events> outbuf = dynamic_cast<WorkBuffer::Events*>(ctx->out[0].hostbuf);
 	const TimeInfo& timeinfo = SeqPlay::get().getTimeInfo();
 	double beatsPerFrame = timeinfo.beatsPerSecond / timeinfo.samplesPerSecond;

@@ -90,6 +90,16 @@ protected:
 	bool m_locked;
 };
 
+#define UNIQUE2(xxx,yyy) xxx##yyy
+#define UNIQUE1(xxx,yyy) UNIQUE2(xxx,yyy)
+#define UNIQUE(xxx) UNIQUE1(xxx,__COUNTER__)
+
+#define CSC_LOCK_MUTEX(xxx) QMutexLocker UNIQUE(csc_mutexlock_) (xxx);
+#define CSC_LOCK_READ(xxx)  QReadLocker  UNIQUE(csc_readlock_)  (xxx);
+#define CSC_LOCK_WRITE(xxx) QWriteLocker UNIQUE(csc_writelock_) (xxx);
+
+#define CSC_LOCK_MUTEX_TIMEOUT(xxx,ttt) MutexLockerWithTimeout UNIQUE(csc_mutexlock_) (xxx,ttt);
+
 /////////////////////////////////////////////////////////////////////////////
 
 template<typename T> uint qHash(QList<T> list)

@@ -33,9 +33,6 @@ namespace Spattern
 	public:
 		Pattern(SpatternMachine* mac, double length);
 
-		virtual void play(Sequence::Track* track, double startpos);
-		virtual void stop(Sequence::Track* track);
-
 		void addNote(const Ptr<Note>& note);
 		void removeNote(const Ptr<Note>& note);
 		QMultiMap< double, Ptr<Note> > getNotes() { return m_notes; }

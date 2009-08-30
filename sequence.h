@@ -33,9 +33,6 @@ namespace Sequence
 
 		Machine* m_mac;
 
-		virtual void play(Track* track, double startpos) = 0;
-		virtual void stop(Track* track) = 0;
-
 		virtual void load(SongLoadContext& ctx, const QDomElement& el);
 		virtual QDomElement save(QDomDocument& doc);
 

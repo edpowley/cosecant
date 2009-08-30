@@ -93,7 +93,7 @@ public:
 		if (m_leftChannel  < 0 || m_leftChannel  >= nChans) return;
 		if (m_rightChannel < 0 || m_rightChannel >= nChans) return;
 
-		QMutexLocker lock(&AudioIO::get().m_outmutex);
+		CSC_LOCK_MUTEX(&AudioIO::get().m_outmutex);
 
 		for (int i=ctx->firstframe; i<ctx->lastframe; i++)
 		{

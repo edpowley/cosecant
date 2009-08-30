@@ -349,8 +349,6 @@ namespace CosecantAPI
 		
 		MiPattern* (*Mi_createPattern)(Mi* m, double length);
 		void (*MiPattern_destroy)(MiPattern* p);
-		void (*MiPattern_play)(MiPattern* p, SequenceTrack* track, double startpos);
-		void (*MiPattern_stop)(MiPattern* p, SequenceTrack* track);
 	};
 	
 	////////////////////////////////////////////////////////////////////
@@ -500,17 +498,7 @@ namespace CosecantAPI
 	class MiPattern
 	{
 	public:
-		/** Start this pattern playing.
-			\param track the sequence track on which this pattern plays
-			\param startpos the starting position in beats. Do \em not assume that this is in the range [0, length).
-				Because of the way Cosecant calculates pattern start times, it is more likely to be in the range
-				(-beats_per_sample, length+beats_per_sample), but do not assume this either. */
-		virtual void play(SequenceTrack* track, double startpos) = 0;
-
-		/** Stop this pattern playing.
-			\param track the sequence track on which this pattern plays
-		*/
-		virtual void stop(SequenceTrack* track) = 0;
+		virtual ~MiPattern() {}
 	};
 
 	/** The base class for your machine. */

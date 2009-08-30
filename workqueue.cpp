@@ -547,14 +547,14 @@ void WorkQueue::updateFromSongRouting()
 
 	// Swap the new for the old
 	{
-		QWriteLocker lock(&s_mutex);
+		CSC_LOCK_WRITE(&s_mutex);
 		s = newq;
 	}
 }
 
 void WorkQueue::setNull()
 {
-	QWriteLocker lock(&s_mutex);
+	CSC_LOCK_WRITE(&s_mutex);
 	s = NULL;
 }
 

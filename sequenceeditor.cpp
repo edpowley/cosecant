@@ -176,7 +176,7 @@ void Editor::createRulerSectionItems()
 
 void Editor::onPlayPosTimer()
 {
-	QReadLocker lock(&SeqPlay::get().m_mutex);
+	CSC_LOCK_READ(&SeqPlay::get().m_mutex);
 
 	if (SeqPlay::get().isPlaying())
 	{

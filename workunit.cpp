@@ -33,7 +33,7 @@ void Base::go(int numframes)
 	work(0, numframes);
 
 	{
-		QMutexLocker lock(&m_queue->m_mutex);
+		CSC_LOCK_MUTEX(&m_queue->m_mutex);
 
 		if (!m_dependents.empty())
 		{
@@ -54,8 +54,6 @@ WorkMachine::WorkMachine(WorkQueue* q, const Ptr<Machine>& machine)
 :	Base(q), m_machine(machine), m_inPinBuffer(NULL), m_outPinBuffer(NULL),
 	m_inpins(machine->m_inpins), m_outpins(machine->m_outpins)
 {
-	m_eventWorkBuffer = new WorkBuffer::Events;
-
 	BOOST_FOREACH(Ptr<Sequence::Track>& track, Song::get().m_sequence->m_tracks)
 	{
 		if (track->m_mac == m_machine)
@@ -96,7 +94,7 @@ void WorkMachine::updatePinBuffers()
 	updatePinBuffers(m_outPinBuffer, m_outWorkBuffer);
 	m_workContext.in  = m_inPinBuffer;
 	m_workContext.out = m_outPinBuffer;
-	m_eventPinBuffer = m_eventWorkBuffer->getPinBuffer();
+	m_eventPinBuffer = m_machine->m_eventBuffer->getPinBuffer();
 	m_workContext.ev = &m_eventPinBuffer;
 
 	for (size_t pin=0; pin<m_inpins.size(); pin++)
@@ -132,12 +130,12 @@ void WorkMachine::work(int firstframe, int lastframe)
 	{
 		PerfClockAutoCount clock(&m_machine->m_perfCount);
 
-		MutexLockerWithTimeout lock(&m_machine->m_mutex, 1000);
+		CSC_LOCK_MUTEX_TIMEOUT(&m_machine->m_mutex, 1000);
 
-		m_eventWorkBuffer->clearAll();
+		WorkBuffer::Events* eventBuffer = m_machine->m_eventBuffer;
 
 		{
-			QMutexLocker paramChangeLock(&m_machine->m_paramChangesMutex);
+			CSC_LOCK_MUTEX(&m_machine->m_paramChangesMutex);
 
 			typedef std::pair<ParamTag, double> parampair;
 			BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
@@ -147,7 +145,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 				ev.time = firstframe;
 				ev.paramChange.tag = p.first;
 				ev.paramChange.value = p.second;
-				m_eventWorkBuffer->m_data.insert(ev);
+				eventBuffer->m_data.insert(ev);
 			}
 
 			// Clear parameter changes
@@ -172,7 +170,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 				ev.time = iter->first;
 				ev.paramChange.tag = ppb.tag;
 				ev.paramChange.value = v;
-				m_eventWorkBuffer->m_data.insert(ev);
+				eventBuffer->m_data.insert(ev);
 				ppb.param->setState(v);
 			}
 		}
@@ -180,7 +178,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 		// Find break points (points where something changes)
 		std::set<int> breakpoints;
 		breakpoints.insert(lastframe);
-		m_eventWorkBuffer->getEventBreakPoints(breakpoints);
+		eventBuffer->getEventBreakPoints(breakpoints);
 
 		for (size_t pin=0; pin<m_inpins.size(); pin++)
 		{
@@ -190,35 +188,10 @@ void WorkMachine::work(int firstframe, int lastframe)
 			}
 		}
 
-		static const EventStream emptySpem;
-		const EventStream& spem = SeqPlay::get().m_events.value(m_machine, emptySpem);
-
-		for (EventStream::const_iterator iter = spem.begin(); iter != spem.end(); ++iter)
-		{
-			breakpoints.insert(iter->time);
-		}
-
 		// Do the work
 		int frame = firstframe;
-		EventStream::const_iterator spemIter = spem.begin();
 		BOOST_FOREACH(int breakpoint, breakpoints)
 		{
-			// Seq play events
-			for (; spemIter != spem.end() && spemIter->time == frame; ++spemIter)
-			{
-				const StreamEvent& spe = *spemIter;
-				switch (spe.type)
-				{
-				case StreamEventType::patternPlay:
-					spe.pattern.hostPattern->play(spe.pattern.track, spe.pattern.pos);
-					break;
-
-				case StreamEventType::patternStop:
-					spe.pattern.hostPattern->stop(spe.pattern.track);
-					break;
-				}
-			}
-
 			if (breakpoint != frame)
 			{
 				m_workContext.firstframe = frame;
@@ -228,6 +201,8 @@ void WorkMachine::work(int firstframe, int lastframe)
 
 			frame = breakpoint;
 		}
+
+		eventBuffer->clearAll();
 	}
 	catch (const std::exception& err)
 	{

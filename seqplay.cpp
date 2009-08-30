@@ -20,7 +20,7 @@ SeqPlay::SeqPlay(const Ptr<Sequence::Seq>& seq)
 
 	foreach(const Ptr<Sequence::Track>& track, m_seq->m_tracks)
 	{
-		Ptr<SeqTrackPlay> stp = new SeqTrackPlay(this, track, m_events[track->m_mac]);
+		Ptr<SeqTrackPlay> stp = new SeqTrackPlay(this, track);
 		m_trackPlays.insert(track, stp);
 	}
 
@@ -32,15 +32,15 @@ SeqPlay::SeqPlay(const Ptr<Sequence::Seq>& seq)
 
 void SeqPlay::onInsertTrack(int index, const Ptr<Sequence::Track>& track)
 {
-	QWriteLocker lock(&m_mutex);
+	CSC_LOCK_WRITE(&m_mutex);
 
-	Ptr<SeqTrackPlay> stp = new SeqTrackPlay(this, track, m_events[track->m_mac]);
+	Ptr<SeqTrackPlay> stp = new SeqTrackPlay(this, track);
 	m_trackPlays.insert(track, stp);	
 }
 
 void SeqPlay::onRemoveTrack(int index, const Ptr<Sequence::Track>& track)
 {
-	QWriteLocker lock(&m_mutex);
+	CSC_LOCK_WRITE(&m_mutex);
 
 	m_trackPlays.remove(track);
 }
@@ -50,20 +50,12 @@ void SeqPlay::setPlaying(bool playing)
 	m_playing = playing;
 }
 
-void SeqPlay::preWork()
-{
-	foreach(const Ptr<SeqTrackPlay>& stp, m_trackPlays)
-	{
-		stp->preWork();
-	}
-}
-
 void SeqPlay::work(int firstframe, int lastframe, bool fromScratch)
 {
 	if (!m_playing) return;
 	if (firstframe >= lastframe) return;
 
-	QReadLocker(&m_seq->m_mutex);
+	CSC_LOCK_READ(&m_seq->m_mutex);
 
 	double nextpos = m_playPos + (lastframe - firstframe) * m_beatsPerSample;
 	
@@ -83,24 +75,13 @@ void SeqPlay::work(int firstframe, int lastframe, bool fromScratch)
 		stp->work(firstframe, lastframe, fromScratch);
 	}
 
-#ifdef _DEBUG
-	foreach(const EventStream& spem, m_events)
-	{
-		if (!spem.empty())
-		{
-			qDebug() << "Seqplay eventstream is not empty";
-			break;
-		}
-	}
-#endif
-
 	m_playPos = nextpos;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-SeqTrackPlay::SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, EventStream& events)
-: m_sp(sp), m_track(track), m_events(events), m_workFromScratch(true)
+SeqTrackPlay::SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track)
+: m_sp(sp), m_track(track), m_workFromScratch(true)
 {
 	connect( m_track, SIGNAL(signalAddClip(const Ptr<Sequence::Clip>&)),
 		this, SLOT(onAddClip(const Ptr<Sequence::Clip>&)) );
@@ -110,7 +91,7 @@ SeqTrackPlay::SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, Event
 
 void SeqTrackPlay::onAddClip(const Ptr<Sequence::Clip>& clip)
 {
-	QWriteLocker(&m_sp->m_mutex);
+	CSC_LOCK_WRITE(&m_sp->m_mutex);
 
 	if (m_sp->m_playPos >= clip->m_startTime && m_sp->m_playPos < clip->getEndTime())
 	{
@@ -118,45 +99,37 @@ void SeqTrackPlay::onAddClip(const Ptr<Sequence::Clip>& clip)
 	}
 	else
 	{
-		QReadLocker(&m_sp->m_seq->m_mutex);
+		CSC_LOCK_READ(&m_sp->m_seq->m_mutex);
 		m_iter = m_track->getClips().lowerBound(m_sp->m_playPos);
 	}
 }
 
 void SeqTrackPlay::onRemoveClip(const Ptr<Sequence::Clip>& clip)
 {
-	QWriteLocker(&m_sp->m_mutex);
+	CSC_LOCK_WRITE(&m_sp->m_mutex);
+	CSC_LOCK_MUTEX_TIMEOUT(&m_track->m_mac->m_mutex, 1000);
 
 	if (m_playingClip == clip)
 	{
 		StreamEvent spe;
 		spe.type = StreamEventType::patternStop;
+		spe.time = 0;
 		spe.pattern.track = m_track;
 		spe.pattern.hostPattern = m_playingClip->m_pattern;
-		m_pendingEvents.append(spe);
+		m_track->m_mac->m_eventBuffer->m_data.insert(spe);
 		m_playingClip = NULL;
 	}
 
-	QReadLocker(&m_sp->m_seq->m_mutex);
+	CSC_LOCK_READ(&m_sp->m_seq->m_mutex);
 	m_iter = m_track->getClips().lowerBound(m_sp->m_playPos);
-}
-
-void SeqTrackPlay::preWork(int firstframe)
-{
-	m_events.clear();
-	foreach(const StreamEvent& spe, m_pendingEvents)
-	{
-		StreamEvent ev(spe);
-		ev.time = firstframe;
-		m_events.insert(ev);
-	}
-	m_pendingEvents.clear();
 }
 
 void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 {
 	double playpos = m_sp->m_playPos;
 	double nextpos = playpos + (lastframe - firstframe) * m_sp->m_beatsPerSample;
+
+	EventStream& events = m_track->m_mac->m_eventBuffer->m_data;
 
 	if (fromScratch || m_workFromScratch)
 	{
@@ -169,7 +142,7 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 			spe.time = firstframe;
 			spe.pattern.track = m_track;
 			spe.pattern.hostPattern = m_playingClip->m_pattern;
-			m_events.insert(spe);
+			events.insert(spe);
 		}
 		m_playingClip = NULL;
 
@@ -186,7 +159,7 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 			spe.time = f;
 			spe.pattern.track = m_track;
 			spe.pattern.hostPattern = m_playingClip->m_pattern;
-			m_events.insert(spe);
+			events.insert(spe);
 			m_playingClip = NULL;
 
 			playpos += (f - firstframe) * m_sp->m_beatsPerSample;
@@ -218,7 +191,7 @@ void SeqTrackPlay::work(int firstframe, int lastframe, bool fromScratch)
 			spe.pattern.track = m_track;
 			spe.pattern.hostPattern = m_playingClip->m_pattern;
 			spe.pattern.pos = m_playingClip->m_begin + (playpos - m_iter.key());
-			m_events.insert(spe);
+			events.insert(spe);
 
 			firstframe = f;
 			++ m_iter;

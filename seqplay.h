@@ -11,13 +11,9 @@ class SeqTrackPlay : public Object
 	Q_OBJECT
 
 public:
-	SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track, EventStream& events);
+	SeqTrackPlay(SeqPlay* sp, const Ptr<Sequence::Track>& track);
 
-	void preWork(int firstframe = 0);
 	void work(int firstframe, int lastframe, bool fromScratch);
-
-	EventStream& m_events;
-	QList<CosecantAPI::StreamEvent> m_pendingEvents;
 
 protected slots:
 	void onAddClip(const Ptr<Sequence::Clip>& clip);
@@ -56,10 +52,8 @@ public:
 
 	void setPlaying(bool playing);
 
-	void preWork();
 	void work(int firstframe, int lastframe, bool fromScratch);
 
-	QHash< Ptr<Machine>, EventStream > m_events;
 	QHash< Ptr<Sequence::Track>, Ptr<SeqTrackPlay> > m_trackPlays;
 
 public slots:

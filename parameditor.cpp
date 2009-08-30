@@ -141,7 +141,7 @@ void ScalarSlider::onParamPinRemoved()
 
 void ScalarSlider::initFromState()
 {
-	QMutexLocker lock(&m_param->getMachine()->m_mutex);
+	CSC_LOCK_MUTEX(&m_param->getMachine()->m_mutex);
 	m_valueChanging = true;
 	setValue(valueToInt(m_param->getState()));
 	m_valueChanging = false;
