@@ -145,19 +145,17 @@ protected:
 
 void MachineItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 {
-	QGraphicsRectItem::mousePressEvent(ev);
-
 	if (m_mouseMode == none)
 	{
 		switch (ev->button())
 		{
 		case Qt::LeftButton:
 			m_mouseMode = leftClick;
+			QGraphicsRectItem::mousePressEvent(ev);
 			break;
 
 		case Qt::RightButton:
 			m_mouseMode = rightClick;
-			ev->accept();
 			if (!isSelected())
 			{
 				if (!(ev->modifiers() & Qt::ControlModifier))
@@ -166,6 +164,9 @@ void MachineItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 			}
 
 			break;
+
+		default:
+			ev->ignore();
 		}
 	}
 }
@@ -195,21 +196,19 @@ void MachineItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
 
 void MachineItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 {
-	QGraphicsRectItem::mouseReleaseEvent(ev);
-
 	switch (m_mouseMode)
 	{
 	case leftClick:
 		if (ev->button() == Qt::LeftButton)
 		{
 			m_mouseMode = none;
+			QGraphicsRectItem::mouseReleaseEvent(ev);
 		}
 		break;
 
 	case rightClick:
 		if (ev->button() == Qt::RightButton)
 		{
-			ev->accept();
 			m_mouseMode = none;
 		}
 		break;
@@ -514,6 +513,7 @@ void MachineItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
 	}
 	else if (sel.length() > 1)
 	{
+		qDebug() << "TODO: ctx menu for multi machines";
 	}
 }
 
