@@ -24,6 +24,44 @@ void Editor::onRemoveConnection(const Ptr<Connection>& conn)
 
 /////////////////////////////////////////////////////////////////////////////////
 
+class DisconnectCommand : public QUndoCommand
+{
+public:
+	DisconnectCommand(const Ptr<Routing>& routing, const Ptr<Connection>& conn)
+		: m_routing(routing), m_conn(conn), QUndoCommand(Editor::tr("disconnect"))
+	{
+	}
+
+	virtual void redo()
+	{
+		m_routing->removeConnection(m_conn);
+	}
+
+	virtual void undo()
+	{
+		m_routing->addConnection(m_conn);
+	}
+
+protected:
+	Ptr<Routing> m_routing;
+	Ptr<Connection> m_conn;
+};
+
+void ConnectionItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* ev)
+{
+	QMenu menu;
+
+	QAction* actDisconnect = menu.addAction(tr("&Disconnect"));
+	
+	QAction* action = menu.exec(ev->screenPos());
+	if (action == actDisconnect)
+	{
+		theUndo().push(new DisconnectCommand(m_editor->getRouting(), m_conn));
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+
 class AddConnectionCommand : public QUndoCommand
 {
 public:

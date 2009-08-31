@@ -119,6 +119,8 @@ namespace RoutingEditor
 		Ptr<Connection> m_conn;
 		virtual Ptr<Pin> getPin1() { return m_conn->getPin1(); }
 		virtual Ptr<Pin> getPin2() { return m_conn->getPin2(); }
+
+		virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent* ev);
 	};
 
 	class NewConnectionItem : public ConnectionLineItem
