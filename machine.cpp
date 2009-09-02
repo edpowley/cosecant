@@ -15,21 +15,13 @@
 Machine::Machine()
 : m_pos(0,0), m_halfsize(40,25), m_name("Unnamed"), m_parameditor(NULL),
 m_routing(NULL), m_perfCount(0),
-m_dead(false), m_mi(NULL), m_scriptObject(QScriptValue::NullValue),
+m_dead(false), m_mi(NULL),
 m_eventBuffer(new WorkBuffer::Events)
 {
 }
 
 Machine::~Machine()
 {
-}
-
-static QScriptValue MachineScriptFunctionCaller(QScriptContext* ctx, QScriptEngine* eng)
-{
-	Machine* mac = dynamic_cast<Machine*>(ctx->thisObject().property("cscMachine").toQObject());
-	ASSERT(mac != NULL);
-	int id = ctx->callee().data().toInt32();
-	return mac->callScriptFunction(ctx, eng, id);
 }
 
 void Machine::init()
@@ -44,49 +36,7 @@ void Machine::init()
 	initPins(Pin::in,  m_info->inPins);
 	initPins(Pin::out, m_info->outPins);
 
-	if (m_info->script)
-	{
-		QScriptEngine* se = Application::get().getScriptEngine();
-		se->pushContext();
-
-		QScriptValue ctor = se->evaluate(
-			m_info->script,
-			QString("<Machine 0x%1 script>").arg(reinterpret_cast<quintptr>(this), 0, 16) );
-		m_scriptObject = ctor.construct();
-
-		if (!m_scriptObject.isObject())
-			m_scriptObject = QScriptValue::NullValue;
-
-		se->clearExceptions();
-
-		if (m_scriptObject.isObject())
-		{
-			m_scriptFunctionObject = se->newObject();
-			m_scriptObject.setProperty("cscFunctions", m_scriptFunctionObject,
-				QScriptValue::ReadOnly | QScriptValue::Undeletable);
-			m_scriptFunctionObject.setProperty("cscMachine", se->newQObject(this),
-				QScriptValue::ReadOnly | QScriptValue::Undeletable);
-		}
-
-		se->popContext();
-	}
-
-	qDebug() << "m_scriptObject =" << m_scriptObject.toString();
-
 	initImpl();
-}
-
-void Machine::addScriptFunction(const QString& name, int id)
-{
-	if (m_scriptFunctionObject.isObject())
-	{
-		QScriptEngine* se = Application::get().getScriptEngine();
-
-		QScriptValue func = se->newFunction(MachineScriptFunctionCaller);
-		func.setData(id);
-
-		m_scriptFunctionObject.setProperty(name, func, QScriptValue::ReadOnly | QScriptValue::Undeletable);
-	}
 }
 
 void Machine::setPos(const QPointF& newpos)
@@ -164,29 +114,7 @@ void Machine::removePattern(const Ptr<Sequence::Pattern>& pat)
 
 QWidget* Machine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern)
 {
-	if (m_scriptObject.isObject())
-	{
-		QScriptEngine* se = m_scriptObject.engine();
-
-		QScriptValue peCtor = m_scriptObject.property("cscPatternEditor");
-		if (!peCtor.isValid()) throw Error("Script object has no cscPatternEditor property");
-
-		QScriptValue patv = se->newQObject(
-			pattern, QScriptEngine::QtOwnership, QScriptEngine::ExcludeDeleteLater);
-
-		QScriptValue pev = peCtor.construct(QScriptValueList() << m_scriptObject << patv);
-		if (pev.engine()->hasUncaughtException())
-		{
-			throw Error(QString("Uncaught exception in cscPatternEditor:\n%1").arg(pev.toString()));
-		}
-
-		QWidget* pew = qscriptvalue_cast<QWidget*>(pev);
-		if (!pew) throw Error("cscPatternEditor is not a constructor for a QWidget-derived class");
-
-		return pew;
-	}
-
-	throw Error("This machine has no script object");
+	return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////

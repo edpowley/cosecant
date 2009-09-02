@@ -110,39 +110,6 @@ void Mac::work(const WorkContext* ctx)
 		m_dll->m_funcs->Mi_work(m_mi, ctx);
 }
 
-QScriptValue Mac::callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id)
-{
-	if (m_dll->m_funcs->Mi_callScriptFunction)
-	{
-		QList<QScriptValue> args;
-		for (int a=0; a<ctx->argumentCount(); ++a)
-			args << ctx->argument(a);
-
-		QVector<const ScriptValue*> argptrs;
-		foreach(const QScriptValue& v, args)
-		{
-			argptrs << &v;
-		}
-		argptrs << NULL;
-
-		QScriptValue* pret = m_dll->m_funcs->Mi_callScriptFunction(m_mi, id, argptrs.data(), args.length());
-		QScriptValue ret;
-		if (pret)
-		{
-			ret = *pret;
-			delete pret;
-		}
-		else
-		{
-			ret = QScriptValue::NullValue;
-		}
-
-		return ret;
-	}
-	
-	return QScriptValue::NullValue;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 Ptr<Sequence::Pattern> Mac::createPatternImpl(double length)

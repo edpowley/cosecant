@@ -55,7 +55,6 @@ namespace CosecantAPI
 #	ifndef COSECANT_API_HOST
 		class MiFactoryList;
 		class HostMachine;
-		class ScriptValue;
 		class HostPattern;
 		class SequenceTrack;
 		class HostPinBuffer;
@@ -308,10 +307,9 @@ namespace CosecantAPI
 		ParamGroupInfo params;
 		const PinInfo* const* inPins;
 		const PinInfo* const* outPins;
-		const char* script;
 
 		MachineInfo() : defaultName(NULL), typeHint(MachineTypeHint::none), flags(0),
-			inPins(NULL), outPins(NULL), script(NULL) {}
+			inPins(NULL), outPins(NULL) {}
 	};
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -357,8 +355,6 @@ namespace CosecantAPI
 		
 		void (*Mi_work)(Mi* m, const WorkContext* ctx);
 		
-		ScriptValue* (*Mi_callScriptFunction)(Mi* m, int32_t id, const ScriptValue** args, int32_t numargs);
-		
 		MiPattern* (*Mi_createPattern)(Mi* m, double length);
 		void (*MiPattern_destroy)(MiPattern* p);
 	};
@@ -391,13 +387,6 @@ namespace CosecantAPI
 	/** \fn const TimeInfo* (*HostFunctions::getTimeInfo)(HostMachine*)
 	Get the TimeInfo structure associated with this machine.
 	*/
-	/** \fn void (*HostFunctions::registerScriptFunction)(HostMachine*, const char* name, int32_t id)
-	Register a function that can be called from your machine's script. A function named \p name will be
-	added to your main script object's \p cscFunctions member; calling this function will call your
-	Mi::callScriptFunction to be called.
-	\param name the name of the function. This must be a valid QtScript identifier.
-	\param id the integer identifier passed to Mi::callScriptFunction
-	*/
 	/** \fn cbool (*HostFunctions::lockMutex)(HostMachine*)
 	Lock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
 	\returns \p ctrue if the mutex was locked, \p cfalse if the lock timed out.
@@ -405,29 +394,6 @@ namespace CosecantAPI
 	/** \fn cbool (*HostFunctions::unlockMutex)(HostMachine*)
 	Unlock the machine's mutex. It is recommended that you use the MutexLock class instead of this function.
 	\returns \p ctrue
-	*/
-	/** \fn const ScriptValue* (*HostFunctions::ScriptValue_getArrayElement)(const ScriptValue* sv, uint32_t index)
-	Get the array element at the specified index. Note that you take ownership of the return value,
-	so it is your responsibility to call ScriptValue_destroy() when you are finished with it.
-	\param sv the array
-	\param index the index into the array
-	\returns the index'th element of sv. If there is no such element, an invalid value is returned.
-	*/
-	/** \fn ScriptValue* (*HostFunctions::ScriptValue_createArray)(uint32_t length)
-	Create a new QtScript Array object.
-	\param length the initial length (number of elements) of the array. Note that the array can be expanded
-		by inserting elements beyond its current length. If you do not know the array length in advance, it
-		is acceptable to pass 0 here.
-	\returns a pointer to the new object, which you own.
-	*/
-	/** \fn void (*HostFunctions::ScriptValue_setArrayElement)(ScriptValue* arr, uint32_t index, ScriptValue* value, cbool takeOwnership)
-	Set the array element at the specified index. \p value is copied and the copy is inserted into the array,
-	so you may safely destroy \p value after calling this function. In fact, the \p takeOwnership parameter
-	allows this function to destroy \p value so you don't have to.
-	\param arr an array, previously created with ScriptValue_createArray()
-	\param index the index into the array
-	\param value the new value of the index'th element of arr
-	\param takeOwnership if \p ctrue, this function will destroy \p value before returning.
 	*/
 	struct HostFunctions
 	{
@@ -443,9 +409,7 @@ namespace CosecantAPI
 			const char* id, const char* desc, void* user, uint32_t userSize);
 
 		const TimeInfo* (*getTimeInfo)(HostMachine*);
-		
-		void (*registerScriptFunction)(HostMachine*, const char* name, int32_t id);
-		
+				
 		cbool (*lockMutex)(HostMachine*);
 		cbool (*unlockMutex)(HostMachine*);
 
@@ -467,35 +431,6 @@ namespace CosecantAPI
 			const char* id, const char* name,
 			void (*callback)(void* user, const PathChar* path),
 			void* user);
-
-		cbool (*ScriptValue_isNull)(const ScriptValue*);
-		cbool (*ScriptValue_isValid)(const ScriptValue*);
-
-		cbool (*ScriptValue_isNumber)(const ScriptValue*);
-		int32_t (*ScriptValue_toInt)(const ScriptValue*);
-		double (*ScriptValue_toDouble)(const ScriptValue*);
-
-		cbool (*ScriptValue_isString)(const ScriptValue*);
-		int32_t (*ScriptValue_toString)(const ScriptValue*, char* buf, int32_t bufsize);
-
-		cbool (*ScriptValue_isArray)(const ScriptValue*);
-		uint32_t (*ScriptValue_getArrayLength)(const ScriptValue*);
-
-		const ScriptValue* (*ScriptValue_getArrayElement)(const ScriptValue* sv, uint32_t index);
-
-		Mi* (*ScriptValue_toMi)(const ScriptValue*);
-		MiPattern* (*ScriptValue_toMiPattern)(const ScriptValue*);
-
-		ScriptValue* (*ScriptValue_createNull)();
-		ScriptValue* (*ScriptValue_createInvalid)();
-		ScriptValue* (*ScriptValue_createInt)(int32_t v);
-		ScriptValue* (*ScriptValue_createDouble)(double v);
-		ScriptValue* (*ScriptValue_createString)(const char* v);
-		void (*ScriptValue_destroy)(const ScriptValue*);
-
-		ScriptValue* (*ScriptValue_createArray)(uint32_t length);
-		void (*ScriptValue_setArrayElement)(
-			ScriptValue* arr, uint32_t index, ScriptValue* value, cbool takeOwnership);
 	};
 	
 	/** A global instance of HostFunctions, initialised when your plugin is loaded.
@@ -524,18 +459,6 @@ namespace CosecantAPI
 		virtual void init() {}
 
 		virtual void work(const WorkContext* ctx) = 0;
-
-		/** Your machine's script can call this.
-			\param id the integer function id, as passed to HostFunctions::registerScriptFunction
-			\param args the arguments passed to the function. This array is NULL-terminated, i.e.
-				<tt>args[numargs] == NULL</tt>. The host owns the arguments; you should not store or destroy them.
-			\param numargs the number of arguments passed to the function
-			\returns a new script value, probably created by one of the \p ScriptValue_create functions in
-				HostFunctions. The host takes ownership of the return value and destroys it, so you should not
-				store it. Returning a \p NULL pointer is the same as returning a null script value.
-		*/
-		virtual ScriptValue* callScriptFunction(int32_t id, const ScriptValue** args, int32_t numargs)
-		{ return NULL; }
 
 		virtual MiPattern* createPattern(double length) { return NULL; }
 

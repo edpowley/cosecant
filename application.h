@@ -18,11 +18,6 @@ public:
 
 	CosecantMainWindow* getMainWindow() { return m_mainWindow; }
 
-	QScriptEngine* getScriptEngine() { return m_scriptEngine; }
-	QScriptEngineDebugger* getScriptDebugger() { return m_scriptDebugger; }
-	void attachScriptDebugger() { m_scriptDebugger->attachTo(m_scriptEngine); }
-	void detachScriptDebugger() { m_scriptDebugger->detach(); }
-
 	static PrefsVar_String s_prefLanguage;
 
 	void pushStatusMsg(const QString& msg);
@@ -33,12 +28,7 @@ public:
 protected slots:
 	void onAboutToQuit();
 
-	void onScriptSuspended();
-	void onScriptResumed();
-
 protected:
-	QScriptEngine* m_scriptEngine;
-	QScriptEngineDebugger* m_scriptDebugger;
 	CosecantMainWindow* m_mainWindow;
 	QSplashScreen* m_splashScreen;
 

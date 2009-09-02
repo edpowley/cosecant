@@ -41,8 +41,6 @@ namespace DllMachine
 
 		virtual void work(const WorkContext* ctx);
 
-		virtual QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id);
-
 	protected:
 		Ptr<MacDll> m_dll;
 		Mi* m_mi;

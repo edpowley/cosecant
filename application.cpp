@@ -26,7 +26,7 @@ Application& Application::initSingleton(int& argc, char** argv)
 
 Application::Application(int& argc, char** argv)
 :	QApplication(argc, argv),
-	m_scriptEngine(NULL), m_scriptDebugger(NULL), m_mainWindow(NULL), m_splashScreen(NULL)
+	m_mainWindow(NULL), m_splashScreen(NULL)
 {
 }
 
@@ -104,12 +104,6 @@ void Application::init()
 	Theme::initSingleton();
 	popStatusMsg();
 
-	pushStatusMsg(tr("Initialising script engine"));
-	setupScriptEngine();
-	connect( m_scriptDebugger, SIGNAL(evaluationSuspended()), this, SLOT(onScriptSuspended()) );
-	connect( m_scriptDebugger, SIGNAL(evaluationResumed()),   this, SLOT(onScriptResumed()) );
-	popStatusMsg();
-
 	pushStatusMsg(tr("Opening audio device"));
 	setupAudio();
 	popStatusMsg();
@@ -126,10 +120,6 @@ void Application::onAboutToQuit()
 {
 	qDebug() << "About to quit";
 	AudioIO::killSingleton();
-
-	detachScriptDebugger();
-	delete m_scriptDebugger; m_scriptDebugger = NULL;
-	delete m_scriptEngine; m_scriptEngine = NULL;
 }
 
 void Application::setupI18n()
@@ -166,51 +156,6 @@ void Application::setupAudio()
 		msg.setInformativeText(err.msg());
 		msg.exec();
 	}
-}
-
-static QScriptValue myprint(QScriptContext* ctx, QScriptEngine* eng)
-{
-	QString str;
-
-	for (int i=0; i<ctx->argumentCount(); i++)
-	{
-		if (i>0) str.append(" ");
-		str.append(ctx->argument(i).toString());
-	}
-
-	qDebug(str.toAscii());
-
-	return QScriptValue::UndefinedValue;
-}
-
-void Application::setupScriptEngine()
-{
-	m_scriptEngine = new QScriptEngine(this);
-	m_scriptDebugger = new QScriptEngineDebugger(this);
-
-	QStringList extensions = QString("qt.core qt.gui qt.xml").split(' ');
-	foreach(QString extension, extensions)
-	{
-		QScriptValue v = m_scriptEngine->importExtension(extension);
-		if (m_scriptEngine->hasUncaughtException())
-		{
-			qDebug() << "Failed to import extension" << extension << ":" << v.toString();
-		}
-	}
-
-	attachScriptDebugger();
-
-	m_scriptEngine->globalObject().setProperty("print", m_scriptEngine->newFunction(myprint));
-}
-
-void Application::onScriptSuspended()
-{
-	m_mainWindow->setEnabled(false);
-}
-
-void Application::onScriptResumed()
-{
-	m_mainWindow->setEnabled(true);
 }
 
 void Application::textMessageHandler(QtMsgType type, const char *msg)

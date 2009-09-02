@@ -29,9 +29,6 @@ namespace PluginFuncImpl
 	void Mi_work(Mi* m, const WorkContext* ctx)
 	{ m->work(ctx); }
 
-	ScriptValue* Mi_callScriptFunction(Mi* m, int32_t id, const ScriptValue** args, int32_t numargs)
-	{ return m->callScriptFunction(id, args, numargs); }
-	
 	MiPattern* Mi_createPattern(Mi* m, double length)
 	{ return m->createPattern(length); }
 
@@ -46,7 +43,6 @@ static CosecantAPI::PluginFunctions g_pluginFuncs = {
 	PluginFuncImpl::Mi_getInfo,
 	PluginFuncImpl::Mi_init,
 	PluginFuncImpl::Mi_work,
-	PluginFuncImpl::Mi_callScriptFunction,
 	PluginFuncImpl::Mi_createPattern,
 	PluginFuncImpl::MiPattern_destroy,
 };

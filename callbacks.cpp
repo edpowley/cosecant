@@ -57,11 +57,6 @@ static const TimeInfo* getTimeInfo(HostMachine* mac)
 	return &SeqPlay::get().getTimeInfo();
 }
 
-static void registerScriptFunction(HostMachine* mac, const char* name, int32_t id)
-{
-	mac->addScriptFunction(name, id);
-}
-
 static cbool lockMutex(HostMachine* mac)
 {
 	return mac->m_mutex.tryLock(1000) ? ctrue : cfalse;
@@ -192,116 +187,6 @@ static void iteratePaths(const char* id, const char* name,
 	}
 }
 
-static cbool ScriptValue_isNull(const ScriptValue* v)
-{
-	return v->isNull() ?ctrue:cfalse;
-}
-
-static cbool ScriptValue_isValid(const ScriptValue* v)
-{
-	return v->isValid() ?ctrue:cfalse;
-}
-
-static cbool ScriptValue_isNumber(const ScriptValue* v)
-{
-	return v->isNumber() ?ctrue:cfalse;
-}
-
-static int32_t ScriptValue_toInt(const ScriptValue* v)
-{
-	return v->toInt32();
-}
-
-static double ScriptValue_toDouble(const ScriptValue* v)
-{
-	return v->toNumber();
-}
-
-static cbool ScriptValue_isString(const ScriptValue* v)
-{
-	return v->isString() ?ctrue:cfalse;
-}
-
-static int32_t ScriptValue_toString(const ScriptValue* v, char* buf, int32_t bufsize)
-{
-	return returnString(v->toString(), buf, bufsize);
-}
-
-static cbool ScriptValue_isArray(const ScriptValue* v)
-{
-	return v->isArray() ?ctrue:cfalse;
-}
-
-static uint32_t ScriptValue_getArrayLength(const ScriptValue* v)
-{
-	return v->property("length").toInt32();
-}
-
-static const ScriptValue* ScriptValue_getArrayElement(const ScriptValue* v, uint32_t index)
-{
-	return new QScriptValue(v->property(index));
-}
-
-static Mi* ScriptValue_toMi(const ScriptValue* v)
-{
-	return NULL;
-}
-
-static MiPattern* ScriptValue_toMiPattern(const ScriptValue* v)
-{
-	QObject* qo = v->toQObject();
-	if (qo)
-	{
-		if (DllMachine::Pattern* dllpat = dynamic_cast<DllMachine::Pattern*>(qo))
-		{
-			return dllpat->getMiPattern();
-		}
-	}
-
-	return NULL;
-}
-
-static ScriptValue* ScriptValue_createNull()
-{
-	return new QScriptValue(QScriptValue::NullValue);
-}
-
-static ScriptValue* ScriptValue_createInvalid()
-{
-	return new QScriptValue(QScriptValue::UndefinedValue);
-}
-
-static ScriptValue* ScriptValue_createInt(int32_t v)
-{
-	return new QScriptValue(v);
-}
-
-static ScriptValue* ScriptValue_createDouble(double v)
-{
-	return new QScriptValue(v);
-}
-
-static ScriptValue* ScriptValue_createString(const char* v)
-{
-	return new QScriptValue(v);
-}
-
-static void ScriptValue_destroy(const ScriptValue* v)
-{
-	delete v;
-}
-
-static ScriptValue* ScriptValue_createArray(uint32_t length)
-{
-	return new QScriptValue(Application::get().getScriptEngine()->newArray(length));
-}
-
-static void ScriptValue_setArrayElement(ScriptValue* arr, uint32_t index, ScriptValue* value, cbool takeOwnership)
-{
-	arr->setProperty(index, *value);
-	if (takeOwnership) delete value;
-}
-
 ///////////////////////////////////////////////////////////////////////////
 
 static HostFunctions g_hostFuncs =
@@ -313,7 +198,6 @@ static HostFunctions g_hostFuncs =
 	toUtf8,
 	registerMiFactory,
 	getTimeInfo,
-	registerScriptFunction,
 	lockMutex,
 	unlockMutex,
 	addParamChangeEvent,
@@ -329,26 +213,6 @@ static HostFunctions g_hostFuncs =
 	EventStreamIter_deref,
 	EventStreamIter_equal,
 	iteratePaths,
-	ScriptValue_isNull,
-	ScriptValue_isValid,
-	ScriptValue_isNumber,
-	ScriptValue_toInt,
-	ScriptValue_toDouble,
-	ScriptValue_isString,
-	ScriptValue_toString,
-	ScriptValue_isArray,
-	ScriptValue_getArrayLength,
-	ScriptValue_getArrayElement,
-	ScriptValue_toMi,
-	ScriptValue_toMiPattern,
-	ScriptValue_createNull,
-	ScriptValue_createInvalid,
-	ScriptValue_createInt,
-	ScriptValue_createDouble,
-	ScriptValue_createString,
-	ScriptValue_destroy,
-	ScriptValue_createArray,
-	ScriptValue_setArrayElement,
 };
 
 HostFunctions* CosecantAPI::g_host = &g_hostFuncs;

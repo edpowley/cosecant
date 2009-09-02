@@ -181,10 +181,6 @@ public:
 
 	virtual QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
 
-	void addScriptFunction(const QString& name, int id);
-	virtual QScriptValue callScriptFunction(QScriptContext* ctx, QScriptEngine* eng, int id)
-	{ return QScriptValue::NullValue; }
-
 protected:
 	CosecantAPI::Mi* m_mi;
 
@@ -198,8 +194,6 @@ protected:
 	QString m_id;
 	QString m_name;
 	CosecantAPI::MachineTypeHint::e m_colorhint;
-
-	QScriptValue m_scriptObject, m_scriptFunctionObject;
 
 	virtual Ptr<Sequence::Pattern> createPatternImpl(double length) { return NULL; }
 

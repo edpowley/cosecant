@@ -26,8 +26,6 @@ namespace CosecantAPI
 
 	typedef Machine HostMachine;
 	
-	typedef QScriptValue ScriptValue;
-	
 	typedef Sequence::Pattern HostPattern;
 	typedef Sequence::Track SequenceTrack;
 
