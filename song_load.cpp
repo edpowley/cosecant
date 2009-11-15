@@ -15,7 +15,7 @@ public:
 	SongLoadFile(const QString& path)
 	{
 		m_p = unzOpen2(path.toUtf8(), &g_zipFileFuncs);
-		if (!m_p) throw SongLoadError(Song::tr("Unable to read file '%1'").arg(path));
+		if (!m_p) throw SongLoadError(Song::tr("unzOpen2 failed to read file '%1'. The file may be missing, inaccessible or corrupted.").arg(path));
 	}
 
 	~SongLoadFile()
@@ -69,6 +69,9 @@ protected:
 
 void Song::load(const QString& filepath)
 {
+	m_savePath = QString();
+	signalSavePathChanged(m_savePath);
+
 	SongLoadFile f(filepath);
 
 	QString errorMsg; int errorLine, errorColumn;
@@ -94,6 +97,9 @@ void Song::load(const QString& filepath)
 	{
 		throw SongLoadError(QString("%1: %2").arg(typeid(err).name()).arg(err.what()));
 	}
+
+	m_savePath = filepath;
+	signalSavePathChanged(m_savePath);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////

@@ -60,10 +60,14 @@ public:
 
 	void load(const QString& filepath);
 	void save(const QString& filepath);
+	const QString& getSavePath() { return m_savePath; }
 
 	void doOpen();
 	void doSave();
 	void doSaveAs();
+
+signals:
+	void signalSavePathChanged(const QString& path);
 
 public slots:
 	void updateWorkQueue();

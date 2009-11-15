@@ -21,7 +21,11 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	ASSERT(s_singleton == NULL);
 	s_singleton = this;
 
-	setWindowTitle(tr("BTDSys Cosecant %1").arg(getVersionString()));
+	updateTitle();
+	connect(&Song::get(), SIGNAL(signalSavePathChanged(const QString&)),
+		this, SLOT(updateTitle()) );
+	connect(&Song::get().m_undo, SIGNAL(cleanChanged(bool)),
+		this, SLOT(updateTitle()) );
 
 	QAction* undoaction = theUndo().createUndoAction(this);
 	undoaction->setShortcut(tr("Ctrl+Z", "shortcut for edit/undo"));
@@ -100,6 +104,23 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 CosecantMainWindow::~CosecantMainWindow()
 {
 
+}
+
+
+
+void CosecantMainWindow::updateTitle()
+{
+	QString path = Song::get().getSavePath();
+	if (path.isNull()) path = tr("<untitled>");
+
+	bool clean = Song::get().m_undo.isClean();
+
+	//: %1 = version, %2 = song file name, %3 = if changed since last save then '*' else ''
+	setWindowTitle(tr("%2%3 - BTDSys Cosecant %1")
+		.arg(getVersionString())
+		.arg(QDir(path).dirName())
+		.arg(clean ? "" : "*")
+	);
 }
 
 void CosecantMainWindow::addTab(MWTab* tab)
@@ -184,28 +205,61 @@ void CosecantMainWindow::on_actionTransportRecord_toggled(bool checked)
 
 void CosecantMainWindow::on_actionFileOpen_triggered()
 {
-	qDebug() << "open";
+	QString filename = QFileDialog::getOpenFileName(this,
+		tr("Select song file to open"), // caption
+		Song::get().getSavePath(), // dir
+		"Cosecant song files (*.csc);;All files (*)" // filters
+	);
 
-	try
+	if (!filename.isNull())
 	{
-		Song::get().load("aaaaa_testsong.zip");
-	}
-	catch (const SongLoadError& err)
-	{
-		QMessageBox::critical(this, QString(), err.msg());
+		try
+		{
+			Song::get().load(filename);
+		}
+		catch (const SongLoadError& err)
+		{
+			QMessageBox::critical(this, QString(), err.msg());
+		}
 	}
 }
 
 void CosecantMainWindow::on_actionFileSave_triggered()
 {
-	qDebug() << "save";
-
-	try
+	if (Song::get().getSavePath().isNull())
 	{
-		Song::get().save("aaaaa_testsong.zip");
+		on_actionFileSaveAs_triggered();
 	}
-	catch (const SongSaveError& err)
+	else
 	{
-		QMessageBox::critical(this, QString(), err.msg());
+		try
+		{
+			Song::get().save(Song::get().getSavePath());
+		}
+		catch (const SongSaveError& err)
+		{
+			QMessageBox::critical(this, QString(), err.msg());
+		}
+	}
+}
+
+void CosecantMainWindow::on_actionFileSaveAs_triggered()
+{
+	QString filename = QFileDialog::getSaveFileName(this,
+		tr("Select song file to save"), // caption
+		Song::get().getSavePath(), // dir
+		"Cosecant song files (*.csc);;All files (*)" // filters
+	);
+
+	if (!filename.isNull())
+	{
+		try
+		{
+			Song::get().save(filename);
+		}
+		catch (const SongSaveError& err)
+		{
+			QMessageBox::critical(this, QString(), err.msg());
+		}
 	}
 }

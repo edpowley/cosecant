@@ -20,6 +20,8 @@ public:
 protected slots:
 	void onTabChanged(int index);
 
+	void updateTitle();
+
 	// Auto connected slots
 	void on_actionSettings_triggered();
 	void on_actionAbout_triggered();
@@ -31,6 +33,7 @@ protected slots:
 
 	void on_actionFileOpen_triggered();
 	void on_actionFileSave_triggered();
+	void on_actionFileSaveAs_triggered();
 
 private:
 	static CosecantMainWindow* s_singleton;
@@ -43,6 +46,7 @@ private:
 
 	QDockWidget* m_paletteDock;
 	QLabel* m_paletteEmpty;
+
 };
 
 #endif // COSECANTMAINWINDOW_H

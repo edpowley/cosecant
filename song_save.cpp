@@ -67,6 +67,10 @@ void Song::save(const QString& filepath)
 	root.appendChild(m_sequence->save(doc));
 
 	f.writeFile("song.xml", doc.toByteArray());
+
+	m_undo.setClean();
+	m_savePath = filepath;
+	signalSavePathChanged(m_savePath);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
