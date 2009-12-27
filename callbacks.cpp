@@ -5,7 +5,6 @@
 using namespace CosecantAPI;
 #include "song.h"
 #include "dllmachine.h"
-#include "seqplay.h"
 #include "application.h"
 
 static int32_t returnString(const QString& s, char* buf, int32_t buf_size)
@@ -54,7 +53,10 @@ static void registerMiFactory(MiFactoryList* list,
 
 static const TimeInfo* getTimeInfo(HostMachine* mac)
 {
-	return &SeqPlay::get().getTimeInfo();
+	// return &SeqPlay::get().getTimeInfo();
+	static TimeInfo foo;
+	foo.samplesPerSecond = 44100;
+	return &foo;
 }
 
 static cbool lockMutex(HostMachine* mac)

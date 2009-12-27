@@ -245,9 +245,6 @@ public:
 	DeleteMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
 		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("delete machine '%1'").arg(mac->getName()))
 	{
-		m_seq = Song::get().m_sequence;
-		m_seqTracks = m_seq->getTracksForMachine(m_mac);
-
 		BOOST_FOREACH(Ptr<Pin>& pin, m_mac->m_inpins)
 			BOOST_FOREACH(Ptr<Connection>& conn, pin->m_connections)
 				m_conns.insert(conn);
@@ -259,8 +256,6 @@ public:
 
 	virtual void redo()
 	{
-		m_seq->removeTracks(m_seqTracks);
-
 		Routing::ChangeBatch batch(m_routing);
 
 		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
@@ -277,16 +272,12 @@ public:
 
 		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
 			m_routing->addConnection(conn);
-
-		m_seq->insertTracks(m_seqTracks);
 	}
 
 protected:
 	Ptr<Routing> m_routing;
 	Ptr<Machine> m_mac;
 	std::set< Ptr<Connection> > m_conns;
-	Ptr<Sequence::Seq> m_seq;
-	Sequence::Seq::TrackIndexMap m_seqTracks;
 };
 
 class RenameMachineCommand : public QUndoCommand

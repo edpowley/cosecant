@@ -47,21 +47,5 @@ namespace DllMachine
 
 		virtual void initInfo();
 		virtual void initImpl();
-
-		virtual Ptr<Sequence::Pattern> createPatternImpl(double length);
-	};
-
-	class Pattern : public Sequence::Pattern
-	{
-	public:
-		Pattern(const Ptr<Mac>& mac, MiPattern* mip, double length);
-		virtual ~Pattern();
-
-		MiPattern* getMiPattern() { return m_mip; }
-
-	protected:
-		Ptr<MacDll> m_dll;
-		Mi* m_mi;
-		MiPattern* m_mip;
 	};
 };

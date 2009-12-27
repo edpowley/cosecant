@@ -5,7 +5,6 @@
 #include "xmlutils.h"
 #include "builtinmachines.h"
 #include "parameter.h"
-#include "spattern.h"
 
 extern zlib_filefunc_def g_zipFileFuncs; // zipfilefuncs.cpp
 
@@ -91,7 +90,6 @@ void Song::load(const QString& filepath)
 
 //		m_routing = new Routing;
 		m_routing->load(ctx, getUniqueChildElement(root, "routing"));
-		m_sequence->load(ctx, getUniqueChildElement(root, "sequence"));
 	}
 	catch (const std::exception& err)
 	{
@@ -155,14 +153,6 @@ void Machine::load(SongLoadContext& ctx, const QDomElement& el)
 		addPin(ppin);
 		param->setParamPin(ppin);
 		ppin->load(ctx, paramPinEl);
-	}
-
-	foreach(const QDomElement& patternEl, getChildElements(el, "pattern"))
-	{
-		double length = getAttribute<double>(patternEl, "length");
-		Ptr<Sequence::Pattern> pattern = createPattern(length);
-		pattern->load(ctx, patternEl);
-		addPattern(pattern);
 	}
 }
 
@@ -239,75 +229,3 @@ void Pin::load(SongLoadContext& ctx, const QDomElement& el)
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void Sequence::Seq::load(SongLoadContext& ctx, const QDomElement& el)
-{
-	m_objectUuid = getAttribute<Uuid>(el, "uuid"); ctx.setObject(m_objectUuid, this);
-
-	m_masterTrack.clear();
-	foreach(const QDomElement& mtcel, getChildElements(el, "masterclip"))
-	{
-		Ptr<MasterTrackClip> mtc = new MasterTrackClip;
-		mtc->load(ctx, mtcel);
-		addMasterTrackClip(mtc);
-	}
-
-	foreach(const QDomElement& tel, getChildElements(el, "track"))
-	{
-		Ptr<Machine> machine = ctx.getObjectOrThrow<Machine>(getAttribute<Uuid>(tel, "machine"));
-		Ptr<Track> track = new Track(machine);
-		appendTrack(track);
-		track->load(ctx, tel);
-	}
-}
-
-void Sequence::Track::load(SongLoadContext& ctx, const QDomElement& el)
-{
-	m_objectUuid = getAttribute<Uuid>(el, "uuid"); ctx.setObject(m_objectUuid, this);
-
-	foreach(const QDomElement& cel, getChildElements(el, "clip"))
-	{
-		double starttime = getAttribute<double>(cel, "starttime");
-		Ptr<Pattern> pattern = ctx.getObjectOrThrow<Pattern>(getAttribute<Uuid>(cel, "pattern"));
-		Ptr<Clip> clip = new Clip(starttime, pattern);
-		clip->m_begin = getAttribute<double>(cel, "begin");
-		clip->m_end = getAttribute<double>(cel, "end");
-		addClip(clip);
-	}
-}
-
-void Sequence::MasterTrackClip::load(SongLoadContext& ctx, const QDomElement& el)
-{
-	m_firstBeat = getAttribute<int>(el, "start");
-	m_lengthInBeats = getAttribute<int>(el, "length");
-
-	m_timeinfo.beatsPerSecond			= getAttribute<double>(el, "beatspersecond");
-	m_timeinfo.beatsPerBar				= getAttribute<int>(el, "beatsperbar");
-	m_timeinfo.beatsPerWholeNote		= getAttribute<int>(el, "beatsperwholenote");
-	m_timeinfo.barsPerSmallGrid			= getAttribute<int>(el, "smallgridstep");
-	m_timeinfo.smallGridsPerLargeGrid	= getAttribute<int>(el, "largegridstep");
-}
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-void Sequence::Pattern::load(SongLoadContext& ctx, const QDomElement& el)
-{
-	m_objectUuid = getAttribute<Uuid>(el, "uuid"); ctx.setObject(m_objectUuid, this);
-
-	m_name = getAttribute<QString>(el, "name");
-	m_color = getAttribute<QColor>(el, "color");
-}
-
-void Spattern::Pattern::load(SongLoadContext& ctx, const QDomElement& el)
-{
-	Sequence::Pattern::load(ctx, el);
-
-	foreach(const QDomElement& nel, getChildElements(el, "note"))
-	{
-		Ptr<Note> note = new Note(this,
-			getAttribute<double>(nel, "start"),
-			getAttribute<double>(nel, "length"),
-			getAttribute<double>(nel, "note")
-		);
-		addNote(note);
-	}
-}

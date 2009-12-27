@@ -17,14 +17,12 @@ Song::Song()
 		m_routing, SIGNAL(signalTopologyChange()),
 		this, SLOT(updateWorkQueue())
 	);
-	m_sequence = new Sequence::Seq();
 }
 
 void Song::clear()
 {
 	m_undo.clear();
 	m_routing = NULL;
-	m_sequence = NULL;
 	WorkQueue::setNull();
 }
 

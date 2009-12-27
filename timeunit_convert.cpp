@@ -3,7 +3,6 @@
 #include "timeunit_convert.h"
 using namespace CosecantAPI;
 using namespace CosecantAPI::TimeUnit;
-#include "seqplay.h"
 
 double fromSamples(TimeUnit::e u, double x, const TimeInfo& ti)
 {
@@ -37,7 +36,13 @@ double ConvertTimeUnits(TimeUnit::e from, TimeUnit::e to, double value, const Ti
 {
 	if (from == to) return value;
 
-	if (!timeinfo) timeinfo = &SeqPlay::get().getTimeInfo();
+	//if (!timeinfo) timeinfo = &SeqPlay::get().getTimeInfo();
+	if (!timeinfo)
+	{
+		static TimeInfo foo;
+		foo.samplesPerSecond = 44100;
+		timeinfo = &foo;
+	}
 
 	return fromSamples(	to,
 						toSamples(from, value, *timeinfo),

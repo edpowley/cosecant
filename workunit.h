@@ -2,7 +2,6 @@
 
 #include "machine.h"
 #include "workbuffer.h"
-#include "sequence.h"
 #include "parameter.h"
 
 class WorkQueue;
@@ -60,7 +59,6 @@ namespace WorkUnit
 
 		Ptr<Machine> m_machine;
 		std::vector< Ptr<Pin> > m_inpins, m_outpins;
-		std::vector< Ptr<Sequence::Track> > m_seqTracks;
 
 		struct ParamPinBuf
 		{

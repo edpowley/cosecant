@@ -4,7 +4,6 @@
 #include "workqueue.h"
 #include "perfclock.h"
 #include "song.h"
-#include "seqplay.h"
 #include "timeunit_convert.h"
 
 using namespace WorkUnit;
@@ -54,11 +53,6 @@ WorkMachine::WorkMachine(WorkQueue* q, const Ptr<Machine>& machine)
 :	Base(q), m_machine(machine), m_inPinBuffer(NULL), m_outPinBuffer(NULL),
 	m_inpins(machine->m_inpins), m_outpins(machine->m_outpins)
 {
-	BOOST_FOREACH(Ptr<Sequence::Track>& track, Song::get().m_sequence->m_tracks)
-	{
-		if (track->m_mac == m_machine)
-			m_seqTracks.push_back(track);
-	}
 }
 
 WorkMachine::~WorkMachine()

@@ -112,25 +112,3 @@ void Mac::work(const WorkContext* ctx)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Ptr<Sequence::Pattern> Mac::createPatternImpl(double length)
-{
-	MiPattern* mip = NULL;
-	if (m_dll->m_funcs->Mi_createPattern)
-		mip = m_dll->m_funcs->Mi_createPattern(m_mi, length);
-	
-	if (mip)
-		return new Pattern(this, mip, length);
-	else
-		return NULL;
-}
-
-Pattern::Pattern(const Ptr<Mac>& mac, MiPattern* mip, double length)
-: Sequence::Pattern(mac, length), m_dll(mac->getDll()), m_mi(mac->getMi()), m_mip(mip)
-{
-}
-
-Pattern::~Pattern()
-{
-	if (m_dll->m_funcs->MiPattern_destroy)
-		m_dll->m_funcs->MiPattern_destroy(m_mip);
-}

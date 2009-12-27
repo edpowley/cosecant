@@ -4,9 +4,7 @@
 #include "version.h"
 
 #include "song.h"
-#include "seqplay.h"
 #include "routingeditor.h"
-#include "sequenceeditor.h"
 #include "dlg_settings.h"
 #include "dlg_about.h"
 #include "keyjazz.h"
@@ -82,7 +80,6 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	m_tabWidget->setTabsClosable(true);
 
 	addTab(new RoutingEditor::Editor(Song::get().m_routing, m_tabWidget));
-	addTab(new SequenceEditor::Editor(Song::get().m_sequence, m_tabWidget));
 
 	m_tabWidget->setDocumentMode(true);
 
@@ -90,6 +87,7 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 		this, SLOT(onTabChanged(int)) );
 
 	m_tabWidget->setCurrentIndex(0);
+	onTabChanged(0);
 
 	QDockWidget* undodock = new QDockWidget(tr("Undo history"), this);
 	undodock->setAllowedAreas(Qt::AllDockWidgetAreas);
@@ -184,7 +182,7 @@ void CosecantMainWindow::on_actionTransportPlay_toggled(bool checked)
 
 	if (!checked) ui.actionTransportRecord->setChecked(false);
 
-	SeqPlay::get().setPlaying(checked);
+	//SeqPlay::get().setPlaying(checked);
 }
 
 void CosecantMainWindow::on_actionTransportStop_triggered()

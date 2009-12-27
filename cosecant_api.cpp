@@ -28,12 +28,6 @@ namespace PluginFuncImpl
 		
 	void Mi_work(Mi* m, const WorkContext* ctx)
 	{ m->work(ctx); }
-
-	MiPattern* Mi_createPattern(Mi* m, double length)
-	{ return m->createPattern(length); }
-
-	void MiPattern_destroy(MiPattern* p)
-	{ delete p; }
 };
 
 static CosecantAPI::PluginFunctions g_pluginFuncs = {
@@ -43,8 +37,6 @@ static CosecantAPI::PluginFunctions g_pluginFuncs = {
 	PluginFuncImpl::Mi_getInfo,
 	PluginFuncImpl::Mi_init,
 	PluginFuncImpl::Mi_work,
-	PluginFuncImpl::Mi_createPattern,
-	PluginFuncImpl::MiPattern_destroy,
 };
 
 COSECANT_EXPORT(CosecantAPI::PluginFunctions*) csc_getPluginFunctions()

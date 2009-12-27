@@ -5,7 +5,6 @@
 #include "xmlutils.h"
 #include "version.h"
 #include "parameter.h"
-#include "spattern.h"
 
 extern zlib_filefunc_def g_zipFileFuncs; // zipfilefuncs.cpp
 static const int Z_STORE = 0;
@@ -64,7 +63,6 @@ void Song::save(const QString& filepath)
 	doc.appendChild(root);
 
 	root.appendChild(m_routing->save(doc));
-	root.appendChild(m_sequence->save(doc));
 
 	f.writeFile("song.xml", doc.toByteArray());
 
@@ -118,11 +116,6 @@ QDomElement Machine::save(QDomDocument& doc)
 	foreach(const Ptr<Pin>& pin, m_outpins)
 	{
 		el.appendChild(pin->save(doc));
-	}
-
-	foreach(const Ptr<Sequence::Pattern>& pattern, m_patterns)
-	{
-		el.appendChild(pattern->save(doc));
 	}
 
 	return el;
@@ -209,91 +202,3 @@ QDomElement Parameter::Group::save(QDomDocument& doc)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-QDomElement Sequence::Seq::save(QDomDocument& doc)
-{
-	QDomElement el = doc.createElement("sequence");
-	setAttribute(el, "uuid", m_objectUuid);
-
-	foreach(const Ptr<Sequence::MasterTrackClip>& mtc, m_masterTrack)
-	{
-		el.appendChild(mtc->save(doc));
-	}
-
-	foreach(const Ptr<Sequence::Track>& track, m_tracks)
-	{
-		el.appendChild(track->save(doc));
-	}
-
-	return el;
-}
-
-QDomElement Sequence::Track::save(QDomDocument& doc)
-{
-	QDomElement el = doc.createElement("track");
-	setAttribute(el, "uuid", m_objectUuid);
-	setAttribute(el, "machine", m_mac->m_objectUuid);
-	setAttribute(el, "height", m_height);
-
-	foreach(const Ptr<Sequence::Clip>& clip, m_clips)
-	{
-		el.appendChild(clip->save(doc));
-	}
-
-	return el;
-}
-
-QDomElement Sequence::Clip::save(QDomDocument& doc)
-{
-	QDomElement el = doc.createElement("clip");
-	setAttribute(el, "starttime", m_startTime);
-	setAttribute(el, "begin", m_begin);
-	setAttribute(el, "end", m_end);
-	setAttribute(el, "pattern", m_pattern->m_objectUuid);
-
-	return el;
-}
-
-QDomElement Sequence::MasterTrackClip::save(QDomDocument& doc)
-{
-	QDomElement el = doc.createElement("masterclip");
-	setAttribute(el, "start", m_firstBeat);
-	setAttribute(el, "length", m_lengthInBeats);
-
-	setAttribute(el, "beatspersecond",		m_timeinfo.beatsPerSecond);
-	setAttribute(el, "beatsperbar",			m_timeinfo.beatsPerBar);
-	setAttribute(el, "beatsperwholenote",	m_timeinfo.beatsPerWholeNote);
-	setAttribute(el, "smallgridstep",		m_timeinfo.barsPerSmallGrid);
-	setAttribute(el, "largegridstep",		m_timeinfo.smallGridsPerLargeGrid);
-
-	return el;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-QDomElement Sequence::Pattern::save(QDomDocument& doc)
-{
-	QDomElement el = doc.createElement("pattern");
-	setAttribute(el, "uuid", m_objectUuid);
-	setAttribute(el, "name", m_name);
-	setAttribute(el, "color", m_color);
-	setAttribute(el, "length", m_length);
-
-	return el;
-}
-
-QDomElement Spattern::Pattern::save(QDomDocument& doc)
-{
-	QDomElement el = Sequence::Pattern::save(doc);
-
-	foreach(const Ptr<Note>& note, m_notes)
-	{
-		QDomElement nel = doc.createElement("note");
-		el.appendChild(nel);
-
-		setAttribute(nel, "start", note->getStart());
-		setAttribute(nel, "length", note->getLength());
-		setAttribute(nel, "note", note->getNote());
-	}
-
-	return el;
-}

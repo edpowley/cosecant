@@ -1,7 +1,6 @@
 #pragma once
 
 #include "workbuffer.h"
-#include "sequence.h"
 #include "cosecant_api.h"
 
 ////////////////////////////////////////////////////////////////////////
@@ -174,13 +173,6 @@ public:
 	virtual void load(SongLoadContext& ctx, const QDomElement& el);
 	QDomElement save(QDomDocument& doc);
 
-	Ptr<Sequence::Pattern> createPattern(double length);
-	std::vector< Ptr<Sequence::Pattern> > m_patterns;
-	void addPattern(const Ptr<Sequence::Pattern>& pat);
-	void removePattern(const Ptr<Sequence::Pattern>& pat);
-
-	virtual QWidget* createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern);
-
 protected:
 	CosecantAPI::Mi* m_mi;
 
@@ -194,8 +186,6 @@ protected:
 	QString m_id;
 	QString m_name;
 	CosecantAPI::MachineTypeHint::e m_colorhint;
-
-	virtual Ptr<Sequence::Pattern> createPatternImpl(double length) { return NULL; }
 
 	void loadPins(SongLoadContext& ctx, Pin::Direction direction, const QList<QDomElement>& els);
 };

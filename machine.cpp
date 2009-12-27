@@ -3,7 +3,6 @@
 #include "machine.h"
 
 #include "routing.h"
-#include "sequence.h"
 #include "song.h"
 #include "timeunit_convert.h"
 #include "parameditor.h"
@@ -85,36 +84,6 @@ ParamPin::ParamPin(Parameter::Scalar* param, TimeUnit::e timeUnit)
 	m_param(param), m_timeUnit(timeUnit)
 {
 	m_name = tr("Parameter '%1'").arg(m_param->getName());
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-Ptr<Sequence::Pattern> Machine::createPattern(double length)
-{
-	Ptr<Sequence::Pattern> pat = createPatternImpl(length);
-	if (pat)
-	{
-		pat->m_name = QString("%1").arg(m_patterns.size(), 2, 10, QLatin1Char('0'));
-	}
-
-	return pat;
-}
-
-void Machine::addPattern(const Ptr<Sequence::Pattern>& pat)
-{
-	m_patterns.push_back(pat);
-	pat->added();
-}
-
-void Machine::removePattern(const Ptr<Sequence::Pattern>& pat)
-{
-	vectorEraseFirst(m_patterns, pat);
-	pat->removed();
-}
-
-QWidget* Machine::createPatternEditorWidget(const Ptr<Sequence::Pattern>& pattern)
-{
-	return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////

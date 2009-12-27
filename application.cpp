@@ -9,7 +9,6 @@
 #include "theme.h"
 #include "htmlentity.h"
 #include "prefs.h"
-#include "seqplay.h"
 #include "version.h"
 #include "keyjazz.h"
 
@@ -97,7 +96,6 @@ void Application::init()
 
 	pushStatusMsg(tr("Creating song"));
 	Song::initSingleton();
-	SeqPlay::initSingleton(Song::get().m_sequence);
 	popStatusMsg();
 
 	pushStatusMsg(tr("Initialising theme"));

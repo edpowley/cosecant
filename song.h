@@ -2,8 +2,6 @@
 
 #include "routing.h"
 
-namespace Sequence { class Seq; };
-
 ERROR_CLASS(SongLoadError);
 ERROR_CLASS(SongSaveError);
 
@@ -55,7 +53,6 @@ public:
 	static Song& get() { return *s_singleton; }
 
 	Ptr<Routing> m_routing;
-	Ptr<Sequence::Seq> m_sequence;
 	QUndoStack m_undo;
 
 	void load(const QString& filepath);

@@ -50,13 +50,10 @@ namespace CosecantAPI
 #	endif
 
 	class Mi;
-	class MiPattern;
 
 #	ifndef COSECANT_API_HOST
 		class MiFactoryList;
 		class HostMachine;
-		class HostPattern;
-		class SequenceTrack;
 		class HostPinBuffer;
 		class EventStreamIter;
 #	endif
@@ -172,13 +169,6 @@ namespace CosecantAPI
 		double value;
 	};
 
-	struct StreamEvent_Pattern
-	{
-		SequenceTrack* track;
-		HostPattern* hostPattern;
-		double pos;
-	};
-
 	struct StreamEvent_Custom
 	{
 		const char* type;
@@ -193,8 +183,6 @@ namespace CosecantAPI
 			noteOn,
 			noteOff,
 			paramChange,
-			patternPlay,
-			patternStop,
 		};
 		typedef uint8_t i;
 	};
@@ -207,7 +195,6 @@ namespace CosecantAPI
 		{
 			StreamEvent_Note note;
 			StreamEvent_ParamChange paramChange;
-			StreamEvent_Pattern pattern;
 			StreamEvent_Custom custom;
 		};
 	};
@@ -354,9 +341,6 @@ namespace CosecantAPI
 		void (*Mi_init)(Mi* m);
 		
 		void (*Mi_work)(Mi* m, const WorkContext* ctx);
-		
-		MiPattern* (*Mi_createPattern)(Mi* m, double length);
-		void (*MiPattern_destroy)(MiPattern* p);
 	};
 	
 	////////////////////////////////////////////////////////////////////
@@ -441,13 +425,6 @@ namespace CosecantAPI
 
 #ifndef COSECANT_API_NO_CLASSES
 
-	/** The base class for your machine's patterns. */
-	class MiPattern
-	{
-	public:
-		virtual ~MiPattern() {}
-	};
-
 	/** The base class for your machine. */
 	class Mi
 	{
@@ -459,8 +436,6 @@ namespace CosecantAPI
 		virtual void init() {}
 
 		virtual void work(const WorkContext* ctx) = 0;
-
-		virtual MiPattern* createPattern(double length) { return NULL; }
 
 	protected:
 		HostMachine* m_hm;
