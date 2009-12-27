@@ -89,6 +89,13 @@ Clip::Clip(const Clip& other)
 {
 }
 
+void Clip::setStartTime(double t)
+{
+	m_startTime = t;
+	signalStartTimeChanged(t);
+	// TODO: need to notify the track so that it can update key in m_clips
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 Track::Track()
@@ -110,13 +117,13 @@ void Track::ctorCommon()
 
 void Track::addClip(const Ptr<Clip>& clip)
 {
-	m_clips.insert(clip->m_startTime, clip);
+	m_clips.insert(clip->getStartTime(), clip);
 	signalAddClip(clip);
 }
 
 void Track::removeClip(const Ptr<Clip>& clip)
 {
-	Clips::iterator iter = m_clips.find(clip->m_startTime);
+	Clips::iterator iter = m_clips.find(clip->getStartTime());
 	ASSERT(iter.value() == clip);
 	m_clips.erase(iter);
 	signalRemoveClip(clip);

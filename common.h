@@ -5,6 +5,8 @@
 #include "utility.h"
 #include "nullable.h"
 
+inline double round(double x) { return ceil(x - 0.5); }
+
 template<typename T> T min(T a, T b) { return (a < b) ? a : b; }
 template<typename T> T max(T a, T b) { return (a > b) ? a : b; }
 

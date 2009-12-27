@@ -93,7 +93,7 @@ void SeqTrackPlay::onAddClip(const Ptr<Sequence::Clip>& clip)
 {
 	CSC_LOCK_WRITE(&m_sp->m_mutex);
 
-	if (m_sp->m_playPos >= clip->m_startTime && m_sp->m_playPos < clip->getEndTime())
+	if (m_sp->m_playPos >= clip->getStartTime() && m_sp->m_playPos < clip->getEndTime())
 	{
 		m_workFromScratch = true;
 	}

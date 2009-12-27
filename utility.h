@@ -102,6 +102,16 @@ protected:
 
 /////////////////////////////////////////////////////////////////////////////
 
+class QGraphicsEmptyItem : public QGraphicsItem
+{
+public:
+	QGraphicsEmptyItem(QGraphicsItem* parent = NULL) : QGraphicsItem(parent) {}
+	QRectF boundingRect() const { return QRectF(); }
+	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) {}
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
 template<typename T> uint qHash(QList<T> list)
 {
 	uint hash = 0;

@@ -18,6 +18,7 @@ enum ZValues
 	zRulerLabel,
 	zRulerBpmText,
 	zPlayLine,
+	zMouse,
 };
 
 Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
@@ -28,6 +29,7 @@ Editor::Editor(const Ptr<Sequence::Seq>& seq, QWidget* parent)
 	m_rulerView->setScene(&m_rulerScene);
 	m_headView ->setScene(&m_headScene);
 	m_bodyView ->setScene(&m_bodyScene);
+	m_bodyView ->setDragMode(QGraphicsView::RubberBandDrag);
 
 	setZoom(16);
 
@@ -245,6 +247,8 @@ void TrackItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
 		pen.setCosmetic(true);
 		m_newClipItem->setPen(pen);
 	}
+	else
+		QGraphicsRectItem::mousePressEvent(ev);
 }
 
 void TrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
@@ -261,6 +265,8 @@ void TrackItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
 			m_newClipItem->setRect(r);
 		}
 		break;
+	default:
+		QGraphicsRectItem::mouseMoveEvent(ev);
 	}
 }
 
@@ -320,13 +326,42 @@ void TrackItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
 			m_mouseMode = none;
 		}
 		break;
+	default:
+		QGraphicsRectItem::mouseReleaseEvent(ev);
 	};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
+QList< Ptr<Sequence::Clip> > Editor::getSelectedClips()
+{
+	QList< Ptr<Sequence::Clip> > ret;
+
+	foreach(TrackItem* ti, m_trackItems)
+	{
+		ret.append(ti->getSelectedClips());
+	}
+
+	return ret;
+}
+
+QList< Ptr<Sequence::Clip> > TrackItem::getSelectedClips()
+{
+	QList< Ptr<Sequence::Clip> > ret;
+
+	for (QHash<Ptr<Sequence::Clip>, ClipItem*>::iterator iter = m_clipItems.begin();
+		iter != m_clipItems.end(); ++iter)
+	{
+		if (iter.value()->isSelected())
+			ret << iter.key();
+	}
+
+	return ret;
+}
+
 ClipItem::ClipItem(Editor* editor, TrackItem* track, const Ptr<Sequence::Clip>& clip)
-: QGraphicsRectItem(track), m_editor(editor), m_track(track), m_clip(clip)
+:	QGraphicsRectItem(track), m_editor(editor), m_track(track), m_clip(clip),
+	m_mouseMode(none)
 {
 	QRectF r;
 	r.setWidth( m_editor->getSeq()->beatToSecond(m_clip->getLength()) );
@@ -334,13 +369,26 @@ ClipItem::ClipItem(Editor* editor, TrackItem* track, const Ptr<Sequence::Clip>& 
 	r.setHeight(track->rect().height());
 	setRect(r);
 
-	setPos( m_editor->getSeq()->beatToSecond(m_clip->m_startTime), 0 );
+	setPos( m_editor->getSeq()->beatToSecond(m_clip->getStartTime()), 0 );
+
+	setFlags(ItemIsSelectable);
 
 	setBrush(m_clip->m_pattern->m_color);
 	QPen pen(Qt::black, 1);
 	pen.setCosmetic(true);
 	pen.setJoinStyle(Qt::MiterJoin);
 	setPen(pen);
+
+	m_selectedPen = pen;
+	m_selectedPen.setColor(Qt::yellow);
+
+	connect(m_clip, SIGNAL(signalStartTimeChanged(double)),
+		this, SLOT(onStartTimeChanged(double)) );
+}
+
+void ClipItem::onStartTimeChanged(double t)
+{
+	setPos( m_editor->getSeq()->beatToSecond(t), 0 );
 }
 
 void ClipItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
@@ -348,6 +396,143 @@ void ClipItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev)
 	if (ev->button() == Qt::LeftButton)
 	{
 		m_clip->m_pattern->showEditor();
+	}
+}
+
+void ClipItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+	if (isSelected())
+		painter->setPen(m_selectedPen);
+	else
+		painter->setPen(pen());
+
+	painter->setBrush(m_clip->m_pattern->m_color);
+	painter->drawRect(rect());
+}
+
+void ClipItem::mousePressEvent(QGraphicsSceneMouseEvent* ev)
+{
+	if (m_mouseMode == none)
+	{
+		switch (ev->button())
+		{
+		case Qt::LeftButton:
+			m_mouseMode = leftClick;
+			QGraphicsRectItem::mousePressEvent(ev);
+			break;
+
+		default:
+			QGraphicsRectItem::mousePressEvent(ev);
+		}
+	}
+}
+
+void ClipItem::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+	QGraphicsRectItem::mouseMoveEvent(ev);
+
+	switch (m_mouseMode)
+	{
+	case leftClick:
+		m_mouseMode = move;
+		m_dragStartTime = m_editor->getNearestSnapPoint(ev->scenePos().x());
+		qDebug() << m_dragStartTime;
+		if (!isSelected()) setSelected(true);
+
+		foreach(const Ptr<Sequence::Clip>& clip, m_editor->getSelectedClips())
+		{
+			QGraphicsRectItem* item = new QGraphicsRectItem(m_track);
+			item->setZValue(zMouse);
+
+			QPen p = m_selectedPen;
+			p.setStyle(Qt::DashLine);
+			item->setPen(p);
+
+			QBrush b = brush();
+			QColor c = b.color();
+			c.setAlpha(128);
+			b.setColor(c);
+			item->setBrush(b);
+
+			m_mouseItems.insert(clip, item);
+		}
+
+		// no break -- fall through to case move
+
+	case move:
+		{
+			double offset = m_editor->getNearestSnapPoint(ev->scenePos().x()) - m_dragStartTime;
+
+			for (QHash<Ptr<Sequence::Clip>, QGraphicsRectItem*>::iterator iter = m_mouseItems.begin();
+				iter != m_mouseItems.end(); ++iter)
+			{
+				const Ptr<Sequence::Clip>& clip = iter.key();
+				QRectF rect(0, 0, 0, m_track->height());
+				rect.setLeft(m_editor->getSeq()->beatToSecond(clip->getStartTime()));
+				rect.setWidth(m_editor->getSeq()->beatToSecond(clip->getLength()));
+				iter.value()->setRect(rect);
+				iter.value()->setPos(offset, 0);
+			}
+		}
+		break;
+	}
+}
+
+class ClipMoveCommand : public QUndoCommand
+{
+public:
+	ClipMoveCommand(const Ptr<Sequence::Clip>& clip, double newtime)
+		: m_clip(clip), m_newtime(newtime), m_oldtime(clip->getStartTime())
+	{ setText(ClipItem::tr("move sequence clip")); }
+
+	virtual void undo() { m_clip->setStartTime(m_oldtime); }
+	virtual void redo() { m_clip->setStartTime(m_newtime); }
+
+protected:
+	Ptr<Sequence::Clip> m_clip;
+	double m_oldtime, m_newtime;
+};
+
+
+void ClipItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+{
+	switch (m_mouseMode)
+	{
+	case leftClick:
+		if (ev->button() == Qt::LeftButton)
+		{
+			m_mouseMode = none;
+			QGraphicsRectItem::mouseReleaseEvent(ev);
+		}
+		break;
+
+	case move:
+		{
+			double offset = m_editor->getNearestSnapPoint(ev->scenePos().x()) - m_dragStartTime;
+
+			QList< Ptr<Sequence::Clip> > selectedClips = m_editor->getSelectedClips();
+			bool usemacro = (selectedClips.length() > 1);
+			if (usemacro) theUndo().beginMacro(tr("move sequence clips"));
+
+			foreach(const Ptr<Sequence::Clip>& clip, m_editor->getSelectedClips())
+			{
+				double newstart = m_editor->getSeq()->secondToBeat(
+					m_editor->getSeq()->beatToSecond(clip->getStartTime()) + offset );
+
+				theUndo().push(new ClipMoveCommand(clip, newstart));
+			}
+
+			if (usemacro) theUndo().endMacro();
+
+			for (QHash<Ptr<Sequence::Clip>, QGraphicsRectItem*>::iterator iter = m_mouseItems.begin();
+				iter != m_mouseItems.end(); ++iter)
+			{
+				delete iter.value();
+			}
+			m_mouseItems.clear();
+		}
+		m_mouseMode = none;
+		break;
 	}
 }
 

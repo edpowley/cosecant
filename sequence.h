@@ -56,10 +56,14 @@ namespace Sequence
 
 	class Clip : public Object
 	{
+		Q_OBJECT
+
 	public:
 		Clip(double starttime, const Ptr<Pattern>& pattern);
 		Clip(const Clip& other);
-		double m_startTime, m_begin, m_end;
+		double m_begin, m_end;
+		double getStartTime() const { return m_startTime; }
+		void setStartTime(double t);
 		double getLength() const { return m_end - m_begin; }
 		double getEndTime() const { return m_startTime + m_end - m_begin; }
 		bool spansTime(double t) { return m_startTime <= t && getEndTime() > t; }
@@ -68,6 +72,12 @@ namespace Sequence
 
 		void load(SongLoadContext& ctx, const QDomElement& el);
 		QDomElement save(QDomDocument& doc);
+
+	signals:
+		void signalStartTimeChanged(double t);
+
+	protected:
+		double m_startTime;
 	};
 
 	/////////////////////////////////////////////////////////////////////////////

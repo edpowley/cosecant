@@ -22,6 +22,8 @@ namespace SequenceEditor
 
 		qreal height() { return rect().height(); }
 
+		QList< Ptr<Sequence::Clip> > getSelectedClips();
+
 	public slots:
 		void onAddClip(const Ptr<Sequence::Clip>& clip);
 		void onRemoveClip(const Ptr<Sequence::Clip>& clip);
@@ -56,9 +58,21 @@ namespace SequenceEditor
 		Editor* m_editor;
 		TrackItem* m_track;
 		Ptr<Sequence::Clip> m_clip;
+		QPen m_selectedPen;
 
-		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev) { ev->accept(); }
+		virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget);
+
+		enum { none, leftClick, move } m_mouseMode;
+		double m_dragStartTime;
+		QHash<Ptr<Sequence::Clip>, QGraphicsRectItem*> m_mouseItems;
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
 		virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* ev);
+
+	protected slots:
+		void onStartTimeChanged(double t);
 	};
 
 	////////////////////////////////////////////////////////////////////////////
@@ -138,6 +152,7 @@ namespace SequenceEditor
 		Tool getTool();
 
 		double getNearestSnapPoint(double x);
+		QList< Ptr<Sequence::Clip> > getSelectedClips();
 
 	signals:
 		void signalChangePlayPos(double seconds);
