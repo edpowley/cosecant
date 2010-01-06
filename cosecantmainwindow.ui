@@ -142,10 +142,16 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuMultiplayer">
+    <property name="title">
+     <string>&amp;Multiplayer</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Edit"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Transport"/>
+   <addaction name="menuMultiplayer"/>
    <addaction name="menuWindow"/>
    <addaction name="menu_Help"/>
   </widget>

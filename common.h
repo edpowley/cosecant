@@ -5,6 +5,14 @@
 #include "utility.h"
 #include "nullable.h"
 
+#ifdef _MSC_VER
+	typedef __int64 int64;
+	typedef unsigned __int64 uint64;
+#else
+	typedef long long int64;
+	typedef unsigned long long uint64;
+#endif
+
 inline double round(double x) { return ceil(x - 0.5); }
 
 template<typename T> T min(T a, T b) { return (a < b) ? a : b; }

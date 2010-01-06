@@ -34,6 +34,7 @@
 // Qt
 #include <QtGui>
 #include <QtXml>
+#include <QtNetwork>
 
 // PortAudio
 #include <portaudio.h>
