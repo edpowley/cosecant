@@ -5,6 +5,7 @@
 
 #include "song.h"
 #include "routingeditor.h"
+#include "sequenceeditor.h"
 #include "dlg_settings.h"
 #include "dlg_about.h"
 #include "keyjazz.h"
@@ -80,6 +81,7 @@ CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
 	m_tabWidget->setTabsClosable(true);
 
 	addTab(new RoutingEditor::Editor(Song::get().m_routing, m_tabWidget));
+	addTab(new SequenceEditor::Editor(Song::get().m_sequence, m_tabWidget));
 
 	m_tabWidget->setDocumentMode(true);
 

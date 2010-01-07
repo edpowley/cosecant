@@ -17,6 +17,8 @@ Song::Song()
 		m_routing, SIGNAL(signalTopologyChange()),
 		this, SLOT(updateWorkQueue())
 	);
+
+	m_sequence = new Seq::Sequence();
 }
 
 void Song::clear()

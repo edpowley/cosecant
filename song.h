@@ -1,6 +1,7 @@
 #pragma once
 
 #include "routing.h"
+#include "sequence.h"
 
 ERROR_CLASS(SongLoadError);
 ERROR_CLASS(SongSaveError);
@@ -53,6 +54,7 @@ public:
 	static Song& get() { return *s_singleton; }
 
 	Ptr<Routing> m_routing;
+	Ptr<Seq::Sequence> m_sequence;
 	QUndoStack m_undo;
 
 	void load(const QString& filepath);
