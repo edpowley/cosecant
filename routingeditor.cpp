@@ -116,21 +116,32 @@ public:
 	AddMachineCommand(const Ptr<Routing>& routing, const Ptr<Machine>& mac)
 		: m_routing(routing), m_mac(mac), QUndoCommand(Editor::tr("add machine '%1'").arg(mac->getName()))
 	{
+		if (m_mac->getInfo()->flags & CosecantAPI::MachineFlags::createSequenceTrack)
+		{
+			m_seq = Song::get().m_sequence;
+			m_seqTrack = new Seq::Track(m_mac);
+			m_seqTrackIndex = m_seq->getNumTracks();
+		}
 	}
 
 	virtual void redo()
 	{
 		m_routing->addMachine(m_mac);
+		if (m_seqTrack) m_seq->insertTrack(m_seqTrackIndex, m_seqTrack);
 	}
 
 	virtual void undo()
 	{
+		if (m_seqTrack) m_seq->removeTrack(m_seqTrackIndex);
 		m_routing->removeMachine(m_mac);
 	}
 
 protected:
 	Ptr<Routing> m_routing;
 	Ptr<Machine> m_mac;
+	Ptr<Seq::Sequence> m_seq;
+	Ptr<Seq::Track> m_seqTrack;
+	int m_seqTrackIndex;
 };
 
 void Scene::dropEvent(QGraphicsSceneDragDropEvent* ev)

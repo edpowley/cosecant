@@ -80,6 +80,8 @@ MachineInfo* SimpleSynth::getInfo()
 		static const PinInfo* outPins[] = { &outPin, NULL };
 		info.outPins = outPins;
 
+		info.flags = MachineFlags::createSequenceTrack;
+
 		initialised = true;
 	}
 

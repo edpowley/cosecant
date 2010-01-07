@@ -3,6 +3,7 @@
 #include "sequence.h"
 #include "mygraphicsview.h"
 #include "mwtab.h"
+#include "ui_sequenceeditor_trackheader.h"
 
 namespace SequenceEditor
 {
@@ -12,9 +13,24 @@ namespace SequenceEditor
 
 	class TrackHeader : public QFrame
 	{
-	public:
-		TrackHeader() { setFrameStyle(Panel | Raised); setLineWidth(2); }
+		Q_OBJECT
 
+	public:
+		TrackHeader(Editor* editor, const Ptr<Seq::Track>& track);
+
+	protected slots:
+
+	protected:
+		Editor* m_editor;
+		Ptr<Seq::Track> m_track;
+
+		void forceHeight(int h) { setMinimumHeight(h); setMaximumHeight(h); }
+
+		QLabel* m_labelMachineName;
+		QToolButton *m_btnMute, *m_btnSolo, *m_btnRecord;
+
+	private:
+		Ui::SequenceTrackHeader ui;
 
 	};
 
@@ -53,13 +69,18 @@ namespace SequenceEditor
 
 		static PrefsVar_Int s_prefTrackHeaderWidth, s_prefRulerHeight;
 
+	protected slots:
+		void onTrackAdded(int index, const Ptr<Seq::Track>& track);
+		void onTrackRemoved(int index, const Ptr<Seq::Track>& track);
+
 	protected:
 		Ptr<Sequence> m_seq;
 
 		virtual void resizeEvent(QResizeEvent* ev);
 
 		QScrollArea* m_trackHeaderScrollArea;
-		QSplitter* m_trackHeaderParent;
+		QWidget* m_trackHeaderParent;
+		QVBoxLayout* m_trackHeaderLayout;
 		QHash< Ptr<Seq::Track>, TrackHeader* > m_trackHeaders;
 	};
 };
