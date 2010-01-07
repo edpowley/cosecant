@@ -33,6 +33,31 @@ void Routing::removeMachine(const  Ptr<Machine>& machine)
 	machine->removed();
 }
 
+QString Routing::getUniqueMachineName(const QString& prefix)
+{
+	QString name = prefix;
+	int n = 1;
+
+	while (true)
+	{
+		bool exists = false;
+		foreach(const Ptr<Machine>& mac, m_machines)
+		{
+			if (mac->getName() == name)
+			{
+				exists = true;
+				break;
+			}
+		}
+
+		if (!exists)
+			return name;
+
+		n++;
+		name = QString("%1 %2").arg(prefix).arg(n);
+	}
+}
+
 Ptr<Connection> Routing::createConnection(const Ptr<Pin> &pin1, const Ptr<Pin> &pin2)
 {
 	// Same direction => don't connect

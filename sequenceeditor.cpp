@@ -8,10 +8,17 @@ using namespace SequenceEditor;
 PrefsVar_Int Editor::s_prefTrackHeaderWidth("sequenceeditor/headerwidth", 200);
 PrefsVar_Int Editor::s_prefRulerHeight("sequenceeditor/rulerheight", 50);
 
+enum
+{
+	zZero = 0,
+	zTrack,
+};
+
 Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 : m_seq(seq), MyGraphicsView(parent), m_scene(this)
 {
 	setScene(&m_scene);
+	setAlignment(Qt::AlignTop | Qt::AlignLeft);
 	setDragMode(RubberBandDrag);
 
 	m_scene.setSceneRect(0,0,1000,1000);
@@ -19,7 +26,7 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 	setViewportMargins(s_prefTrackHeaderWidth(), s_prefRulerHeight(), 0, 0);
 
 	m_trackHeaderScrollArea = new QScrollArea(this);
-	m_trackHeaderScrollArea->move(0, s_prefRulerHeight());
+	m_trackHeaderScrollArea->move(0, s_prefRulerHeight()+1);
 	m_trackHeaderScrollArea->resize(s_prefTrackHeaderWidth(), 500);
 	m_trackHeaderScrollArea->setFrameStyle(QFrame::NoFrame);
 
@@ -61,6 +68,7 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 
 void Editor::resizeEvent(QResizeEvent* ev)
 {
+	QGraphicsView::resizeEvent(ev);
 	m_trackHeaderScrollArea->resize(s_prefTrackHeaderWidth(), ev->size().height());
 }
 
@@ -69,6 +77,18 @@ void Editor::onTrackAdded(int index, const Ptr<Seq::Track>& track)
 	TrackHeader* header = new TrackHeader(this, track);
 	m_trackHeaders.insert(track, header);
 	m_trackHeaderLayout->insertWidget(index, header);
+
+	Track* item = new Track(this, track);
+	m_tracks.insert(track, item);
+	m_scene.addItem(item);
+
+	item->setHeight(header->height());
+	connect( header, SIGNAL(signalHeightChanged(int)),
+		item, SLOT(setHeight(int)) );
+
+	item->setY(header->y());
+	connect( header, SIGNAL(signalYChanged(int)),
+		item, SLOT(setY(int)) );
 }
 
 void Editor::onTrackRemoved(int index, const Ptr<Seq::Track>& track)
@@ -78,6 +98,12 @@ void Editor::onTrackRemoved(int index, const Ptr<Seq::Track>& track)
 	{
 		m_trackHeaderLayout->removeWidget(header);
 		delete header;
+	}
+
+	Track* item = m_tracks.take(track);
+	if (item)
+	{
+		delete item;
 	}
 }
 
@@ -94,6 +120,37 @@ TrackHeader::TrackHeader(Editor* editor, const Ptr<Seq::Track>& track)
 
 	connect( m_track->getMachine(), SIGNAL(signalRename(const QString&)),
 		ui.labelMachineName, SLOT(setText(const QString&)) );
+}
+
+void TrackHeader::resizeEvent(QResizeEvent* ev)
+{
+	QWidget::resizeEvent(ev);
+	signalHeightChanged(ev->size().height());
+}
+
+void TrackHeader::moveEvent(QMoveEvent* ev)
+{
+	QWidget::moveEvent(ev);
+	signalYChanged(ev->pos().y());
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+Track::Track(Editor* editor, const Ptr<Seq::Track>& track)
+: m_editor(editor), m_track(track)
+{
+	setZValue(zTrack);
+	setPen(QPen(Qt::black));
+}
+
+void Track::setHeight(int height)
+{
+	setRect(0, 0, 1000, height);
+}
+
+void Track::setY(int y)
+{
+	setPos(0, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

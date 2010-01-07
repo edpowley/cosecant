@@ -154,6 +154,7 @@ void Scene::dropEvent(QGraphicsSceneDragDropEvent* ev)
 		foreach(QString id, ids)
 		{
 			Ptr<Machine> mac = MachineFactory::get(id)->createMachine();
+			mac->setName( m_editor->m_routing->getUniqueMachineName(mac->getName()) );
 			mac->m_pos = ev->scenePos();
 			theUndo().push(new AddMachineCommand(m_editor->m_routing, mac));
 		}

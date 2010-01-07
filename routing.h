@@ -32,6 +32,8 @@ public:
 	void addMachine(const Ptr<Machine>& machine);
 	void removeMachine(const Ptr<Machine>& machine);
 
+	QString getUniqueMachineName(const QString& prefix);
+
 	ERROR_CLASS(CreateConnectionError);
 	Ptr<Connection> createConnection(const Ptr<Pin>& pin1, const Ptr<Pin>& pin2);
 	void addConnection(const Ptr<Connection>& conn);

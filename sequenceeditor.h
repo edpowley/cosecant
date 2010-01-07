@@ -11,18 +11,25 @@ namespace SequenceEditor
 
 	/////////////////////////////////////////////////////////////////////////
 
-	class TrackHeader : public QFrame
+	class TrackHeader : public QWidget
 	{
 		Q_OBJECT
 
 	public:
 		TrackHeader(Editor* editor, const Ptr<Seq::Track>& track);
 
+	signals:
+		void signalHeightChanged(int height);
+		void signalYChanged(int y);
+
 	protected slots:
 
 	protected:
 		Editor* m_editor;
 		Ptr<Seq::Track> m_track;
+
+		virtual void resizeEvent(QResizeEvent* ev);
+		virtual void moveEvent(QMoveEvent* ev);
 
 		void forceHeight(int h) { setMinimumHeight(h); setMaximumHeight(h); }
 
@@ -32,6 +39,24 @@ namespace SequenceEditor
 	private:
 		Ui::SequenceTrackHeader ui;
 
+	};
+
+	/////////////////////////////////////////////////////////////////////////
+
+	class Track : public QObject, public QGraphicsRectItem
+	{
+		Q_OBJECT
+
+	public:
+		Track(Editor* editor, const Ptr<Seq::Track>& track);
+
+	public slots:
+		void setHeight(int height);
+		void setY(int y);
+
+	protected:
+		Editor* m_editor;
+		Ptr<Seq::Track> m_track;
 	};
 
 	/////////////////////////////////////////////////////////////////////////
@@ -82,5 +107,6 @@ namespace SequenceEditor
 		QWidget* m_trackHeaderParent;
 		QVBoxLayout* m_trackHeaderLayout;
 		QHash< Ptr<Seq::Track>, TrackHeader* > m_trackHeaders;
+		QHash< Ptr<Seq::Track>, Track* > m_tracks;
 	};
 };
