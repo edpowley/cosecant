@@ -62,6 +62,7 @@ namespace Seq
 
 		int getNumTracks() { return m_tracks.length(); }
 		Ptr<Track> getTrack(int index) { return m_tracks.value(index); }
+		int getTrackIndex(const Ptr<Track>& track) { return m_tracks.indexOf(track); }
 
 		void insertTrack(int index, const Ptr<Track>& track);
 		void removeTrack(int index);

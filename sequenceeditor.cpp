@@ -12,6 +12,7 @@ enum
 {
 	zZero = 0,
 	zTrack,
+	zSelection,
 };
 
 Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
@@ -19,9 +20,8 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 {
 	setScene(&m_scene);
 	setAlignment(Qt::AlignTop | Qt::AlignLeft);
-	setDragMode(RubberBandDrag);
 
-	m_scene.setSceneRect(0,0,240,1000);
+	m_scene.setSceneRect(0, 0, getSceneWidth(), 1);
 	scale(100, 1);
 
 	setViewportMargins(s_prefTrackHeaderWidth(), s_prefRulerHeight(), 0, 0);
@@ -62,6 +62,18 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 		this, SLOT(onTrackAdded(int, const Ptr<Seq::Track>&)) );
 	connect( m_seq, SIGNAL(signalRemoveTrack(int, const Ptr<Seq::Track>&)),
 		this, SLOT(onTrackRemoved(int, const Ptr<Seq::Track>&)) );
+
+	m_itemSelection = new QGraphicsRectItem;
+	
+	QColor c(Qt::black);
+	m_itemSelection->setPen(c);
+
+	c = Qt::white;
+	c.setAlphaF(0.5);
+	m_itemSelection->setBrush(c);
+
+	m_itemSelection->setZValue(zSelection);
+	m_scene.addItem(m_itemSelection);
 }
 
 void Editor::resizeEvent(QResizeEvent* ev)
@@ -105,6 +117,22 @@ void Editor::onTrackRemoved(int index, const Ptr<Seq::Track>& track)
 	}
 }
 
+void Editor::updateSelectionItem()
+{
+	QRectF rect;
+	rect.setLeft ((double)m_selStart / c_pow_2_32);
+	rect.setRight((double)m_selEnd   / c_pow_2_32);
+
+	TrackHeader* header = m_trackHeaders.value(m_seq->getTrack(m_selFirstTrack));
+	rect.setTop(header->y());
+
+	if (m_selLastTrack != m_selFirstTrack)
+		header = m_trackHeaders.value(m_seq->getTrack(m_selLastTrack));
+	rect.setBottom(header->y() + header->height());
+
+	m_itemSelection->setRect(rect);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 
 TrackHeader::TrackHeader(Editor* editor, const Ptr<Seq::Track>& track)
@@ -146,7 +174,7 @@ void Track::setHeight(int height)
 {
 	resetTransform();
 	scale(1, height-1);
-	setRect(0, 0, 1000, 1);
+	setRect(0, 0, m_editor->getSceneWidth(), 1);
 }
 
 void Track::setY(int y)
@@ -154,7 +182,78 @@ void Track::setY(int y)
 	setPos(0, y);
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+
+void Track::mousePressEvent(QGraphicsSceneMouseEvent* ev)
+{
+	m_editor->startSelectionDrag(m_track, ev);
+}
+
+void Track::mouseMoveEvent(QGraphicsSceneMouseEvent* ev)
+{
+	m_editor->continueSelectionDrag(ev);
+}
+
+void Track::mouseReleaseEvent(QGraphicsSceneMouseEvent* ev)
+{
+	m_editor->endSelectionDrag(ev);
+}
+
+void Editor::startSelectionDrag(const Ptr<Seq::Track>& track, QGraphicsSceneMouseEvent* ev)
+{
+	QPointF pos = ev->scenePos();
+
+	m_selDragStart = m_seq->getSnapPoint((int64)(pos.x() * c_pow_2_32));
+	m_selDragStart = max(0LL, m_selDragStart);
+	m_selDragStartTrack = m_seq->getTrackIndex(track);
+	
+	continueSelectionDrag(ev);
+}
+
+void Editor::continueSelectionDrag(QGraphicsSceneMouseEvent* ev)
+{
+	QPointF pos = ev->scenePos();
+
+	int64 end = m_seq->getSnapPoint((int64)(pos.x() * c_pow_2_32));
+	end = max(0LL, end);
+
+	m_selStart = min(m_selDragStart, end);
+	m_selEnd   = max(m_selDragStart, end);
+
+	Track* track = getTrackAtY(pos.y());
+	if (track)
+	{
+		int index = m_seq->getTrackIndex(track->getTrack());
+
+		m_selFirstTrack = min(m_selDragStartTrack, index);
+		m_selLastTrack  = max(m_selDragStartTrack, index);
+	}
+
+	updateSelectionItem();
+}
+
+void Editor::endSelectionDrag(QGraphicsSceneMouseEvent* ev)
+{
+	continueSelectionDrag(ev);
+}
+
+Track* Editor::getTrackAtY(double y)
+{
+	QPointF p(getSceneWidth()*0.5, y);
+	foreach(QGraphicsItem* item, m_scene.items(p))
+	{
+		Track* track = dynamic_cast<Track*>(item);
+		if (track) return track;
+	}
+	return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
+
+Scene::Scene(Editor* ed)
+: m_editor(ed)
+{
+}
 
 void Scene::setHeight(int h)
 {

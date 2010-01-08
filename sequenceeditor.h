@@ -47,6 +47,8 @@ namespace SequenceEditor
 	public:
 		Track(Editor* editor, const Ptr<Seq::Track>& track);
 
+		const Ptr<Seq::Track>& getTrack() { return m_track; }
+
 	public slots:
 		void setHeight(int height);
 		void setY(int y);
@@ -54,6 +56,10 @@ namespace SequenceEditor
 	protected:
 		Editor* m_editor;
 		Ptr<Seq::Track> m_track;
+
+		virtual void mousePressEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* ev);
+		virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* ev);
 	};
 
 	/////////////////////////////////////////////////////////////////////////
@@ -63,7 +69,7 @@ namespace SequenceEditor
 		Q_OBJECT
 
 	public:
-		Scene(Editor* editor) : m_editor(editor) {}
+		Scene(Editor* editor);
 
 	protected slots:
 		void setHeight(int h);
@@ -105,6 +111,14 @@ namespace SequenceEditor
 
 		static PrefsVar_Int s_prefTrackHeaderWidth, s_prefRulerHeight;
 
+		double getSceneWidth() { return 240; }
+
+		void getSelectionRange(int64& start, int64& end) { start = m_selStart; end = m_selEnd; }
+
+		void startSelectionDrag(const Ptr<Seq::Track>& track, QGraphicsSceneMouseEvent* ev);
+		void continueSelectionDrag(QGraphicsSceneMouseEvent* ev);
+		void endSelectionDrag(QGraphicsSceneMouseEvent* ev);
+
 	protected slots:
 		void onTrackAdded(int index, const Ptr<Seq::Track>& track);
 		void onTrackRemoved(int index, const Ptr<Seq::Track>& track);
@@ -119,5 +133,16 @@ namespace SequenceEditor
 		QVBoxLayout* m_trackHeaderLayout;
 		QHash< Ptr<Seq::Track>, TrackHeader* > m_trackHeaders;
 		QHash< Ptr<Seq::Track>, Track* > m_tracks;
+
+		int64 m_selStart, m_selEnd;
+		int m_selFirstTrack, m_selLastTrack;
+
+		QGraphicsRectItem* m_itemSelection;
+		void updateSelectionItem();
+
+		int64 m_selDragStart;
+		int m_selDragStartTrack;
+
+		Track* getTrackAtY(double y);
 	};
 };

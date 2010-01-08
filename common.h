@@ -13,6 +13,8 @@
 	typedef unsigned long long uint64;
 #endif
 
+static const double c_pow_2_32 = (double)(1LL << 32);
+
 inline double round(double x) { return ceil(x - 0.5); }
 
 template<typename T> T min(T a, T b) { return (a < b) ? a : b; }
