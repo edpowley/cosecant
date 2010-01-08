@@ -33,9 +33,6 @@ namespace SequenceEditor
 
 		void forceHeight(int h) { setMinimumHeight(h); setMaximumHeight(h); }
 
-		QLabel* m_labelMachineName;
-		QToolButton *m_btnMute, *m_btnSolo, *m_btnRecord;
-
 	private:
 		Ui::SequenceTrackHeader ui;
 
@@ -68,6 +65,9 @@ namespace SequenceEditor
 	public:
 		Scene(Editor* editor) : m_editor(editor) {}
 
+	protected slots:
+		void setHeight(int h);
+
 	protected:
 		Editor* m_editor;
 		virtual void dragEnterEvent(QGraphicsSceneDragDropEvent* ev);
@@ -78,6 +78,17 @@ namespace SequenceEditor
 	};
 
 	/////////////////////////////////////////////////////////////////////////
+
+	class TrackHeaderParent : public QWidget
+	{
+		Q_OBJECT
+
+	signals:
+		void signalHeightChanged(int h);
+
+	protected:
+		virtual void resizeEvent(QResizeEvent* ev) { signalHeightChanged(ev->size().height()); }
+	};
 
 	class Editor : public MyGraphicsView, public MWTab
 	{
@@ -104,7 +115,7 @@ namespace SequenceEditor
 		virtual void resizeEvent(QResizeEvent* ev);
 
 		QScrollArea* m_trackHeaderScrollArea;
-		QWidget* m_trackHeaderParent;
+		TrackHeaderParent* m_trackHeaderParent;
 		QVBoxLayout* m_trackHeaderLayout;
 		QHash< Ptr<Seq::Track>, TrackHeader* > m_trackHeaders;
 		QHash< Ptr<Seq::Track>, Track* > m_tracks;

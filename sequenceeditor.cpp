@@ -21,7 +21,8 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 	setAlignment(Qt::AlignTop | Qt::AlignLeft);
 	setDragMode(RubberBandDrag);
 
-	m_scene.setSceneRect(0,0,1000,1000);
+	m_scene.setSceneRect(0,0,240,1000);
+	scale(100, 1);
 
 	setViewportMargins(s_prefTrackHeaderWidth(), s_prefRulerHeight(), 0, 0);
 
@@ -30,16 +31,19 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 	m_trackHeaderScrollArea->resize(s_prefTrackHeaderWidth(), 500);
 	m_trackHeaderScrollArea->setFrameStyle(QFrame::NoFrame);
 
-	m_trackHeaderParent = new QWidget;
-	m_trackHeaderParent->resize(s_prefTrackHeaderWidth(), 1000);
+	m_trackHeaderParent = new TrackHeaderParent;
+	m_trackHeaderParent->resize(s_prefTrackHeaderWidth(), 500);
 	m_trackHeaderLayout = new QVBoxLayout(m_trackHeaderParent);
 	m_trackHeaderLayout->setSpacing(0);
 	m_trackHeaderLayout->setContentsMargins(0,0,0,0);
 
 	m_trackHeaderScrollArea->setWidget(m_trackHeaderParent);
-	m_trackHeaderScrollArea->setWidgetResizable(false);
+	m_trackHeaderScrollArea->setWidgetResizable(true);
 	m_trackHeaderScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	m_trackHeaderScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+	connect( m_trackHeaderParent, SIGNAL(signalHeightChanged(int)),
+		&m_scene, SLOT(setHeight(int)) );
 
 	// Tie the vertical scrolling of the main view to that of the track headers
 	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
@@ -53,12 +57,6 @@ Editor::Editor(const Ptr<Sequence>& seq, QWidget* parent)
 	{
 		onTrackAdded(i, m_seq->getTrack(i));
 	}
-
-/*	for (int i=0; i<10; i++)
-	{
-		m_trackHeaderLayout->addWidget(new TrackHeader);
-	}
-*/
 
 	connect( m_seq, SIGNAL(signalAddTrack(int, const Ptr<Seq::Track>&)),
 		this, SLOT(onTrackAdded(int, const Ptr<Seq::Track>&)) );
@@ -140,12 +138,15 @@ Track::Track(Editor* editor, const Ptr<Seq::Track>& track)
 : m_editor(editor), m_track(track)
 {
 	setZValue(zTrack);
-	setPen(QPen(Qt::black));
+	setPen(Qt::NoPen);
+	setBrush(QColor("light steel blue"));
 }
 
 void Track::setHeight(int height)
 {
-	setRect(0, 0, 1000, height);
+	resetTransform();
+	scale(1, height-1);
+	setRect(0, 0, 1000, 1);
 }
 
 void Track::setY(int y)
@@ -154,6 +155,13 @@ void Track::setY(int y)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
+
+void Scene::setHeight(int h)
+{
+	QRectF rect = sceneRect();
+	rect.setHeight(h);
+	setSceneRect(rect);
+}
 
 bool Scene::shouldAcceptDropEvent(QGraphicsSceneDragDropEvent* ev)
 {

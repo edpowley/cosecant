@@ -4,28 +4,38 @@
 
 namespace Seq
 {
-	class Track; class Clip;
-
-	class Sequence : public Object
+	namespace TempoClip
 	{
-		Q_OBJECT
+		class Base : public Object
+		{
+		public:
+			virtual int64 getSnapPoint(int64 x) = 0;
+		};
 
-	public:
-		int getNumTracks() { return m_tracks.length(); }
-		Ptr<Track> getTrack(int index) { return m_tracks.value(index); }
+		class Fixed : public Base
+		{
+		public:
+			Fixed(double bpm);
 
-		void insertTrack(int index, const Ptr<Track>& track);
-		void removeTrack(int index);
+			int64 getSnapPoint(int64 x);
 
-		QMap<int, Ptr<Track> > getTracksForMachine(const Ptr<Machine>& mac);
+		protected:
+			int64 m_pulsesPerBeat;
+			double m_bpm;
 
-	signals:
-		void signalAddTrack(int index, const Ptr<Seq::Track>& track);
-		void signalRemoveTrack(int index, const Ptr<Seq::Track>& track);
-
-	protected:
-		QList< Ptr<Track> > m_tracks;
+			void setBpm(double bpm);
+		};
 	};
+
+	///////////////////////////////////////////////////////////////////////////
+
+	class Clip : public Object
+	{
+	protected:
+		int64 m_length;
+	};
+
+	///////////////////////////////////////////////////////////////////////////
 
 	class Track : public Object
 	{
@@ -41,10 +51,33 @@ namespace Seq
 		Ptr<Machine> m_mac;
 	};
 
-	class Clip : public Object
+	///////////////////////////////////////////////////////////////////////////
+
+	class Sequence : public Object
 	{
+		Q_OBJECT
+
+	public:
+		Sequence();
+
+		int getNumTracks() { return m_tracks.length(); }
+		Ptr<Track> getTrack(int index) { return m_tracks.value(index); }
+
+		void insertTrack(int index, const Ptr<Track>& track);
+		void removeTrack(int index);
+
+		QMap<int, Ptr<Track> > getTracksForMachine(const Ptr<Machine>& mac);
+
+		int64 getSnapPoint(int64 x);
+
+	signals:
+		void signalAddTrack(int index, const Ptr<Seq::Track>& track);
+		void signalRemoveTrack(int index, const Ptr<Seq::Track>& track);
+
 	protected:
-		int64 m_length;
+		QList< Ptr<Track> > m_tracks;
+
+		QMap<int64, Ptr<TempoClip::Base> > m_tempoClips;
 	};
 
 };
