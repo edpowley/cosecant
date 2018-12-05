@@ -80,8 +80,6 @@ void MachineChooserWidget::populateUnsortedBranch(QTreeWidgetItem* root, const s
 	QTreeWidgetItem* unsortedRoot = new QTreeWidgetItem(QStringList("Unsorted"));
 	root->addChild(unsortedRoot);
 
-	QHash<QStringList, QTreeWidgetItem*> hierarchy;
-
 	bool haveUnsortedMachines = false;
 	typedef std::pair<QString, bool> stringboolpair;
 	BOOST_FOREACH(const stringboolpair& sb, idSeenInIndex)
@@ -91,7 +89,7 @@ void MachineChooserWidget::populateUnsortedBranch(QTreeWidgetItem* root, const s
 			haveUnsortedMachines = true;
 			QStringList pathHead = sb.first.split('/');
 			QString pathTail = pathHead.takeLast();
-			QTreeWidgetItem* parent = addToHierarchy(unsortedRoot, pathHead, hierarchy);
+            QTreeWidgetItem* parent = addToHierarchy(unsortedRoot, pathHead);
 			QString name = QString("%1 [%2]").arg(MachineFactory::get(sb.first)->getDesc()).arg(sb.first);
 			new QTreeWidgetItem(parent, QStringList() << name << sb.first);
 		}
@@ -103,16 +101,35 @@ void MachineChooserWidget::populateUnsortedBranch(QTreeWidgetItem* root, const s
 	}
 }
 
-QTreeWidgetItem* MachineChooserWidget::addToHierarchy(
-	QTreeWidgetItem* root, const QStringList& path, QHash<QStringList, QTreeWidgetItem*>& hierarchy)
+QTreeWidgetItem* findChildItem(QTreeWidgetItem* parent, const QString& name)
+{
+    for (int childIndex = 0; childIndex < parent->childCount(); childIndex++)
+    {
+        auto child = parent->child(childIndex);
+        if (child->text(0) == name)
+            return child;
+    }
+
+    return nullptr;
+}
+
+QTreeWidgetItem* MachineChooserWidget::addToHierarchy(QTreeWidgetItem* root, const QStringList& path)
 {
 	if (path.isEmpty()) return root;
-    //if (hierarchy.contains(path)) return hierarchy.value(path);
 
-	QTreeWidgetItem* parent = addToHierarchy(root, path.mid(0, path.length()-1), hierarchy);
-	QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(path.last()));
-    //hierarchy.insert(path, item);
-	return item;
+    QTreeWidgetItem* node = root;
+    for (auto pathElement : path)
+    {
+        QTreeWidgetItem* item = findChildItem(node, pathElement);
+        if (!item)
+        {
+            item = new QTreeWidgetItem(node, QStringList(pathElement));
+        }
+
+        node = item;
+    }
+
+    return node;
 }
 
 void MachineChooserWidget::populateIndexBranch(QTreeWidgetItem* parentItem,
