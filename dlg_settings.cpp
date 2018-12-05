@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <QMessageBox>
+#include <QFileDialog>
 #include "common.h"
 #include "dlg_settings.h"
 #include "application.h"
@@ -15,7 +17,7 @@ void Dlg_Settings::run(QWidget *parent)
 	}
 }
 
-Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WFlags flags)
+Dlg_Settings::Dlg_Settings(QWidget *parent, Qt::WindowFlags flags)
 : QDialog(parent, flags)
 {
 	ui.setupUi(this);
@@ -163,7 +165,7 @@ void Dlg_Settings::on_buttonAsioPanel_clicked()
 	}
 
 #ifdef Q_OS_WIN32
-	void* parent = static_cast<void*>(CosecantMainWindow::get()->winId());
+    void* parent = reinterpret_cast<void*>(CosecantMainWindow::get()->winId());
 #else
 	void* parent = NULL;
 #endif

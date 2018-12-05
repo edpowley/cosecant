@@ -74,7 +74,7 @@ void WorkMachine::updatePinBuffers(PinBuffer*& pinBuffers,
 		pinBuffers = new PinBuffer[workBuffers.size()];
 		PinBuffer* pb = pinBuffers;
 
-		BOOST_FOREACH(const Ptr<WorkBuffer::Base>& wb, workBuffers)
+        for (const Ptr<WorkBuffer::Base>& wb : workBuffers)
 		{
 			*pb = wb->getPinBuffer();
 			++pb;
@@ -132,7 +132,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 			CSC_LOCK_MUTEX(&m_machine->m_paramChangesMutex);
 
 			typedef std::pair<ParamTag, double> parampair;
-			BOOST_FOREACH(const parampair& p, m_machine->m_paramChanges)
+            for (const parampair& p : m_machine->m_paramChanges)
 			{
 				StreamEvent ev;
 				ev.type = StreamEventType::paramChange;
@@ -146,7 +146,7 @@ void WorkMachine::work(int firstframe, int lastframe)
 			m_machine->m_paramChanges.clear();
 		}
 
-		BOOST_FOREACH(ParamPinBuf& ppb, m_paramPinBufs)
+        for (ParamPinBuf& ppb : m_paramPinBufs)
 		{
 			std::map<int, double>::const_iterator iter = ppb.buf->m_data.lower_bound(firstframe);
 			std::map<int, double>::const_iterator enditer = ppb.buf->m_data.lower_bound(lastframe);

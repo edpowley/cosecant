@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QGraphicsView>
+#include <QGraphicsSimpleTextItem>
 #include "prefs.h"
 
 class MyGraphicsView : public QGraphicsView

@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <QGraphicsSceneDragDropEvent>
 #include "common.h"
 #include "routingeditor.h"
 using namespace RoutingEditor;
@@ -78,7 +79,7 @@ QList<MachineItem*> Editor::getSelectedMachineItems()
 
 bool Scene::shouldAcceptDropEvent(QGraphicsSceneDragDropEvent* ev)
 {
-	QGraphicsItem* item = itemAt(ev->scenePos());
+    QGraphicsItem* item = itemAt(ev->scenePos(), QTransform());
 	if (item) return false;
 
 	if (ev->mimeData()->hasFormat(MachineChooserWidget::c_dndMimeType)

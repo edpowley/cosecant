@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <QGraphicsSceneMouseEvent>
 #include "common.h"
 #include "routingeditor.h"
 using namespace RoutingEditor;
@@ -46,7 +47,10 @@ PinItem::PinItem(Editor* editor, const Ptr<Pin>& pin, MachineItem* parent)
 
 	QPointF pos = multElementWise(m_pin->m_machine->m_halfsize, m_pin->getPosOffset());
 	setPos(pos);
-	rotate(m_pin->getRotation());
+    QTransform transform;
+    transform.rotate(m_pin->getRotation());
+    setTransform(transform, true);
+    //rotate(m_pin->getRotation());
 
 	QPen pen;
 	pen.setColor(Theme::get().getSignalTypeColor(m_pin->m_type));

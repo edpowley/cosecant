@@ -2,7 +2,7 @@
 
 #include "htmlentity.h"
 
-#define COSECANT_API_NO_CLASSES
+//#define COSECANT_API_NO_CLASSES
 
 inline QString decodeApiString(const char* str)
 {

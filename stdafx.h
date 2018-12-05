@@ -24,17 +24,22 @@
 #include <set>
 #include <iomanip> // std::setprecision etc
 #include <sstream>
+#include <functional>
 
 // Boost
-#include <boost/foreach.hpp>
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-#include <boost/random.hpp>
+//#include <boost/foreach.hpp>
+//#include <boost/function.hpp>
+//#include <boost/bind.hpp>
+//#include <boost/random.hpp>
+
+#define BOOST_FOREACH(a,b)  for (a : b)
 
 // Qt
+#include <QtCore>
 #include <QtGui>
-#include <QtXml>
-#include <QtNetwork>
+#include <QDomElement>
+#include <QGridLayout>
+//#include <QtNetwork>
 
 // PortAudio
 #include <portaudio.h>
@@ -44,8 +49,8 @@
 #include "sqlite/sqlite3.h"
 
 // zlib / minizip
-#include "zip.h"
-#include "unzip.h"
+#include <zip.h>
+#include <unzip.h>
 
 // Mine
 #define COSECANT_API_HOST

@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <QGroupBox>
+#include <QWidget>
 #include "common.h"
 #include "expanderbox.h"
 

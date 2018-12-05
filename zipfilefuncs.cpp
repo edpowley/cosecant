@@ -80,3 +80,4 @@ static int ZCALLBACK testerror(voidpf opaque, voidpf stream)
 }
 
 zlib_filefunc_def g_zipFileFuncs = { open, read, write, tell, seek, close, testerror, NULL };
+

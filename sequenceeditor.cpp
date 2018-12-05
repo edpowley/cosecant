@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <QScrollBar>
+#include <QGraphicsSceneMouseEvent>
 #include "common.h"
 #include "sequenceeditor.h"
 using namespace SequenceEditor;
@@ -173,7 +175,7 @@ Track::Track(Editor* editor, const Ptr<Seq::Track>& track)
 void Track::setHeight(int height)
 {
 	resetTransform();
-	scale(1, height-1);
+    setTransform(QTransform::fromScale(1, height-1), true);
 	setRect(0, 0, m_editor->getSceneWidth(), 1);
 }
 

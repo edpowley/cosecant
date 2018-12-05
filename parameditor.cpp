@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <QLabel>
+
 #include "common.h"
 #include "parameditor.h"
 #include "machine.h"

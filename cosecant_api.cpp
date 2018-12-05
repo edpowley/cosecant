@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "cosecant_api.h"
 
+#ifndef COSECANT_API_HOST
+
 COSECANT_EXPORT(uint32_t) csc_getVersion()
 {
 	return CosecantAPI::version;
@@ -17,16 +19,16 @@ COSECANT_EXPORT(void) csc_setHostFunctions(CosecantAPI::HostFunctions* host)
 
 namespace PluginFuncImpl
 {
-	void Mi_destroy(Mi* m)
+    void Mi_destroy(CosecantAPI::Mi* m)
 	{ delete m; }
 		
-	MachineInfo* Mi_getInfo(Mi* m)
+    CosecantAPI::MachineInfo* Mi_getInfo(CosecantAPI::Mi* m)
 	{ return m->getInfo(); }
 
-	void Mi_init(Mi* m)
+    void Mi_init(CosecantAPI::Mi* m)
 	{ m->init(); }
 		
-	void Mi_work(Mi* m, const WorkContext* ctx)
+    void Mi_work(CosecantAPI::Mi* m, const CosecantAPI::WorkContext* ctx)
 	{ m->work(ctx); }
 };
 
@@ -44,4 +46,4 @@ COSECANT_EXPORT(CosecantAPI::PluginFunctions*) csc_getPluginFunctions()
 	return &g_pluginFuncs;
 }
 
-
+#endif

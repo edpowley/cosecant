@@ -48,7 +48,7 @@ Parameter::Group::Group(const Ptr<Machine>& mac, const ParamGroupInfo* info)
 
 void Parameter::Group::initParamStuff(Machine* mac)
 {
-	BOOST_FOREACH(Ptr<Parameter::Base> p, m_params)
+    for (Ptr<Parameter::Base> p : m_params)
 	{
 		p->initParamStuff(mac);
 	}

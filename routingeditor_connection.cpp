@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#include <QMenu>
+#include <QGraphicsSceneContextMenuEvent>
+#include <QMessageBox>
 #include "common.h"
 #include "routingeditor.h"
 using namespace RoutingEditor;

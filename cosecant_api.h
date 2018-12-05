@@ -11,7 +11,7 @@
 #endif
 
 #ifndef COSECANT_API_NO_STDINT
-#ifdef _MSC_VER
+#if 0  //#ifdef _MSC_VER
 	// Visual C++ doesn't ship with stdint.h
 	typedef	         __int8  int8_t;
 	typedef unsigned __int8  uint8_t;

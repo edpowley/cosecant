@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QGroupBox>
+
 class ExpanderBox : public QGroupBox
 {
 	Q_OBJECT

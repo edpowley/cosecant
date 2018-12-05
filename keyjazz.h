@@ -1,5 +1,9 @@
 #pragma once
 
+#include <QEvent>
+#include <QObject>
+#include "object.h"
+
 class KeyJazzEvent : public QEvent
 {
 public:

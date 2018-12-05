@@ -41,7 +41,7 @@ inline int truemod(int a, int b)
 
 inline std::ostream& operator<<(std::ostream& stream, const QString& str)
 {
-	stream << str.toAscii().constData();
+    stream << str.toLatin1().constData();
 	return stream;
 }
 

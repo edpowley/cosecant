@@ -1,5 +1,10 @@
 #pragma once
 
+#include "stdafx.h"
+#include <QGraphicsItem>
+
+#include "error.h"
+
 template<typename T> void vectorErase(std::vector<T>& v, const T& what, bool firstonly = false)
 {
 	for (std::vector<T>::iterator i = v.begin(); i != v.end(); )

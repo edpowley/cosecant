@@ -1,6 +1,8 @@
 #ifndef COSECANTMAINWINDOW_H
 #define COSECANTMAINWINDOW_H
 
+#include "stdafx.h"
+
 #include "ui_cosecantmainwindow.h"
 #include "prefs.h"
 #include "mwtab.h"
@@ -12,7 +14,7 @@ class CosecantMainWindow : public QMainWindow
 public:
 	static CosecantMainWindow* get() { return s_singleton; }
 
-	CosecantMainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
+    CosecantMainWindow(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	~CosecantMainWindow();
 
 	void addTab(MWTab* tab);

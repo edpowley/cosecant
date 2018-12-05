@@ -55,7 +55,7 @@ void MachineChooserWidget::populateIndexBranch()
 
 	std::map<QString, bool> idSeenInIndex;
 	typedef std::pair< QString, Ptr<MachineFactory> > factorypair;
-	BOOST_FOREACH(const factorypair& fp, MachineFactory::s_factories)
+    for (const factorypair& fp : MachineFactory::s_factories)
 	{
 		idSeenInIndex[fp.first] = false;
 	}
@@ -107,11 +107,11 @@ QTreeWidgetItem* MachineChooserWidget::addToHierarchy(
 	QTreeWidgetItem* root, const QStringList& path, QHash<QStringList, QTreeWidgetItem*>& hierarchy)
 {
 	if (path.isEmpty()) return root;
-	if (hierarchy.contains(path)) return hierarchy.value(path);
+    //if (hierarchy.contains(path)) return hierarchy.value(path);
 
 	QTreeWidgetItem* parent = addToHierarchy(root, path.mid(0, path.length()-1), hierarchy);
 	QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(path.last()));
-	hierarchy.insert(path, item);
+    //hierarchy.insert(path, item);
 	return item;
 }
 
@@ -145,10 +145,11 @@ void MachineChooserWidget::populateIndexBranch(QTreeWidgetItem* parentItem,
 			else
 			{
 				seeniter->second = true;
-				bool hidden = getAttribute<bool>(el, "hidden", false);
+                //bool hidden = getAttribute<bool>(el, "hidden", false);
+                bool hidden = false;
 				if (!hidden)
 				{
-					QString label = getAttribute<QString>(el, "label", id);
+                    QString label = getAttribute<QString>(el, "label");
 					QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << label << id);
 					parentItem->addChild(item);
 				}

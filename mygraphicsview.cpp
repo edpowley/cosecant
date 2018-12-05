@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <QStyleOptionGraphicsItem>
 #include "common.h"
 #include "mygraphicsview.h"
 

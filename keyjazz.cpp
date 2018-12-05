@@ -87,7 +87,8 @@ void KeyJazz::sendEvent(KeyJazzEvent& ev)
 
 void KeyJazz::sendEvent(KeyJazzEvent::Type type, double note)
 {
-	sendEvent(KeyJazzEvent(type, note));
+    KeyJazzEvent ev(type, note);
+    sendEvent(ev);
 }
 
 //////////////////////////////////////////////////////////////////////////////////

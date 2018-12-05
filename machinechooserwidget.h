@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QTreeWidget>
+
 class MachineChooserTree : public QTreeWidget
 {
 	Q_OBJECT

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stdafx.h"
 #include "machine.h"
 #include "signal.h"
 
@@ -42,7 +43,7 @@ public:
 	bool existsPathBetweenMachines(Machine* mac1, Machine* mac2, bool useFeedbackConnections = false);
 
 	typedef
-		boost::function<
+        std::function<
 			void (
 				const std::vector<
 					Ptr<Connection>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stdafx.h"
 #include "builtinmachines.h"
 #include "audioio.h"
 #include "parameter.h"
@@ -58,7 +59,7 @@ protected:
 		return info;
 	}
 
-	static QStringList getChannelParamItems(int nChans, boost::function<QString(int)> getName)
+    static QStringList getChannelParamItems(int nChans, std::function<QString(int)> getName)
 	{
 		QStringList items("None");
 		for (int i=0; i<nChans/2; i++)
@@ -68,7 +69,7 @@ protected:
 		return items;
 	}
 
-	void populateChannelParam(int nChans, boost::function<QString(int)> getName)
+    void populateChannelParam(int nChans, std::function<QString(int)> getName)
 	{
 		Ptr<Parameter::Enum> param = dynamic_cast<Parameter::Enum*>(
 			m_paramMap.value(ptChannel).c_ptr() );
@@ -128,7 +129,7 @@ public:
 	void populateChannelParam()
 	{
 		AudioInOut::populateChannelParam(AudioIO::get().m_numOutputChannels,
-			boost::bind(&AudioIO::getOutputChannelName, &AudioIO::get(), _1));
+            std::bind(&AudioIO::getOutputChannelName, &AudioIO::get(), std::placeholders::_1));
 	}
 
 protected:
@@ -186,7 +187,7 @@ public:
 	void populateChannelParam()
 	{
 		AudioInOut::populateChannelParam(AudioIO::get().m_numInputChannels,
-			boost::bind(&AudioIO::getInputChannelName, &AudioIO::get(), _1));
+            std::bind(&AudioIO::getInputChannelName, &AudioIO::get(), std::placeholders::_1));
 	}
 
 protected:

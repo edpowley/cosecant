@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <QScrollBar>
 #include "common.h"
 #include "headedview.h"
 

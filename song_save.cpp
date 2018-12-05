@@ -27,7 +27,7 @@ public:
 	{
 		int err;
 		err = zipOpenNewFileInZip(m_p,
-			name.toAscii(),
+            name.toLatin1(),
 			NULL, // zipfi
 			NULL, 0, // extrafield_local
 			NULL, 0, // extrafield_global

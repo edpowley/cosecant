@@ -1,5 +1,6 @@
 #pragma once
 
+#include "stdafx.h"
 #include "ui_settings_dlg.h"
 #include "prefs.h"
 
@@ -8,7 +9,7 @@ class Dlg_Settings : public QDialog
 	Q_OBJECT
 
 public:
-	Dlg_Settings(QWidget *parent = 0, Qt::WFlags flags = 0);
+    Dlg_Settings(QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	~Dlg_Settings();
 
 	static void run(QWidget *parent);

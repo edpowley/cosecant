@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include <QDockWidget>
+#include <QFileDialog>
+#include <QUndoView>
+#include <QMessageBox>
 #include "common.h"
 #include "cosecantmainwindow.h"
 #include "version.h"
@@ -12,7 +16,7 @@
 
 CosecantMainWindow* CosecantMainWindow::s_singleton = NULL;
 
-CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WFlags flags)
+CosecantMainWindow::CosecantMainWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags), m_currentTab(NULL)
 {
 	ui.setupUi(this);

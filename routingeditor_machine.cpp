@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <QGraphicsSceneMouseEvent>
+#include <QMenu>
 #include "common.h"
 #include "routingeditor.h"
 using namespace RoutingEditor;
@@ -272,7 +274,7 @@ public:
 
 		Routing::ChangeBatch batch(m_routing);
 
-		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
+        BOOST_FOREACH(const Ptr<Connection>& conn, m_conns)
 			m_routing->removeConnection(conn);
 
 		m_routing->removeMachine(m_mac);
@@ -284,7 +286,7 @@ public:
 
 		m_routing->addMachine(m_mac);
 
-		BOOST_FOREACH(Ptr<Connection>& conn, m_conns)
+        BOOST_FOREACH(const Ptr<Connection>& conn, m_conns)
 			m_routing->addConnection(conn);
 
 		if (!m_seqTracks.empty())

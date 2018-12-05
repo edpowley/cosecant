@@ -3,7 +3,7 @@
 #include "dlg_about.h"
 #include "version.h"
 
-Dlg_About::Dlg_About(QWidget *parent, Qt::WFlags flags)
+Dlg_About::Dlg_About(QWidget *parent, Qt::WindowFlags flags)
 : QDialog(parent, flags)
 {
 	ui.setupUi(this);

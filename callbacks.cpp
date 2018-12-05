@@ -160,7 +160,7 @@ static int32_t EventStreamIter_deref(EventStreamIter* iter, StreamEvent* ev, uin
 {
 	if (!iter) return 0;
 	if (ev && evSize)
-		memcpy(ev, &*iter->i, min(evSize, sizeof(StreamEvent)));
+        memcpy(ev, &*iter->i, min(evSize, (uint32_t)sizeof(StreamEvent)));
 	return iter->i->time;
 }
 

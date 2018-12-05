@@ -25,7 +25,7 @@ public:
 	QByteArray readFile(const QString& name)
 	{
 		int err;
-		err = unzLocateFile(m_p, name.toAscii(), 2); // 2 = not case sensitive
+        err = unzLocateFile(m_p, name.toLatin1(), 2); // 2 = not case sensitive
 		if (err != UNZ_OK)
 			throw SongLoadError(QString("Error code %1 in unzLocateFile").arg(err));
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdafx.h"
+#include <QUndoStack>
 #include "routing.h"
 #include "sequence.h"
 

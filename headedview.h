@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QSplitter>
 #include "mygraphicsview.h"
 
 class HeadedView : public QSplitter

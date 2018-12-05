@@ -1,5 +1,6 @@
 #pragma once
 
+#include "object.h"
 #include "ui_machine_rename_dlg.h"
 #include "cosecant_api.h"
 
@@ -10,7 +11,7 @@ class Dlg_MachineRename : public QDialog
 	Q_OBJECT
 
 public:
-	Dlg_MachineRename(const Ptr<Machine>& mac, QWidget *parent = 0, Qt::WFlags flags = 0);
+	Dlg_MachineRename(const Ptr<Machine>& mac, QWidget *parent = 0, Qt::WindowFlags flags = 0);
 	~Dlg_MachineRename();
 
 	QString getName() { return ui.editName->text(); }

@@ -1,5 +1,14 @@
 #pragma once
 
+#include "stdafx.h"
+#include <QScrollArea>
+#include <QDockWidget>
+#include <QUndoCommand>
+#include <QSlider>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QGroupBox>
+
 #include "machine.h"
 #include "parameter.h"
 #include "undo_command_ids.h"

@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <QMessageBox>
+
 #include "common.h"
 #include "application.h"
 
@@ -47,7 +49,7 @@ bool Application::notify(QObject* receiver, QEvent* ev)
 
 void Application::init()
 {
-	qInstallMsgHandler(&Application::textMessageHandler);
+    qInstallMessageHandler(&Application::textMessageHandler);
 
 	QPixmap splashpic(":/CosecantMainWindow/images/splash.png");
 	{
@@ -156,7 +158,7 @@ void Application::setupAudio()
 	}
 }
 
-void Application::textMessageHandler(QtMsgType type, const char *msg)
+void Application::textMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
 	QString str;
 
@@ -171,7 +173,7 @@ void Application::textMessageHandler(QtMsgType type, const char *msg)
 
 	str.append(msg);
 	str.append("\n");
-	OutputDebugStringA(str.toAscii());
+    OutputDebugStringA(str.toLatin1());
 }
 
 void Application::pushStatusMsg(const QString& msg)

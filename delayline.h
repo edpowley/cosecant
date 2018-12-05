@@ -3,6 +3,7 @@
 #include "cosecant_api.h"
 using namespace CosecantAPI;
 
+#include "common.h"
 #include "eventstream.h"
 
 namespace DelayLine

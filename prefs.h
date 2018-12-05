@@ -1,5 +1,7 @@
 #pragma once
 
+#include "object.h"
+
 class PrefsVar_Base : public QObject
 {
 	Q_OBJECT

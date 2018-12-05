@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QSplashScreen>
 #include "prefs.h"
 #include "cosecantmainwindow.h"
 
@@ -39,5 +40,5 @@ protected:
 	void setupAudio();
 	void setupScriptEngine();
 
-	static void textMessageHandler(QtMsgType type, const char* msg);
+    static void textMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 };

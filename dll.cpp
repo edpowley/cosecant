@@ -11,7 +11,7 @@ Dll::Dll(const QString& path)
 {
 	ASSERT(sizeof(wchar_t) == 2);
 
-	m_hmod = LoadLibrary(QDir::toNativeSeparators(path).utf16());
+    m_hmod = LoadLibrary((LPCWSTR)QDir::toNativeSeparators(path).utf16());
 	if (!m_hmod)
 	{
 		THROW_ERROR(InitError,

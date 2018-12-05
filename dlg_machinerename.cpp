@@ -7,7 +7,7 @@
 #include "cosecant_api.h"
 using namespace CosecantAPI;
 
-Dlg_MachineRename::Dlg_MachineRename(const Ptr<Machine>& mac, QWidget *parent, Qt::WFlags flags)
+Dlg_MachineRename::Dlg_MachineRename(const Ptr<Machine>& mac, QWidget *parent, Qt::WindowFlags flags)
 : QDialog(parent, flags), m_mac(mac)
 {
 	ui.setupUi(this);
