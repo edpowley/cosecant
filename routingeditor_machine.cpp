@@ -34,7 +34,7 @@ MachineItem::MachineItem(Editor* editor, const Ptr<Machine>& machine)
 : m_mac(machine), m_editor(editor)
 {
 	setZValue(10);
-	setFlags(ItemIsSelectable);
+    setFlags(ItemIsSelectable | ItemSendsGeometryChanges);
 	m_mouseMode = none;
 
 	prepareGeometryChange();

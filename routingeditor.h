@@ -34,7 +34,7 @@ namespace RoutingEditor
 
 		enum { none, leftClick, rightClick, move } m_mouseMode;
 
-		virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
+        virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
 
 	signals:
 		void signalMove();
